@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Repository } from "@shared/types";
+import { Repository } from "../../shared/types";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { MainLayout } from "./components/MainLayout";
 import { LoadingScreen } from "./components/LoadingScreen";
@@ -114,7 +114,7 @@ const App: React.FC = () => {
   // Show error if there's an error
   if (state.error) {
     return (
-      <div className="h-full flex items-center justify-center bg-background-primary">
+      <div className="h-full flex items-center justify-center bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text">
         <div className="max-w-md mx-auto text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
@@ -152,7 +152,7 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="h-full w-full bg-background-primary">
+      <div className="h-full w-full bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text">
         {state.repository ? (
           <MainLayout
             repository={state.repository}

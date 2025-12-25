@@ -8,10 +8,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "npm run build:preload && concurrently \"npm run dev:renderer\" \"npm run dev:main\"",
+    "dev": "/Users/admin/.bun/bin/bun run build:preload && concurrently \"/Users/admin/.bun/bin/bun run dev:renderer\" \"/Users/admin/.bun/bin/bun run dev:main\"",
     "dev:renderer": "vite",
     "dev:main": "tsc -p src/main/tsconfig.json && electron dist/main/main.js --inspect=5858",
-    "build": "npm run build:renderer && npm run build:main",
+    "build": "/Users/admin/.bun/bin/bun run build:renderer && /Users/admin/.bun/bin/bun run build:main",
     "build:renderer": "vite build",
     "build:main": "tsc -p src/main/tsconfig.json",
     "build:preload": "tsc -p src/preload/tsconfig.json",
@@ -22,7 +22,7 @@
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "type-check": "tsc --noEmit",
-    "install:bun": "bun install"
+    "clean": "rm -rf node_modules dist release && /Users/admin/.bun/bin/bun install"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
