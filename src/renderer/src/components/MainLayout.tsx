@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Repository, Branch } from "@shared/types";
+import { Repository, Branch, AppSettings } from "@shared/types"; // Add AppSettings
 import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
@@ -18,6 +18,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const { showToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null); // Add appSettings state
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -48,11 +49,26 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     };
   }, [repository.path, showToast]); // Re-run when repository path or showToast changes
 
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const settings = await window.gitnetAPI.getSettings();
+        setAppSettings(settings);
+      } catch (error) {
+        console.error("Failed to fetch settings:", error);
+        showToast("Failed to load settings.", "error");
+      }
+    };
+
+    fetchSettings();
+  }, [showToast]); // Re-run when showToast changes
+
   const handleBranchSelect = (branchName: string) => {
     console.log("Selected branch:", branchName);
     // TODO: Implement actual branch selection logic (e.g., checkout)
     // For now, we'll just log and potentially highlight
   };
+
 
   return (
     <div className="h-full w-full flex flex-col bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text overflow-hidden">
@@ -184,7 +200,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
                   <span>Recent Commits</span>
                 </div>
-                <CommitMiniLog repoPath={repository.path} />
+                <CommitMiniLog
+                    repoPath={repository.path}
+                    githubUsernameMap={appSettings?.githubUsernameMap || {}}
+                />
               </div>
             </div>
           </div>

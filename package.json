@@ -28,6 +28,7 @@
     "@tailwindcss/forms": "^0.5.7",
     "@types/d3": "^7.4.3",
     "@types/node": "^20.10.0",
+    "@types/node-fetch": "^2.6.13",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.13.1",
@@ -48,6 +49,8 @@
   },
   "dependencies": {
     "d3": "^7.8.5",
+    "lru-cache": "^11.2.4",
+    "node-fetch": "2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

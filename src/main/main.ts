@@ -4,17 +4,20 @@ import { isDev } from "./utils";
 import { GitService } from "./services/git-service";
 import { RepositoryWatcher } from "./services/repository-watcher";
 import { SettingsService } from "./services/settings-service";
+import { GitHubService } from "./services/github-service";
 
 class GitNetApp {
   private mainWindow: BrowserWindow | null = null;
   private gitService: GitService;
   private repositoryWatcher: RepositoryWatcher;
   private settingsService: SettingsService;
+  private gitHubService: GitHubService; // Declare GitHubService
 
   constructor() {
     this.gitService = new GitService();
     this.repositoryWatcher = new RepositoryWatcher();
     this.settingsService = new SettingsService();
+    this.gitHubService = new GitHubService();
     this.initializeApp();
   }
 
@@ -230,6 +233,11 @@ class GitNetApp {
     );
     ipcMain.handle("get-stash-list", (_, repoPath: string) =>
       this.gitService.getStashList(repoPath),
+    );
+
+    // GitHub operations
+    ipcMain.handle("get-github-profile", async (_, username: string) =>
+      this.gitHubService.getProfileByUsername(username),
     );
 
     // File system operations
