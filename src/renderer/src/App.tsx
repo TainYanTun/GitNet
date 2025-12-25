@@ -1,0 +1,169 @@
+import React, { useState, useEffect } from "react";
+import { Repository } from "@shared/types";
+import { WelcomeScreen } from "./components/WelcomeScreen";
+import { MainLayout } from "./components/MainLayout";
+import { LoadingScreen } from "./components/LoadingScreen";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+
+interface AppState {
+  repository: Repository | null;
+  loading: boolean;
+  error: string | null;
+}
+
+const App: React.FC = () => {
+  const [state, setState] = useState<AppState>({
+    repository: null,
+    loading: false,
+    error: null,
+  });
+
+  // Handle repository selection
+  const handleSelectRepository = async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const repository = await window.gitnetAPI.selectRepository();
+
+      if (repository) {
+        setState({
+          repository,
+          loading: false,
+          error: null,
+        });
+
+        // Start watching the repository for changes
+        await window.gitnetAPI.watchRepository(repository.path);
+      } else {
+        setState((prev) => ({ ...prev, loading: false }));
+      }
+    } catch (error) {
+      console.error("Failed to select repository:", error);
+      setState({
+        repository: null,
+        loading: false,
+        error:
+          error instanceof Error ? error.message : "Failed to load repository",
+      });
+    }
+  };
+
+  // Handle repository close
+  const handleCloseRepository = async () => {
+    if (state.repository) {
+      try {
+        await window.gitnetAPI.unwatchRepository(state.repository.path);
+      } catch (error) {
+        console.error("Failed to unwatch repository:", error);
+      }
+    }
+
+    setState({
+      repository: null,
+      loading: false,
+      error: null,
+    });
+  };
+
+  // Set up event listeners for repository changes
+  useEffect(() => {
+    const handleRepositoryChanged = (event: any) => {
+      console.log("Repository changed:", event);
+      // Handle repository changes from file system watcher
+      if (
+        event.repository &&
+        state.repository?.path === event.repository.path
+      ) {
+        setState((prev) => ({
+          ...prev,
+          repository: event.repository,
+        }));
+      }
+    };
+
+    const handleHeadChanged = (event: any) => {
+      console.log("HEAD changed:", event);
+      // Trigger refresh of commit data when HEAD changes
+      if (state.repository) {
+        // This will be handled by the MainLayout component
+      }
+    };
+
+    // Set up event listeners
+    if (window.gitnetAPI) {
+      window.gitnetAPI.onRepositoryChanged(handleRepositoryChanged);
+      window.gitnetAPI.onHeadChanged(handleHeadChanged);
+    }
+
+    // Cleanup function would go here if the API returned cleanup functions
+    return () => {
+      // Cleanup listeners if needed
+    };
+  }, [state.repository]);
+
+  // Error handling
+  const handleErrorDismiss = () => {
+    setState((prev) => ({ ...prev, error: null }));
+  };
+
+  // Show loading screen
+  if (state.loading) {
+    return <LoadingScreen message="Loading repository..." />;
+  }
+
+  // Show error if there's an error
+  if (state.error) {
+    return (
+      <div className="h-full flex items-center justify-center bg-background-primary">
+        <div className="max-w-md mx-auto text-center">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+              <svg
+                className="w-6 h-6 text-red-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Error Loading Repository
+            </h3>
+            <p className="text-gray-600 mb-4">{state.error}</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={handleErrorDismiss} className="btn-secondary">
+                Dismiss
+              </button>
+              <button onClick={handleSelectRepository} className="btn-primary">
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <ErrorBoundary>
+      <div className="h-full w-full bg-background-primary">
+        {state.repository ? (
+          <MainLayout
+            repository={state.repository}
+            onCloseRepository={handleCloseRepository}
+          />
+        ) : (
+          <WelcomeScreen onSelectRepository={handleSelectRepository} />
+        )}
+      </div>
+    </ErrorBoundary>
+  );
+};
+
+export default App;

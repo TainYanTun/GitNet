@@ -1,0 +1,286 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  html {
+    @apply h-full;
+  }
+
+  body {
+    @apply h-full m-0 font-sans antialiased;
+    @apply bg-background-primary text-text-primary;
+    @apply overflow-hidden;
+  }
+
+  #root {
+    @apply h-full w-full flex flex-col;
+  }
+}
+
+/* Custom component styles */
+@layer components {
+  /* Button styles */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-blue-600 text-white hover:bg-blue-700;
+    @apply focus:ring-blue-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-200 text-gray-900 hover:bg-gray-300;
+    @apply focus:ring-gray-500;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-gray-600 hover:bg-gray-100;
+    @apply focus:ring-gray-500;
+  }
+
+  /* Input styles */
+  .input {
+    @apply w-full px-3 py-2 border border-border-light rounded-lg;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+    @apply placeholder-text-tertiary;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-white rounded-lg shadow-soft border border-border-light;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-border-light;
+  }
+
+  .card-content {
+    @apply px-6 py-4;
+  }
+
+  /* Panel styles */
+  .panel {
+    @apply bg-background-secondary border-r border-border-light;
+  }
+
+  .panel-header {
+    @apply px-4 py-3 border-b border-border-light bg-background-tertiary;
+  }
+
+  .panel-content {
+    @apply px-4 py-4;
+  }
+
+  /* Toolbar styles */
+  .toolbar {
+    @apply flex items-center justify-between px-4 py-2;
+    @apply bg-background-secondary border-b border-border-light;
+  }
+
+  /* Graph container */
+  .graph-container {
+    @apply relative flex-1 overflow-hidden bg-background-primary;
+  }
+
+  /* Tooltip styles */
+  .tooltip {
+    @apply absolute z-50 px-3 py-2 text-sm;
+    @apply bg-gray-900 text-white rounded-lg shadow-lg;
+    @apply pointer-events-none opacity-0 transition-opacity duration-200;
+  }
+
+  .tooltip.visible {
+    @apply opacity-100;
+  }
+
+  /* Loading styles */
+  .loading {
+    @apply flex items-center justify-center;
+  }
+
+  .loading-text {
+    @apply text-text-secondary animate-pulse;
+  }
+
+  /* Commit node styles */
+  .commit-node {
+    @apply cursor-pointer transition-all duration-200;
+  }
+
+  .commit-node:hover {
+    @apply scale-110;
+  }
+
+  /* Branch lane styles */
+  .branch-lane {
+    @apply stroke-2 fill-none;
+  }
+
+  /* Scrollbar styles for webkit browsers */
+  .custom-scrollbar::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full hover:bg-gray-400;
+  }
+}
+
+/* Custom utility styles */
+@layer utilities {
+  /* Animation utilities */
+  .animate-slide-in-right {
+    animation: slideInRight 0.3s ease-out;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.3s ease-out;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.4s ease-out;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text selection utilities */
+  .select-none {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  .select-text {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Drag utilities */
+  .draggable {
+    cursor: grab;
+  }
+
+  .dragging {
+    cursor: grabbing;
+  }
+
+  /* Focus utilities */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+}
+
+/* Keyframe animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Dark mode styles */
+@media (prefers-color-scheme: dark) {
+  .card {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .card-header {
+    @apply border-gray-700;
+  }
+
+  .panel {
+    @apply bg-gray-900 border-gray-700;
+  }
+
+  .panel-header {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .toolbar {
+    @apply bg-gray-900 border-gray-700;
+  }
+
+  .input {
+    @apply bg-gray-800 border-gray-600 text-white;
+  }
+
+  .tooltip {
+    @apply bg-gray-700 text-gray-100;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-800;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 hover:bg-gray-500;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .graph-container {
+    overflow: visible !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
