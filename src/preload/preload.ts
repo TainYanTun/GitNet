@@ -5,6 +5,7 @@ import type {
   Repository,
   Commit,
   Branch,
+  StashEntry, // Add StashEntry here
   AppSettings,
 } from "../shared/types";
 
@@ -26,11 +27,19 @@ const gitnetAPI: GitNetAPI = {
   ): Promise<Commit[]> =>
     ipcRenderer.invoke("get-commits", repoPath, limit, offset),
 
+  getRecentCommits: (repoPath: string): Promise<Commit[]> =>
+    ipcRenderer.invoke("get-recent-commits", repoPath),
+
+
   getBranches: (repoPath: string): Promise<Branch[]> =>
     ipcRenderer.invoke("get-branches", repoPath),
 
   getCurrentHead: (repoPath: string): Promise<string> =>
     ipcRenderer.invoke("get-current-head", repoPath),
+
+  getStashList: (repoPath: string): Promise<StashEntry[]> =>
+    ipcRenderer.invoke("get-stash-list", repoPath),
+
 
   // File system operations
   watchRepository: (repoPath: string): Promise<void> =>

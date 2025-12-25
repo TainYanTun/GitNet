@@ -3,6 +3,7 @@ import { Repository, Branch } from "@shared/types";
 import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
+import { CommitMiniLog } from "./CommitMiniLog";
 
 interface MainLayoutProps {
   repository: Repository;
@@ -21,7 +22,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const fetchedBranches = await window.gitnetAPI.getBranches(repository.path);
+        const fetchedBranches = await window.gitnetAPI.getBranches(
+          repository.path,
+        );
         setBranches(fetchedBranches);
       } catch (error) {
         console.error("Failed to fetch branches:", error);
@@ -50,9 +53,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     // TODO: Implement actual branch selection logic (e.g., checkout)
     // For now, we'll just log and potentially highlight
   };
-
-
-
 
   return (
     <div className="h-full w-full flex flex-col bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text overflow-hidden">
@@ -171,13 +171,20 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
               <div className="space-y-1">
                 <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
-                    <span>Branches</span>
+                  <span>Branches</span>
                 </div>
                 <BranchExplorer
-                    branches={branches}
-                    currentBranchName={repository.currentBranch}
-                    onBranchSelect={handleBranchSelect}
+                  branches={branches}
+                  currentBranchName={repository.currentBranch}
+                  onBranchSelect={handleBranchSelect}
                 />
+              </div>
+
+              <div className="space-y-1">
+                <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
+                  <span>Recent Commits</span>
+                </div>
+                <CommitMiniLog repoPath={repository.path} />
               </div>
             </div>
           </div>

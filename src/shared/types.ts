@@ -36,6 +36,9 @@ export interface Branch {
   lane: number;
 }
 
+export type StashEntry = string;
+
+
 export interface Repository {
   path: string;
   name: string;
@@ -169,8 +172,10 @@ export interface GitNetAPI {
 
   // Git data operations
   getCommits: (repoPath: string, limit?: number, offset?: number) => Promise<Commit[]>;
+  getRecentCommits: (repoPath: string) => Promise<Commit[]>;
   getBranches: (repoPath: string) => Promise<Branch[]>;
   getCurrentHead: (repoPath: string) => Promise<string>;
+  getStashList: (repoPath: string) => Promise<StashEntry[]>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;

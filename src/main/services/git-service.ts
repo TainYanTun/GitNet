@@ -66,6 +66,23 @@ export class GitService {
     }
   }
 
+  async getStashList(repoPath: string): Promise<string[]> {
+    try {
+      const output = execSync("git stash list --pretty=format:'%gd: %gs'", {
+        cwd: repoPath,
+        encoding: "utf8",
+      }).trim();
+      return output.split("\n").filter(line => line.length > 0);
+    } catch (error) {
+      // If there's no stash, git stash list returns an empty string and exits with 0.
+      // If there's an actual error, log it.
+      if (error instanceof Error && !error.message.includes("No stashed changes found")) {
+        console.error("Failed to get stash list:", error);
+      }
+      return [];
+    }
+  }
+
   private getCurrentBranch(repoPath: string): string {
     try {
       return execSync("git symbolic-ref --short HEAD", {

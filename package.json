@@ -2,7 +2,7 @@
   "name": "gitnet",
   "version": "1.0.0",
   "description": "A Railway-style desktop Git visualizer that displays commit history as an interactive graph with semantic coloring and clear merge representation.",
-  "main": "dist/main/main.js",
+  "main": "dist/main/main/main.js",
   "homepage": "./",
   "author": "GitNet Team",
   "license": "MIT",
@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "/Users/admin/.bun/bin/bun run build:preload && concurrently \"/Users/admin/.bun/bin/bun run dev:renderer\" \"/Users/admin/.bun/bin/bun run dev:main\"",
     "dev:renderer": "vite",
-    "dev:main": "tsc -p src/main/tsconfig.json && electron dist/main/main.js --inspect=5858",
+    "dev:main": "tsc -p src/main/tsconfig.json && electron dist/main/main/main.js --inspect=5858",
     "build": "/Users/admin/.bun/bin/bun run build:renderer && /Users/admin/.bun/bin/bun run build:main",
     "build:renderer": "vite build",
     "build:main": "tsc -p src/main/tsconfig.json",
