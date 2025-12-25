@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Repository } from "@shared/types";
 import { useTheme } from "./ThemeContext";
 
@@ -12,6 +12,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   onCloseRepository,
 }) => {
   const { toggleTheme } = useTheme();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <div className="h-full w-full flex flex-col bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text overflow-hidden">
@@ -20,7 +21,29 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <div className="flex items-center gap-3">
           {/* Window Controls Placeholder (Mac) */}
           <div className="w-14 no-drag"></div>
-          <span className="text-xs font-medium text-zed-muted uppercase tracking-wider">
+
+          {/* Sidebar Toggle */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className={`p-1.5 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element text-zed-muted hover:text-zed-text transition-colors no-drag ${!isSidebarOpen ? "text-zed-accent dark:text-zed-accent" : ""}`}
+            title="Toggle Sidebar"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+
+          <span className="text-xs font-medium text-zed-muted uppercase tracking-wider pl-2 border-l border-zed-border dark:border-zed-dark-border">
             {repository.name}
           </span>
         </div>
@@ -45,98 +68,165 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               />
             </svg>
           </button>
+
+          <button
+            onClick={onCloseRepository}
+            className="p-1.5 rounded hover:bg-zed-element text-zed-muted hover:text-commit-fix transition-colors"
+            title="Close Repository"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
       </div>
 
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar (Project Explorer Style) */}
-        <div className="w-60 flex-shrink-0 flex flex-col border-r border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface">
-          <div className="px-3 py-2 text-xs font-bold text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
-            <span>Project Info</span>
-            <button
-              onClick={onCloseRepository}
-              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-zed-element dark:hover:bg-zed-dark-element rounded text-zed-text dark:text-zed-dark-text"
-              title="Close Repository"
-            >
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
-            <div className="space-y-1">
-              <div className="text-[11px] text-zed-muted uppercase">
-                Repository
-              </div>
-              <div
-                className="text-sm text-zed-text dark:text-zed-dark-text truncate"
-                title={repository.path}
-              >
-                {repository.name}
-              </div>
-              <div className="text-xs text-zed-muted dark:text-zed-dark-muted font-mono truncate opacity-60">
-                {repository.path}
-              </div>
+        {isSidebarOpen && (
+          <div className="w-60 flex-shrink-0 flex flex-col border-r border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface animate-slide-in-left">
+            <div className="px-3 py-2 text-xs font-bold text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
+              <span>Project Info</span>
             </div>
 
-            <div className="space-y-1">
-              <div className="text-[11px] text-zed-muted dark:text-zed-dark-muted uppercase">
-                Status
+            <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4">
+              <div className="space-y-1">
+                <div className="text-[11px] text-zed-muted uppercase">
+                  Repository
+                </div>
+                <div
+                  className="text-sm text-zed-text dark:text-zed-dark-text truncate"
+                  title={repository.path}
+                >
+                  {repository.name}
+                </div>
+                <div className="text-xs text-zed-muted dark:text-zed-dark-muted font-mono truncate opacity-60">
+                  {repository.path}
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-zed-text dark:text-zed-dark-text">
-                <span className="w-2 h-2 rounded-full bg-zed-accent"></span>
-                <span>{repository.currentBranch}</span>
-              </div>
-              <div className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted">
-                HEAD: {repository.headCommit.substring(0, 7)}
-              </div>
-            </div>
 
-            <div className="space-y-1">
-              <div className="text-[11px] text-zed-muted dark:text-zed-dark-muted uppercase">
-                Stats
+              <div className="space-y-1">
+                <div className="text-[11px] text-zed-muted dark:text-zed-dark-muted uppercase">
+                  Status
+                </div>
+                <div className="flex items-center gap-2 text-sm text-zed-text dark:text-zed-dark-text">
+                  <span className="w-2 h-2 rounded-full bg-zed-accent"></span>
+                  <span>{repository.currentBranch}</span>
+                </div>
+                <div className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted">
+                  HEAD: {repository.headCommit.substring(0, 7)}
+                </div>
               </div>
-              <div className="text-sm text-zed-text dark:text-zed-dark-text">
-                {repository.branches.length} local branches
+
+              <div className="space-y-1">
+                <div className="text-[11px] text-zed-muted dark:text-zed-dark-muted uppercase">
+                  Stats
+                </div>
+                <div className="text-sm text-zed-text dark:text-zed-dark-text">
+                  {repository.branches.length} local branches
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Editor Area (Graph) */}
         <div className="flex-1 flex flex-col bg-zed-bg dark:bg-zed-dark-bg relative">
           {/* Canvas Area */}
-          <div className="flex-1 overflow-hidden relative">
-            <div className="absolute inset-0 flex items-center justify-center text-zed-muted dark:text-zed-dark-muted">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 text-zed-element dark:text-zed-dark-element flex items-center justify-center">
-                  <svg
-                    className="w-12 h-12"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
+          <div className="flex-1 overflow-hidden relative group">
+            <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none">
+              <div className="max-w-md w-full p-8 rounded-xl border border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface shadow-soft opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform scale-95 group-hover:scale-100">
+                <h3 className="text-sm font-medium text-zed-text dark:text-zed-dark-text mb-4 uppercase tracking-wider text-center">
+                  Keyboard Shortcuts
+                </h3>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                  <div className="flex justify-between items-center">
+                    <span className="text-zed-muted dark:text-zed-dark-muted">
+                      Open Repo
+                    </span>
+                    <div className="flex gap-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
+                        ⌘
+                      </kbd>
+                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
+                        O
+                      </kbd>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-zed-muted dark:text-zed-dark-muted">
+                      Close Repo
+                    </span>
+                    <div className="flex gap-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
+                        ⌘
+                      </kbd>
+                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
+                        W
+                      </kbd>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-zed-muted dark:text-zed-dark-muted">
+                      Toggle Sidebar
+                    </span>
+                    <div className="flex gap-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
+                        ⌘
+                      </kbd>
+                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
+                        B
+                      </kbd>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-zed-muted dark:text-zed-dark-muted">
+                      Toggle Theme
+                    </span>
+                    <div className="flex gap-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
+                        ⌘
+                      </kbd>
+                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
+                        T
+                      </kbd>
+                    </div>
+                  </div>
                 </div>
-                <p className="font-medium">Waiting for D3 Graph...</p>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center text-zed-muted dark:text-zed-dark-muted group-hover:opacity-0 transition-opacity duration-300">
+                <div className="text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 text-zed-element dark:text-zed-dark-element flex items-center justify-center">
+                    <svg
+                      className="w-12 h-12"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                  </div>
+                  <p className="font-medium">Waiting for D3 Graph...</p>
+                  <p className="text-xs mt-2 opacity-60">
+                    Hover to see shortcuts
+                  </p>
+                </div>
               </div>
             </div>
           </div>

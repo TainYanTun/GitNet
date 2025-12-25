@@ -4,6 +4,7 @@ import { WelcomeScreen } from "./components/WelcomeScreen";
 import { MainLayout } from "./components/MainLayout";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { useToast } from "./components/ToastContext";
 
 interface AppState {
   repository: Repository | null;
@@ -12,6 +13,7 @@ interface AppState {
 }
 
 const App: React.FC = () => {
+  const { showToast } = useToast();
   const [state, setState] = useState<AppState>({
     repository: null,
     loading: false,
@@ -34,16 +36,20 @@ const App: React.FC = () => {
 
         // Start watching the repository for changes
         await window.gitnetAPI.watchRepository(repository.path);
+        showToast(`Repository loaded: ${repository.name}`, "success");
       } else {
         setState((prev) => ({ ...prev, loading: false }));
       }
     } catch (error) {
       console.error("Failed to select repository:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to load repository";
+      showToast(errorMessage, "error");
+
       setState({
         repository: null,
         loading: false,
-        error:
-          error instanceof Error ? error.message : "Failed to load repository",
+        error: errorMessage,
       });
     }
   };
@@ -63,6 +69,7 @@ const App: React.FC = () => {
       loading: false,
       error: null,
     });
+    showToast("Repository closed", "info");
   };
 
   // Set up event listeners for repository changes

@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { ThemeProvider } from "./components/ThemeContext";
+import { ToastProvider } from "./components/ToastContext";
 
 // Ensure we're running in the correct environment
 if (!window.gitnetAPI) {
@@ -20,7 +21,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <ThemeProvider>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </ThemeProvider>
   </React.StrictMode>,
 );
