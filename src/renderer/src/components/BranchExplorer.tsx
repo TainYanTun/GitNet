@@ -32,7 +32,7 @@ export const BranchExplorer: React.FC<BranchExplorerProps> = ({
 
   const renderBranch = (branch: Branch) => (
     <div
-      key={branch.name}
+      key={`branch-${branch.name}`}
       className={`flex items-center gap-1 px-2 py-1 text-sm rounded cursor-pointer transition-colors
                   ${branch.name === currentBranchName
                       ? 'bg-zed-accent text-white'
@@ -62,7 +62,7 @@ export const BranchExplorer: React.FC<BranchExplorerProps> = ({
   );
 
   const renderFolder = (group: BranchGroup) => (
-    <div key={group.name} className="space-y-0.5">
+    <div key={`folder-${group.name}`} className="space-y-0.5">
       <div
         className="flex items-center gap-1 px-2 py-1 text-xs rounded cursor-pointer transition-colors text-zed-muted hover:bg-zed-element dark:hover:bg-zed-dark-element"
         onClick={() => toggleFolder(group.name)}
