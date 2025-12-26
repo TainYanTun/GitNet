@@ -42,6 +42,9 @@ const gitnetAPI: GitNetAPI = {
   getCommitDetails: (repoPath: string, commitHash: string): Promise<Commit> =>
     ipcRenderer.invoke("get-commit-details", repoPath, commitHash),
 
+  getDiff: (repoPath: string, commitHash: string, filePath: string): Promise<string> =>
+    ipcRenderer.invoke("get-diff", repoPath, commitHash, filePath),
+
   // File system operations
   watchRepository: (repoPath: string): Promise<void> =>
     ipcRenderer.invoke("watch-repository", repoPath),

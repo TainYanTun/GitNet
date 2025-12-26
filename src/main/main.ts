@@ -238,6 +238,11 @@ class GitNetApp {
       (_, repoPath: string, commitHash: string) =>
         this.gitService.getCommitDetails(repoPath, commitHash),
     );
+    ipcMain.handle(
+      "get-diff",
+      (_, repoPath: string, commitHash: string, filePath: string) =>
+        this.gitService.getDiff(repoPath, commitHash, filePath),
+    );
 
     // File system operations
     ipcMain.handle("watch-repository", (_, repoPath: string) => {

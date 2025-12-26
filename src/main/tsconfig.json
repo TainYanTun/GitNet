@@ -20,6 +20,7 @@
     "paths": {
       "@shared/*": ["shared/*"],
     },
+    "types": ["bun-types"]
   },
   "include": ["./**/*", "../shared/**/*"],
   "exclude": ["node_modules", "../../dist", "../../release"],

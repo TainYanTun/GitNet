@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Commit, FileChange } from "@shared/types";
-import moment from "moment"; // For date formatting
+import moment from "moment";
+import { DiffModal } from "./DiffModal";
 
 interface CommitDetailsProps {
   commit: Commit;
-  repoPath: string; // Add repoPath prop
+  repoPath: string;
   onSelectCommit: (hash: string) => void;
 }
 
@@ -19,6 +20,10 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<FileChange | null>(null);
+  const [diffContent, setDiffContent] = useState<string | null>(null);
+  const [isDiffModalVisible, setDiffModalVisible] = useState(false);
+
 
   const handleCopy = async (text: string, hash: string) => {
     try {
@@ -29,6 +34,23 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
       console.error("Failed to copy:", err);
     }
   };
+
+  const handleFileClick = async (file: FileChange) => {
+    setSelectedFile(file);
+    setDiffContent("Loading diff...");
+    setDiffModalVisible(true);
+    try {
+      const diff = await window.gitnetAPI.getDiff(
+        repoPath,
+        commit.hash,
+        file.path,
+      );
+      setDiffContent(diff);
+    } catch (error) {
+      setDiffContent("Failed to load diff.");
+    }
+  };
+
 
   useEffect(() => {
     const fetchFullDetails = async () => {
@@ -271,7 +293,8 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
             {displayCommit.fileChanges.map((change, index) => (
               <div
                 key={index}
-                className="flex items-center gap-2 text-xs px-2 py-1 border-b border-zed-border dark:border-zed-dark-border last:border-b-0 hover:bg-zed-element dark:hover:bg-zed-dark-element"
+                className="flex items-center gap-2 text-xs px-2 py-1 border-b border-zed-border dark:border-zed-dark-border last:border-b-0 hover:bg-zed-element dark:hover:bg-zed-dark-element cursor-pointer"
+                onClick={() => handleFileClick(change)}
               >
                 <span
                   className={`font-mono w-4 text-center ${getFileStatusColor(change.status)}`}
@@ -288,6 +311,16 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
             ))}
           </div>
         </div>
+      )}
+
+
+      {selectedFile && (
+        <DiffModal
+          visible={isDiffModalVisible}
+          onClose={() => setDiffModalVisible(false)}
+          filePath={selectedFile.path}
+          diffContent={diffContent || ""}
+        />
       )}
     </div>
   );

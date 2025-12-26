@@ -222,6 +222,7 @@ export interface GitNetAPI {
   getCurrentHead: (repoPath: string) => Promise<string>;
   getStashList: (repoPath: string) => Promise<StashEntry[]>;
   getCommitDetails: (repoPath: string, commitHash: string) => Promise<Commit>;
+  getDiff: (repoPath: string, commitHash: string, filePath: string) => Promise<string>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;
