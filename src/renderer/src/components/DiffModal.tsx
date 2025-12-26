@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal } from "antd";
-import { CopyOutlined, FileTextOutlined } from "@ant-design/icons";
+import { CopyOutlined, FileTextOutlined, CheckOutlined } from "@ant-design/icons";
 
 interface DiffLine {
   oldLineNumber: number | null;
@@ -87,85 +87,106 @@ export const DiffModal: React.FC<DiffModalProps> = ({
   visible,
 }) => {
   const diffLines = parseDiff(diffContent);
+  const [copied, setCopied] = React.useState(false);
 
   const handleCopyDiff = () => {
     navigator.clipboard.writeText(diffContent);
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+    }, 1500); // Show copied state for 1.5 seconds
   };
 
   return (
     <Modal
-      title={
-        <div className="flex items-center justify-between text-zed-text dark:text-zed-dark-text py-2 px-4">
-          <div className="flex items-center gap-2">
-            <FileTextOutlined className="h-5 w-5" />
-            <span className="font-medium truncate">{filePath}</span>
-          </div>
-          <button
-            onClick={handleCopyDiff}
-            className="flex items-center gap-1 text-xs text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text px-2 py-1 rounded transition-colors duration-200"
-          >
-            <CopyOutlined />
-            Copy Diff
-          </button>
-        </div>
-      }
+      title={null}
+      footer={null}
       open={visible}
       onCancel={onClose}
-      footer={null}
       width="80%"
       style={{ top: 20 }}
+      closeIcon={
+        <div className="absolute top-3 right-3 text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text p-1 rounded transition-colors duration-200">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="w-5 h-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </div>
+      }
       classNames={{
-        header:
-          "bg-zed-surface dark:bg-zed-dark-surface border-b border-zed-border dark:border-zed-dark-border",
-        content: "bg-zed-surface dark:bg-zed-dark-surface",
+        content:
+          "bg-zed-surface dark:bg-zed-dark-surface rounded-lg shadow-soft",
         mask: "bg-black bg-opacity-50",
       }}
       styles={{
-        body: { height: "80vh", overflowY: "auto", padding: "0" },
+        body: { height: "90vh", overflow: "hidden", padding: "0" },
       }}
     >
-      <div className="text-xs font-mono bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text h-full leading-relaxed">
-        {diffLines.map((diffLine) => (
-          <div
-            key={diffLine.key}
-            className={`flex group ${
-              diffLine.type === "addition"
-                ? "bg-green-500/10" // Tailwind class with opacity
-                : diffLine.type === "deletion"
-                  ? "bg-red-500/10" // Tailwind class with opacity
-                  : diffLine.type === "info" || diffLine.type === "hunk"
-                    ? "bg-zed-element dark:bg-zed-dark-element text-zed-muted dark:text-zed-dark-muted"
-                    : "hover:bg-zed-element/5 dark:hover:bg-zed-dark-element/5"
-            }`}
-          >
-            {/* Line Numbers */}
-            {(diffLine.type === "addition" ||
-              diffLine.type === "deletion" ||
-              diffLine.type === "context") && (
-              <div className="flex-shrink-0 w-20 text-right text-zed-muted dark:text-zed-dark-muted pr-2 select-none">
-                <span className="inline-block w-8 text-right">
-                  {diffLine.oldLineNumber || ""}
-                </span>
-                <span className="inline-block w-8 text-right">
-                  {diffLine.newLineNumber || ""}
-                </span>
-              </div>
-            )}
-            {/* Diff Content */}
-            <pre
-              className={`flex-grow px-4 whitespace-pre-wrap ${
-                // Use pre-wrap to handle long lines
+      <div className="flex flex-col h-full">
+        {/* Custom Header */}
+        <div className="flex items-center justify-between text-zed-text dark:text-zed-dark-text py-2 px-4 border-b border-zed-border dark:border-zed-dark-border">
+          <div className="flex items-center gap-2">
+            <FileTextOutlined className="h-5 w-5 mr-2" />
+            <span className="font-medium truncate">{filePath}</span>
+            <button
+              onClick={handleCopyDiff}
+              className="group flex items-center gap-1 text-xs text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text px-2 py-1 rounded transition-colors duration-200"
+            >
+              {copied ? <CheckOutlined /> : <CopyOutlined />}
+            </button>
+          </div>
+        </div>
+        {/* Diff Content */}
+        <div className="flex-grow overflow-y-auto text-xs font-mono bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text leading-relaxed">
+          {diffLines.map((diffLine) => (
+            <div
+              key={diffLine.key}
+              className={`flex group ${
                 diffLine.type === "addition"
-                  ? "text-green-400"
+                  ? "bg-green-500/10"
                   : diffLine.type === "deletion"
-                    ? "text-red-400"
-                    : ""
+                    ? "bg-red-500/10"
+                    : diffLine.type === "info" || diffLine.type === "hunk"
+                      ? "bg-zed-element dark:bg-zed-dark-element text-zed-muted dark:text-zed-dark-muted"
+                      : "hover:bg-zed-element/5 dark:hover:bg-zed-dark-element/5"
               }`}
             >
-              {diffLine.originalLine}
-            </pre>
-          </div>
-        ))}
+              {(diffLine.type === "addition" ||
+                diffLine.type === "deletion" ||
+                diffLine.type === "context") && (
+                <div className="flex-shrink-0 w-20 text-right text-zed-muted dark:text-zed-dark-muted pr-2 select-none">
+                  <span className="inline-block w-8 text-right">
+                    {diffLine.oldLineNumber || ""}
+                  </span>
+                  <span className="inline-block w-8 text-right">
+                    {diffLine.newLineNumber || ""}
+                  </span>
+                </div>
+              )}
+              <pre
+                className={`flex-grow px-4 whitespace-pre-wrap ${
+                  diffLine.type === "addition"
+                    ? "text-green-400"
+                    : diffLine.type === "deletion"
+                      ? "text-red-400"
+                      : ""
+                }`}
+              >
+                {diffLine.originalLine}
+              </pre>
+            </div>
+          ))}
+        </div>
       </div>
     </Modal>
   );
