@@ -161,6 +161,7 @@ export interface AppSettings {
   showTimestamp: boolean;
   compactMode: boolean;
   colorBlindMode: boolean;
+  recentRepositories?: string[];
 }
 
 export interface TooltipData {
@@ -229,6 +230,7 @@ export interface GitNetAPI {
   // Settings
   getSettings: () => Promise<AppSettings>;
   saveSettings: (settings: AppSettings) => Promise<void>;
+  clearRecentRepositories: () => Promise<void>;
 
   // Events
   onRepositoryChanged: (

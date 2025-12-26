@@ -55,6 +55,9 @@ const gitnetAPI: GitNetAPI = {
   saveSettings: (settings: AppSettings): Promise<void> =>
     ipcRenderer.invoke("save-settings", settings),
 
+  clearRecentRepositories: (): Promise<void> =>
+    ipcRenderer.invoke("clear-recent-repositories"),
+
   // Event listeners
   onRepositoryChanged: (callback: (event: any) => void): (() => void) => {
     const wrappedCallback = (_: any, event: any) => callback(event);

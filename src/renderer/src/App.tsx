@@ -21,11 +21,19 @@ const App: React.FC = () => {
   });
 
   // Handle repository selection
-  const handleSelectRepository = async () => {
+  const handleSelectRepository = async (repoPath?: string) => {
     setState((prev) => ({ ...prev, loading: true, error: null }));
 
     try {
-      const repository = await window.gitnetAPI.selectRepository();
+      let repository: Repository | null;
+
+      if (repoPath) {
+        // If a path is provided (e.g., from recent repos), use it directly
+        repository = await window.gitnetAPI.getRepository(repoPath);
+      } else {
+        // Otherwise, open the file dialog
+        repository = await window.gitnetAPI.selectRepository();
+      }
 
       if (repository) {
         setState({

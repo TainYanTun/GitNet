@@ -208,9 +208,11 @@ class GitNetApp {
   private setupIpcHandlers(): void {
     // Repository operations
     ipcMain.handle("select-repository", () => this.handleSelectRepository());
-    ipcMain.handle("get-repository", (_, path: string) =>
-      this.gitService.getRepository(path),
-    );
+    ipcMain.handle("get-repository", async (_, path: string) => {
+      const repository = await this.gitService.getRepository(path);
+      await this.settingsService.addRecentRepository(path);
+      return repository;
+    });
 
     // Git data operations
     ipcMain.handle(
@@ -252,6 +254,9 @@ class GitNetApp {
     ipcMain.handle("save-settings", (_, settings) =>
       this.settingsService.saveSettings(settings),
     );
+    ipcMain.handle("clear-recent-repositories", () =>
+      this.settingsService.clearRecentRepositories(),
+    );
 
     // Utility
     ipcMain.handle("show-item-in-folder", (_, path: string) =>
@@ -275,10 +280,10 @@ class GitNetApp {
     }
 
     const repoPath = result.filePaths[0];
-    try {
-      const repository = await this.gitService.getRepository(repoPath);
-      return repository;
-    } catch (error) {
+          try {
+            const repository = await this.gitService.getRepository(repoPath);
+            await this.settingsService.addRecentRepository(repoPath);
+            return repository;    } catch (error) {
       console.error("Failed to load repository:", error);
 
       dialog.showErrorBox(

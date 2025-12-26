@@ -14,6 +14,7 @@ export class SettingsService {
     showTimestamp: true,
     compactMode: false,
     colorBlindMode: false,
+    recentRepositories: [],
   };
 
   constructor() {
@@ -66,10 +67,37 @@ export class SettingsService {
       showTimestamp: Boolean(settings.showTimestamp),
       compactMode: Boolean(settings.compactMode),
       colorBlindMode: Boolean(settings.colorBlindMode),
+      recentRepositories: Array.isArray(settings.recentRepositories)
+        ? settings.recentRepositories.filter(r => typeof r === 'string').slice(0, 10)
+        : [],
     };
   }
 
   resetToDefaults(): Promise<void> {
     return this.saveSettings(this.defaultSettings);
+  }
+
+  async addRecentRepository(path: string): Promise<void> {
+    const settings = await this.getSettings();
+    let recent = settings.recentRepositories || [];
+
+    // Remove if already exists to move to front
+    recent = recent.filter(p => p !== path);
+    // Add to front
+    recent.unshift(path);
+    // Limit size
+    recent = recent.slice(0, 10); // Keep max 10 recent repositories
+
+    await this.saveSettings({ ...settings, recentRepositories: recent });
+  }
+
+  async getRecentRepositories(): Promise<string[]> {
+    const settings = await this.getSettings();
+    return settings.recentRepositories || [];
+  }
+
+  async clearRecentRepositories(): Promise<void> {
+    const settings = await this.getSettings();
+    await this.saveSettings({ ...settings, recentRepositories: [] });
   }
 }
