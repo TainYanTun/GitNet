@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { Repository, Commit, Branch, FileChange, CommitParent, CommitType, BranchType } from "../../shared/types";
+import { Repository, Commit, Branch, FileChange, CommitParent, CommitType, BranchType, CommitStats } from "../../shared/types";
 
 export class GitService {
   async getRepository(path: string): Promise<Repository> {
@@ -174,12 +174,29 @@ export class GitService {
         output.trim().split("|");
       const message = messageParts.join("|");
 
-      const parentsDetails: CommitParent[] = parentsHashes
-        ? parentsHashes.split(" ").map((pHash) => ({
-            hash: pHash,
-            shortHash: pHash.substring(0, 7),
-          }))
-        : [];
+      const parentsDetails: CommitParent[] = [];
+      if (parentsHashes) {
+        for (const pHash of parentsHashes.split(" ")) {
+          try {
+            const parentLogCommand = `git log -n 1 --pretty=format:'%an|%s' ${pHash}`;
+            const parentLogOutput = execSync(parentLogCommand, { cwd: repoPath, encoding: "utf8" }).trim();
+            const [parentAuthorName, parentShortMessage] = parentLogOutput.split('|');
+
+            parentsDetails.push({
+              hash: pHash,
+              shortHash: pHash.substring(0, 7),
+              author: { name: parentAuthorName, email: '' },
+              shortMessage: parentShortMessage,
+            });
+          } catch (parentError) {
+            console.warn(`Could not get details for parent commit ${pHash}:`, parentError);
+            parentsDetails.push({
+              hash: pHash,
+              shortHash: pHash.substring(0, 7),
+            });
+          }
+        }
+      }
 
       commit = {
         hash,

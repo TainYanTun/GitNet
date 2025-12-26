@@ -33,6 +33,8 @@ export interface FileChange {
 export interface CommitParent {
   hash: string;
   shortHash: string;
+  author?: Author; // Optional author details
+  shortMessage?: string; // Optional short message
 }
 
 export interface CommitStats {

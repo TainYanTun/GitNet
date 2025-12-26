@@ -104,13 +104,29 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
         <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
           Parents
         </div>
-        <div className="font-mono text-zed-text dark:text-zed-dark-text text-xs">
+        <div className="space-y-1"> {/* Added a div for spacing between parent entries */}
           {displayCommit.parentsDetails && displayCommit.parentsDetails.length > 0 ? (
             displayCommit.parentsDetails.map((p) => (
-              <div key={p.hash}>{p.shortHash}</div>
+              <div key={p.hash} className="flex flex-col">
+                <div className="flex items-center gap-1">
+                  <span className="font-mono text-zed-text dark:text-zed-dark-text">{p.shortHash}</span>
+                </div>
+                {p.author?.name && (
+                  <div className="text-xs text-zed-muted dark:text-zed-dark-muted ml-3">
+                    By {p.author.name}
+                  </div>
+                )}
+                {p.shortMessage && (
+                  <div className="text-xs text-zed-muted dark:text-zed-dark-muted ml-3 truncate">
+                    {p.shortMessage}
+                  </div>
+                )}
+              </div>
             ))
           ) : (
-            <div>(root-commit)</div>
+            <div className="font-mono text-zed-text dark:text-zed-dark-text text-xs">
+              (root-commit)
+            </div>
           )}
         </div>
       </div>
