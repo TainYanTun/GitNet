@@ -275,7 +275,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <CommitDetails commit={selectedCommit} repoPath={repository.path} />
+              <CommitDetails
+                commit={selectedCommit}
+                repoPath={repository.path}
+                onSelectCommit={(hashToSelect) => {
+                  const commitToSelect = commits.find(c => c.hash === hashToSelect);
+                  if (commitToSelect) {
+                    setSelectedCommit(commitToSelect);
+                  } else {
+                    setSelectedCommit({ hash: hashToSelect } as Commit);
+                  }
+                }}
+              />
             </div>
           </div>
         )}

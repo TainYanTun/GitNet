@@ -5,12 +5,30 @@ import moment from "moment"; // For date formatting
 interface CommitDetailsProps {
   commit: Commit;
   repoPath: string; // Add repoPath prop
+  onSelectCommit: (hash: string) => void;
 }
 
-export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }) => {
-  const [fullCommitDetails, setFullCommitDetails] = useState<Commit | null>(null);
+export const CommitDetails: React.FC<CommitDetailsProps> = ({
+  commit,
+  repoPath,
+  onSelectCommit,
+}) => {
+  const [fullCommitDetails, setFullCommitDetails] = useState<Commit | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedHash, setCopiedHash] = useState<string | null>(null);
+
+  const handleCopy = async (text: string, hash: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedHash(hash);
+      setTimeout(() => setCopiedHash(null), 1500); // Show "Copied!" for 1.5 seconds
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchFullDetails = async () => {
@@ -18,7 +36,10 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
       setError(null);
       setFullCommitDetails(null); // Clear previous details
       try {
-        const details = await window.gitnetAPI.getCommitDetails(repoPath, commit.hash);
+        const details = await window.gitnetAPI.getCommitDetails(
+          repoPath,
+          commit.hash,
+        );
         setFullCommitDetails(details);
       } catch (err) {
         console.error("Failed to fetch full commit details:", err);
@@ -28,7 +49,8 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
       }
     };
 
-    if (commit?.hash && repoPath) { // Ensure repoPath is available
+    if (commit?.hash && repoPath) {
+      // Ensure repoPath is available
       fetchFullDetails();
     }
   }, [commit?.hash, repoPath]); // Re-fetch when commit hash or repoPath changes
@@ -45,23 +67,33 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
   if (!commit || !fullCommitDetails || loading) {
     return (
       <div className="p-4 text-zed-muted dark:text-zed-dark-muted">
-        {loading ? "Loading commit details..." : "Select a commit to see details."}
+        {loading
+          ? "Loading commit details..."
+          : "Select a commit to see details."}
         {error && <div className="text-red-500 text-xs mt-2">{error}</div>}
       </div>
     );
   }
 
   const displayCommit = fullCommitDetails || commit; // Use full details if available, otherwise basic commit
-  const formattedDate = moment.unix(displayCommit.timestamp).format("MMM D, YYYY h:mm A");
+  const formattedDate = moment
+    .unix(displayCommit.timestamp)
+    .format("MMM D, YYYY h:mm A");
 
-  const getFileStatusColor = (status: FileChange['status']) => {
+  const getFileStatusColor = (status: FileChange["status"]) => {
     switch (status) {
-      case 'A': return 'text-green-500';
-      case 'M': return 'text-yellow-500';
-      case 'D': return 'text-red-500';
-      case 'R': return 'text-blue-500';
-      case 'C': return 'text-purple-500';
-      default: return 'text-gray-500';
+      case "A":
+        return "text-green-500";
+      case "M":
+        return "text-yellow-500";
+      case "D":
+        return "text-red-500";
+      case "R":
+        return "text-blue-500";
+      case "C":
+        return "text-purple-500";
+      default:
+        return "text-gray-500";
     }
   };
 
@@ -86,7 +118,9 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
         <div className="font-medium">{displayCommit.shortMessage}</div>
         {displayCommit.message !== displayCommit.shortMessage && (
           <pre className="text-xs text-zed-muted dark:text-zed-dark-muted whitespace-pre-wrap font-mono mt-1">
-            {displayCommit.message.substring(displayCommit.shortMessage.length).trim()}
+            {displayCommit.message
+              .substring(displayCommit.shortMessage.length)
+              .trim()}
           </pre>
         )}
       </div>
@@ -95,8 +129,16 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
         <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
           Hash
         </div>
-        <div className="font-mono text-zed-text dark:text-zed-dark-text text-xs">
-          {displayCommit.hash}
+        <div
+          className="font-mono text-zed-text dark:text-zed-dark-text text-xs truncate flex-grow min-w-0 cursor-pointer hover:bg-zed-element dark:hover:bg-zed-dark-element p-1 rounded inline-flex items-center"
+          onClick={() => handleCopy(displayCommit.hash, displayCommit.hash)}
+          title="Click to copy hash"
+        >
+          {copiedHash === displayCommit.hash ? (
+            <span className="text-green-500 text-xs mr-1">Copied!</span>
+          ) : (
+            <span className="mr-1">{displayCommit.hash}</span>
+          )}
         </div>
       </div>
 
@@ -104,12 +146,27 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
         <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
           Parents
         </div>
-        <div className="space-y-1"> {/* Added a div for spacing between parent entries */}
-          {displayCommit.parentsDetails && displayCommit.parentsDetails.length > 0 ? (
+        <div className="space-y-1">
+          {" "}
+          {/* Added a div for spacing between parent entries */}
+          {displayCommit.parentsDetails &&
+          displayCommit.parentsDetails.length > 0 ? (
             displayCommit.parentsDetails.map((p) => (
-              <div key={p.hash} className="flex flex-col">
-                <div className="flex items-center gap-1">
-                  <span className="font-mono text-zed-text dark:text-zed-dark-text">{p.shortHash}</span>
+              <div
+                key={p.hash}
+                className="flex flex-col p-1 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element cursor-pointer"
+                onClick={() => onSelectCommit(p.hash)}
+              >
+                <div
+                  className="font-mono text-zed-text dark:text-zed-dark-text truncate flex-grow min-w-0 cursor-pointer hover:bg-zed-element dark:hover:bg-zed-dark-element p-1 rounded inline-flex items-center"
+                  onClick={(e) => { e.stopPropagation(); handleCopy(p.hash, p.hash); }}
+                  title="Click to copy hash"
+                >
+                  {copiedHash === p.hash ? (
+                    <span className="text-green-500 text-xs mr-1">Copied!</span>
+                  ) : (
+                    <span className="mr-1">{p.shortHash}</span>
+                  )}
                 </div>
                 {p.author?.name && (
                   <div className="text-xs text-zed-muted dark:text-zed-dark-muted ml-3">
@@ -138,7 +195,10 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
           </div>
           <div className="flex flex-wrap gap-1">
             {displayCommit.branches.map((branch) => (
-              <span key={branch} className="px-2 py-0.5 text-xs bg-zed-element dark:bg-zed-dark-element rounded-full text-zed-text dark:text-zed-dark-text">
+              <span
+                key={branch}
+                className="px-2 py-0.5 text-xs bg-zed-element dark:bg-zed-dark-element rounded-full text-zed-text dark:text-zed-dark-text"
+              >
                 {branch}
               </span>
             ))}
@@ -153,7 +213,10 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
           </div>
           <div className="flex flex-wrap gap-1">
             {displayCommit.tags.map((tag) => (
-              <span key={tag} className="px-2 py-0.5 text-xs bg-zed-element dark:bg-zed-dark-element rounded-full text-zed-text dark:text-zed-dark-text">
+              <span
+                key={tag}
+                className="px-2 py-0.5 text-xs bg-zed-element dark:bg-zed-dark-element rounded-full text-zed-text dark:text-zed-dark-text"
+              >
                 {tag}
               </span>
             ))}
@@ -174,17 +237,27 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
         <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
           Type
         </div>
-        <div className={`text-xs px-2 py-0.5 rounded-full inline-block ${
-          displayCommit.type === 'feat' ? 'bg-commit-feat text-white' :
-          displayCommit.type === 'fix' ? 'bg-commit-fix text-white' :
-          displayCommit.type === 'docs' ? 'bg-commit-docs text-white' :
-          displayCommit.type === 'style' ? 'bg-commit-style text-white' :
-          displayCommit.type === 'refactor' ? 'bg-commit-refactor text-white' :
-          displayCommit.type === 'perf' ? 'bg-commit-perf text-white' :
-          displayCommit.type === 'test' ? 'bg-commit-test text-white' :
-          displayCommit.type === 'chore' ? 'bg-commit-chore text-white' :
-          'bg-commit-other text-white'
-        }`}>
+        <div
+          className={`text-xs px-2 py-0.5 rounded-full inline-block ${
+            displayCommit.type === "feat"
+              ? "bg-commit-feat text-white"
+              : displayCommit.type === "fix"
+                ? "bg-commit-fix text-white"
+                : displayCommit.type === "docs"
+                  ? "bg-commit-docs text-white"
+                  : displayCommit.type === "style"
+                    ? "bg-commit-style text-white"
+                    : displayCommit.type === "refactor"
+                      ? "bg-commit-refactor text-white"
+                      : displayCommit.type === "perf"
+                        ? "bg-commit-perf text-white"
+                        : displayCommit.type === "test"
+                          ? "bg-commit-test text-white"
+                          : displayCommit.type === "chore"
+                            ? "bg-commit-chore text-white"
+                            : "bg-commit-other text-white"
+          }`}
+        >
           {displayCommit.type}
         </div>
       </div>
@@ -196,8 +269,13 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }
           </div>
           <div className="max-h-60 overflow-y-auto border border-zed-border dark:border-zed-dark-border rounded">
             {displayCommit.fileChanges.map((change, index) => (
-              <div key={index} className="flex items-center gap-2 text-xs px-2 py-1 border-b border-zed-border dark:border-zed-dark-border last:border-b-0 hover:bg-zed-element dark:hover:bg-zed-dark-element">
-                <span className={`font-mono w-4 text-center ${getFileStatusColor(change.status)}`}>
+              <div
+                key={index}
+                className="flex items-center gap-2 text-xs px-2 py-1 border-b border-zed-border dark:border-zed-dark-border last:border-b-0 hover:bg-zed-element dark:hover:bg-zed-dark-element"
+              >
+                <span
+                  className={`font-mono w-4 text-center ${getFileStatusColor(change.status)}`}
+                >
                   {change.status}
                 </span>
                 <span className="flex-1 truncate">{change.path}</span>
