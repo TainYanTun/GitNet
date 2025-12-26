@@ -4,6 +4,7 @@ import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
 import { CommitMiniLog } from "./CommitMiniLog";
+import { StashList } from "./StashList"; // Import StashList
 
 interface MainLayoutProps {
   repository: Repository;
@@ -178,6 +179,14 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   currentBranchName={repository.currentBranch}
                   onBranchSelect={handleBranchSelect}
                 />
+              </div>
+
+              {/* Stash List */}
+              <div className="space-y-1">
+                <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
+                  <span>Stash List</span>
+                </div>
+                <StashList repoPath={repository.path} />
               </div>
 
               <div className="space-y-1">
