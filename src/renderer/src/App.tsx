@@ -155,7 +155,7 @@ const App: React.FC = () => {
               <button onClick={handleErrorDismiss} className="btn-secondary">
                 Dismiss
               </button>
-              <button onClick={handleSelectRepository} className="btn-primary">
+              <button onClick={() => handleSelectRepository()} className="btn-primary">
                 Try Again
               </button>
             </div>

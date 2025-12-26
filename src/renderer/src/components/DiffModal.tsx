@@ -1,6 +1,10 @@
 import React from "react";
 import { Modal } from "antd";
-import { CopyOutlined, FileTextOutlined, CheckOutlined } from "@ant-design/icons";
+import {
+  CopyOutlined,
+  FileTextOutlined,
+  CheckOutlined,
+} from "@ant-design/icons";
 
 interface DiffLine {
   oldLineNumber: number | null;

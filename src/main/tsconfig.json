@@ -23,5 +23,5 @@
     "types": ["bun-types"]
   },
   "include": ["./**/*", "../shared/**/*"],
-  "exclude": ["node_modules", "../../dist", "../../release"],
+  "exclude": ["node_modules", "../../dist", "../../release", "./**/*.test.ts"],
 }

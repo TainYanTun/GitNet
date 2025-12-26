@@ -24,7 +24,6 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
   const [diffContent, setDiffContent] = useState<string | null>(null);
   const [isDiffModalVisible, setDiffModalVisible] = useState(false);
 
-
   const handleCopy = async (text: string, hash: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -50,7 +49,6 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
       setDiffContent("Failed to load diff.");
     }
   };
-
 
   useEffect(() => {
     const fetchFullDetails = async () => {
@@ -181,7 +179,10 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
               >
                 <div
                   className="font-mono text-zed-text dark:text-zed-dark-text truncate flex-grow min-w-0 cursor-pointer hover:bg-zed-element dark:hover:bg-zed-dark-element p-1 rounded inline-flex items-center"
-                  onClick={(e) => { e.stopPropagation(); handleCopy(p.hash, p.hash); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCopy(p.hash, p.hash);
+                  }}
                   title="Click to copy hash"
                 >
                   {copiedHash === p.hash ? (
@@ -312,8 +313,6 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
           </div>
         </div>
       )}
-
-
       {selectedFile && (
         <DiffModal
           visible={isDiffModalVisible}
