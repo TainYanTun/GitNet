@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Commit, FileChange, CommitParent } from "@shared/types";
+import { Commit, FileChange } from "@shared/types";
 import moment from "moment"; // For date formatting
 
 interface CommitDetailsProps {
