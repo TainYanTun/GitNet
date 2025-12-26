@@ -1,12 +1,38 @@
-import React from "react";
-import { Commit } from "@shared/types";
+import React, { useState, useEffect } from "react";
+import { Commit, FileChange, CommitParent } from "@shared/types";
 import moment from "moment"; // For date formatting
 
 interface CommitDetailsProps {
   commit: Commit;
+  repoPath: string; // Add repoPath prop
 }
 
-export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit }) => {
+export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit, repoPath }) => {
+  const [fullCommitDetails, setFullCommitDetails] = useState<Commit | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchFullDetails = async () => {
+      setLoading(true);
+      setError(null);
+      setFullCommitDetails(null); // Clear previous details
+      try {
+        const details = await window.gitnetAPI.getCommitDetails(repoPath, commit.hash);
+        setFullCommitDetails(details);
+      } catch (err) {
+        console.error("Failed to fetch full commit details:", err);
+        setError("Failed to load full commit details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (commit?.hash && repoPath) { // Ensure repoPath is available
+      fetchFullDetails();
+    }
+  }, [commit?.hash, repoPath]); // Re-fetch when commit hash or repoPath changes
+
   const getAuthorInitials = (authorName: string) => {
     return authorName
       .split(" ")
@@ -16,26 +42,39 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit }) => {
       .substring(0, 2);
   };
 
-  if (!commit) {
+  if (!commit || !fullCommitDetails || loading) {
     return (
       <div className="p-4 text-zed-muted dark:text-zed-dark-muted">
-        Select a commit to see details.
+        {loading ? "Loading commit details..." : "Select a commit to see details."}
+        {error && <div className="text-red-500 text-xs mt-2">{error}</div>}
       </div>
     );
   }
 
-  const formattedDate = moment.unix(commit.timestamp).format("MMM D, YYYY h:mm A");
+  const displayCommit = fullCommitDetails || commit; // Use full details if available, otherwise basic commit
+  const formattedDate = moment.unix(displayCommit.timestamp).format("MMM D, YYYY h:mm A");
+
+  const getFileStatusColor = (status: FileChange['status']) => {
+    switch (status) {
+      case 'A': return 'text-green-500';
+      case 'M': return 'text-yellow-500';
+      case 'D': return 'text-red-500';
+      case 'R': return 'text-blue-500';
+      case 'C': return 'text-purple-500';
+      default: return 'text-gray-500';
+    }
+  };
 
   return (
     <div className="p-4 space-y-4 text-zed-text dark:text-zed-dark-text text-sm">
       <div className="flex items-center gap-2">
         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-zed-surface-2 dark:bg-zed-dark-surface-2 flex items-center justify-center text-xs text-zed-muted dark:text-zed-dark-muted font-medium">
-          {getAuthorInitials(commit.author.name)}
+          {getAuthorInitials(displayCommit.author.name)}
         </div>
         <div>
-          <div className="font-semibold">{commit.author.name}</div>
+          <div className="font-semibold">{displayCommit.author.name}</div>
           <div className="text-xs text-zed-muted dark:text-zed-dark-muted">
-            {commit.author.email}
+            {displayCommit.author.email}
           </div>
         </div>
       </div>
@@ -44,10 +83,10 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit }) => {
         <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
           Message
         </div>
-        <div className="font-medium">{commit.shortMessage}</div>
-        {commit.message !== commit.shortMessage && (
+        <div className="font-medium">{displayCommit.shortMessage}</div>
+        {displayCommit.message !== displayCommit.shortMessage && (
           <pre className="text-xs text-zed-muted dark:text-zed-dark-muted whitespace-pre-wrap font-mono mt-1">
-            {commit.message.substring(commit.shortMessage.length).trim()}
+            {displayCommit.message.substring(displayCommit.shortMessage.length).trim()}
           </pre>
         )}
       </div>
@@ -57,7 +96,7 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit }) => {
           Hash
         </div>
         <div className="font-mono text-zed-text dark:text-zed-dark-text text-xs">
-          {commit.hash}
+          {displayCommit.hash}
         </div>
       </div>
 
@@ -66,15 +105,45 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit }) => {
           Parents
         </div>
         <div className="font-mono text-zed-text dark:text-zed-dark-text text-xs">
-          {commit.parents.length > 0 ? (
-            commit.parents.map((p) => (
-              <div key={p}>{p}</div>
+          {displayCommit.parentsDetails && displayCommit.parentsDetails.length > 0 ? (
+            displayCommit.parentsDetails.map((p) => (
+              <div key={p.hash}>{p.shortHash}</div>
             ))
           ) : (
             <div>(root-commit)</div>
           )}
         </div>
       </div>
+
+      {displayCommit.branches && displayCommit.branches.length > 0 && (
+        <div className="space-y-1">
+          <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
+            Branches
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {displayCommit.branches.map((branch) => (
+              <span key={branch} className="px-2 py-0.5 text-xs bg-zed-element dark:bg-zed-dark-element rounded-full text-zed-text dark:text-zed-dark-text">
+                {branch}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {displayCommit.tags && displayCommit.tags.length > 0 && (
+        <div className="space-y-1">
+          <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
+            Tags
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {displayCommit.tags.map((tag) => (
+              <span key={tag} className="px-2 py-0.5 text-xs bg-zed-element dark:bg-zed-dark-element rounded-full text-zed-text dark:text-zed-dark-text">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-1">
         <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
@@ -90,19 +159,42 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({ commit }) => {
           Type
         </div>
         <div className={`text-xs px-2 py-0.5 rounded-full inline-block ${
-          commit.type === 'feat' ? 'bg-commit-feat text-white' :
-          commit.type === 'fix' ? 'bg-commit-fix text-white' :
-          commit.type === 'docs' ? 'bg-commit-docs text-white' :
-          commit.type === 'style' ? 'bg-commit-style text-white' :
-          commit.type === 'refactor' ? 'bg-commit-refactor text-white' :
-          commit.type === 'perf' ? 'bg-commit-perf text-white' :
-          commit.type === 'test' ? 'bg-commit-test text-white' :
-          commit.type === 'chore' ? 'bg-commit-chore text-white' :
+          displayCommit.type === 'feat' ? 'bg-commit-feat text-white' :
+          displayCommit.type === 'fix' ? 'bg-commit-fix text-white' :
+          displayCommit.type === 'docs' ? 'bg-commit-docs text-white' :
+          displayCommit.type === 'style' ? 'bg-commit-style text-white' :
+          displayCommit.type === 'refactor' ? 'bg-commit-refactor text-white' :
+          displayCommit.type === 'perf' ? 'bg-commit-perf text-white' :
+          displayCommit.type === 'test' ? 'bg-commit-test text-white' :
+          displayCommit.type === 'chore' ? 'bg-commit-chore text-white' :
           'bg-commit-other text-white'
         }`}>
-          {commit.type}
+          {displayCommit.type}
         </div>
       </div>
+
+      {displayCommit.fileChanges && displayCommit.fileChanges.length > 0 && (
+        <div className="space-y-1">
+          <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
+            File Changes ({displayCommit.fileChanges.length})
+          </div>
+          <div className="max-h-60 overflow-y-auto border border-zed-border dark:border-zed-dark-border rounded">
+            {displayCommit.fileChanges.map((change, index) => (
+              <div key={index} className="flex items-center gap-2 text-xs px-2 py-1 border-b border-zed-border dark:border-zed-dark-border last:border-b-0 hover:bg-zed-element dark:hover:bg-zed-dark-element">
+                <span className={`font-mono w-4 text-center ${getFileStatusColor(change.status)}`}>
+                  {change.status}
+                </span>
+                <span className="flex-1 truncate">{change.path}</span>
+                {change.previousPath && (
+                  <span className="text-zed-muted dark:text-zed-dark-muted text-xs italic">
+                    (from {change.previousPath})
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -39,6 +39,8 @@ const gitnetAPI: GitNetAPI = {
 
   getStashList: (repoPath: string): Promise<StashEntry[]> =>
     ipcRenderer.invoke("get-stash-list", repoPath),
+  getCommitDetails: (repoPath: string, commitHash: string): Promise<Commit> =>
+    ipcRenderer.invoke("get-commit-details", repoPath, commitHash),
 
   // File system operations
   watchRepository: (repoPath: string): Promise<void> =>

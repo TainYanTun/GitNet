@@ -24,10 +24,26 @@ export interface Author {
   email: string;
 }
 
+export interface FileChange {
+  status: 'A' | 'M' | 'D' | 'R' | 'C' | 'U'; // Added, Modified, Deleted, Renamed, Copied, Unmerged
+  path: string;
+  previousPath?: string; // For renamed/copied files
+}
+
+export interface CommitParent {
+  hash: string;
+  shortHash: string;
+}
+
+export interface CommitStats {
+  additions: number;
+  deletions: number;
+  total: number;
+}
+
 export interface Commit {
   hash: string;
   shortHash: string;
-  parents: string[];
   message: string;
   shortMessage: string;
   type: CommitType;
@@ -37,6 +53,14 @@ export interface Commit {
   isMerge: boolean;
   isSquash: boolean;
   branchName?: string;
+  
+  // New properties for detailed view
+  parentsDetails?: CommitParent[]; // Detailed parent info
+  fileChanges?: FileChange[];
+  branches?: string[]; // Branches that contain this commit
+  tags?: string[]; // Tags that point to this commit
+  children?: CommitParent[]; // Direct children of this commit (optional, for graph navigation)
+  stats?: CommitStats; // Commit statistics (lines added/deleted)
 }
 
 export interface Branch {
@@ -194,6 +218,7 @@ export interface GitNetAPI {
   getBranches: (repoPath: string) => Promise<Branch[]>;
   getCurrentHead: (repoPath: string) => Promise<string>;
   getStashList: (repoPath: string) => Promise<StashEntry[]>;
+  getCommitDetails: (repoPath: string, commitHash: string) => Promise<Commit>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;

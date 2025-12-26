@@ -219,8 +219,8 @@ class GitNetApp {
         this.gitService.getCommits(repoPath, limit, offset),
     );
     ipcMain.handle("get-recent-commits", async (_, repoPath: string) => {
-        const LIMIT = 5; // Display the last 5 commits
-        return this.gitService.getCommits(repoPath, LIMIT, 0);
+      const LIMIT = 5; // Display the last 5 commits
+      return this.gitService.getCommits(repoPath, LIMIT, 0);
     });
     ipcMain.handle("get-branches", (_, repoPath: string) =>
       this.gitService.getBranches(repoPath),
@@ -231,9 +231,14 @@ class GitNetApp {
     ipcMain.handle("get-stash-list", (_, repoPath: string) =>
       this.gitService.getStashList(repoPath),
     );
+    ipcMain.handle(
+      "get-commit-details",
+      (_, repoPath: string, commitHash: string) =>
+        this.gitService.getCommitDetails(repoPath, commitHash),
+    );
 
     // File system operations
-    ipcMain.handle("watch-repository", (_, repoPath:string) => {
+    ipcMain.handle("watch-repository", (_, repoPath: string) => {
       this.repositoryWatcher.watchRepository(repoPath, (event) => {
         this.mainWindow?.webContents.send("repository-event", event);
       });
