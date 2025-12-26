@@ -4,9 +4,10 @@ import { useToast } from './ToastContext';
 
 interface CommitMiniLogProps {
   repoPath: string;
+  onCommitSelect?: (commit: Commit) => void;
 }
 
-export const CommitMiniLog: React.FC<CommitMiniLogProps> = ({ repoPath }) => {
+export const CommitMiniLog: React.FC<CommitMiniLogProps> = ({ repoPath, onCommitSelect }) => {
   const { showToast } = useToast();
   const [commits, setCommits] = useState<Commit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,6 +72,7 @@ export const CommitMiniLog: React.FC<CommitMiniLogProps> = ({ repoPath }) => {
             key={commit.hash}
             className="flex items-center gap-1 px-2 py-1 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element cursor-pointer"
             title={`${commit.author.name} - ${commit.shortMessage}`}
+            onClick={() => onCommitSelect?.(commit)}
           >
             <div className="flex-shrink-0 w-6 h-6 rounded-full bg-zed-surface-2 dark:bg-zed-dark-surface-2 flex items-center justify-center text-xs text-zed-muted dark:text-zed-dark-muted">
               {getAuthorInitials(commit.author.name)}

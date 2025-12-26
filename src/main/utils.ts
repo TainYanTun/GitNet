@@ -1,5 +1,5 @@
 import { app } from 'electron';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, statSync } from 'fs';
 import { join } from 'path';
 
 // Check if running in development mode
@@ -85,9 +85,8 @@ export const throttle = <T extends (...args: any[]) => any>(
 // Check if a path is a valid directory
 export const isValidDirectory = (path: string): boolean => {
   try {
-    const fs = require('fs');
-    const stat = fs.statSync(path);
-    return stat.isDirectory();
+    const stats = statSync(path);
+    return stats.isDirectory();
   } catch {
     return false;
   }

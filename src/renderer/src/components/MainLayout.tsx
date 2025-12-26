@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Repository, Branch } from "@shared/types";
+import { Repository, Branch, Commit } from "@shared/types";
 import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
 import { CommitMiniLog } from "./CommitMiniLog";
-import { StashList } from "./StashList"; // Import StashList
+import { StashList } from "./StashList";
+import { CommitGraph } from "./CommitGraph"; // Import CommitGraph
+import { CommitDetails } from "./CommitDetails"; // Import CommitDetails
 
 interface MainLayoutProps {
   repository: Repository;
@@ -19,6 +21,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const { showToast } = useToast();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [commits, setCommits] = useState<Commit[]>([]);
+  const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -33,27 +37,65 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       }
     };
 
+    const fetchCommits = async () => {
+      try {
+        const fetchedCommits = await window.gitnetAPI.getCommits(
+          repository.path,
+          1000,
+        ); // Fetch up to 1000 commits
+        setCommits(fetchedCommits);
+      } catch (error) {
+        console.error("Failed to fetch commits:", error);
+        showToast("Failed to load commits.", "error");
+      }
+    };
+
     fetchBranches();
+    fetchCommits();
 
     const handleBranchesUpdated = () => {
       fetchBranches(); // Re-fetch branches when updated
     };
 
+    const handleCommitsUpdated = () => {
+      fetchCommits(); // Re-fetch commits when updated
+    };
+
     if (window.gitnetAPI) {
       window.gitnetAPI.onBranchesUpdated(handleBranchesUpdated);
+      window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
     }
 
     return () => {
-      // Cleanup event listener if needed
-      // Note: A proper cleanup would require the API to return an unsubscribe function
+      if (window.gitnetAPI) {
+        window.gitnetAPI.onBranchesUpdated(handleBranchesUpdated)(); // Cleanup
+        window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated)(); // Cleanup
+      }
     };
-  }, [repository.path, showToast]); // Re-run when repository path or showToast changes
+  }, [repository.path, showToast]);
 
   const handleBranchSelect = (branchName: string) => {
     console.log("Selected branch:", branchName);
     // TODO: Implement actual branch selection logic (e.g., checkout)
     // For now, we'll just log and potentially highlight
   };
+
+  const handleCommitSelect = (commit: Commit) => {
+    setSelectedCommit(commit);
+  };
+
+  // Keyboard shortcut for closing the right sidebar
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedCommit(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <div className="h-full w-full flex flex-col bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text overflow-hidden">
@@ -193,7 +235,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
                   <span>Recent Commits</span>
                 </div>
-                <CommitMiniLog repoPath={repository.path} />
+                <CommitMiniLog repoPath={repository.path} onCommitSelect={handleCommitSelect} />
               </div>
             </div>
           </div>
@@ -203,92 +245,40 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <div className="flex-1 flex flex-col bg-zed-bg dark:bg-zed-dark-bg relative">
           {/* Canvas Area */}
           <div className="flex-1 overflow-hidden relative group">
-            <div className="absolute inset-0 flex items-center justify-center select-none pointer-events-none">
-              <div className="max-w-md w-full p-8 rounded-xl border border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface shadow-soft opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform scale-95 group-hover:scale-100">
-                <h3 className="text-sm font-medium text-zed-text dark:text-zed-dark-text mb-4 uppercase tracking-wider text-center">
-                  Keyboard Shortcuts
-                </h3>
-                <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-                  <div className="flex justify-between items-center">
-                    <span className="text-zed-muted dark:text-zed-dark-muted">
-                      Open Repo
-                    </span>
-                    <div className="flex gap-1">
-                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
-                        ⌘
-                      </kbd>
-                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
-                        O
-                      </kbd>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-zed-muted dark:text-zed-dark-muted">
-                      Close Repo
-                    </span>
-                    <div className="flex gap-1">
-                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
-                        ⌘
-                      </kbd>
-                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
-                        W
-                      </kbd>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-zed-muted dark:text-zed-dark-muted">
-                      Toggle Sidebar
-                    </span>
-                    <div className="flex gap-1">
-                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
-                        ⌘
-                      </kbd>
-                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
-                        B
-                      </kbd>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-zed-muted dark:text-zed-dark-muted">
-                      Toggle Theme
-                    </span>
-                    <div className="flex gap-1">
-                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
-                        ⌘
-                      </kbd>
-                      <kbd className="px-1.5 py-0.5 rounded bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border text-xs font-mono">
-                        T
-                      </kbd>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center text-zed-muted dark:text-zed-dark-muted group-hover:opacity-0 transition-opacity duration-300">
-                <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 text-zed-element dark:text-zed-dark-element flex items-center justify-center">
-                    <svg
-                      className="w-12 h-12"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                      />
-                    </svg>
-                  </div>
-                  <p className="font-medium">Waiting for D3 Graph...</p>
-                  <p className="text-xs mt-2 opacity-60">
-                    Hover to see shortcuts
-                  </p>
-                </div>
-              </div>
-            </div>
+            <CommitGraph commits={commits} onCommitSelect={handleCommitSelect} />
           </div>
         </div>
+
+        {/* Right Sidebar for Commit Details */}
+        {selectedCommit && (
+          <div className="w-80 flex-shrink-0 flex flex-col border-l border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface animate-slide-in-right">
+            <div className="px-3 py-2 text-xs font-bold text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
+              <span>Commit Details</span>
+              <button
+                onClick={() => setSelectedCommit(null)}
+                className="p-1.5 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element text-zed-muted hover:text-zed-text transition-colors no-drag"
+                title="Close Commit Details"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <CommitDetails commit={selectedCommit} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Status Bar */}

@@ -35,7 +35,7 @@ export class GitService {
     try {
       const branches = await this.getBranches(repoPath);
       const branchMap = new Map<string, string>();
-      branches.forEach(branch => {
+      branches.forEach((branch) => {
         branchMap.set(branch.objectName, branch.name);
       });
 
@@ -78,11 +78,14 @@ export class GitService {
         cwd: repoPath,
         encoding: "utf8",
       }).trim();
-      return output.split("\n").filter(line => line.length > 0);
+      return output.split("\n").filter((line) => line.length > 0);
     } catch (error) {
       // If there's no stash, git stash list returns an empty string and exits with 0.
       // If there's an actual error, log it.
-      if (error instanceof Error && !error.message.includes("No stashed changes found")) {
+      if (
+        error instanceof Error &&
+        !error.message.includes("No stashed changes found")
+      ) {
         console.error("Failed to get stash list:", error);
       }
       return [];
@@ -100,7 +103,10 @@ export class GitService {
     }
   }
 
-  private parseCommits(output: string, branchMap: Map<string, string>): Commit[] {
+  private parseCommits(
+    output: string,
+    branchMap: Map<string, string>,
+  ): Commit[] {
     if (!output.trim()) return [];
 
     return output
@@ -136,9 +142,9 @@ export class GitService {
       .split("\n")
       .map((line, index) => {
         const [name, objectName] = line.split("|");
-        const isRemote = name.startsWith('remotes/');
+        const isRemote = name.startsWith("remotes/");
         return {
-          name: name.replace(/^remotes\/[^\/]+\//, ''), // remove remote prefix
+          name: name.replace(/^remotes\/[^/]+\//, ""), // remove remote prefix
           type: this.getBranchType(name),
           objectName,
           isHead: false, // Will be determined later
@@ -190,4 +196,3 @@ export class GitService {
     return colors[type as keyof typeof colors];
   }
 }
-

@@ -4,9 +4,10 @@ import { Commit } from "@shared/types";
 
 interface CommitGraphProps {
   commits: Commit[];
+  onCommitSelect?: (commit: Commit) => void;
 }
 
-export const CommitGraph: React.FC<CommitGraphProps> = ({ commits }) => {
+export const CommitGraph: React.FC<CommitGraphProps> = ({ commits, onCommitSelect }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
@@ -18,11 +19,10 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({ commits }) => {
     svg.selectAll("*").remove();
 
     // Set up dimensions
-    const width = svg.node()?.getBoundingClientRect().width || 800;
     const height = svg.node()?.getBoundingClientRect().height || 600;
 
     // Create a simple visualization
-    const nodes = svg
+    svg
       .selectAll("circle")
       .data(commits)
       .enter()
@@ -30,8 +30,11 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({ commits }) => {
       .attr("cx", (_, i) => 50 + i * 80)
       .attr("cy", height / 2)
       .attr("r", 20)
-      .attr("fill", "blue");
-  }, [commits]);
+      .attr("fill", "blue")
+      .on("click", (event, d) => {
+        onCommitSelect?.(d);
+      });
+  }, [commits, onCommitSelect]);
 
   return (
     <div className="w-full h-full">

@@ -1,8 +1,23 @@
 // Shared type definitions for GitNet application
 
-export type CommitType = 'feat' | 'fix' | 'docs' | 'style' | 'refactor' | 'perf' | 'test' | 'chore' | 'other';
+export type CommitType =
+  | "feat"
+  | "fix"
+  | "docs"
+  | "style"
+  | "refactor"
+  | "perf"
+  | "test"
+  | "chore"
+  | "other";
 
-export type BranchType = 'main' | 'develop' | 'feature' | 'release' | 'hotfix' | 'custom';
+export type BranchType =
+  | "main"
+  | "develop"
+  | "feature"
+  | "release"
+  | "hotfix"
+  | "custom";
 
 export interface Author {
   name: string;
@@ -70,7 +85,7 @@ export interface GraphNode {
   y: number;
   lane: number;
   color: string;
-  shape: 'circle' | 'diamond' | 'square';
+  shape: "circle" | "diamond" | "square";
   size: number;
   children: string[];
   parents: string[];
@@ -81,7 +96,7 @@ export interface GraphEdge {
   source: string;
   target: string;
   color: string;
-  type: 'normal' | 'merge' | 'branch';
+  type: "normal" | "merge" | "branch";
   points: Array<{ x: number; y: number }>;
 }
 
@@ -112,7 +127,7 @@ export interface GitCommandResult {
 }
 
 export interface AppSettings {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   maxCommits: number;
   autoRefresh: boolean;
   refreshInterval: number;
@@ -137,22 +152,22 @@ export interface ZoomState {
 
 // Events
 export interface RepositoryChangedEvent {
-  type: 'repository-changed';
+  type: "repository-changed";
   repository: Repository;
 }
 
 export interface CommitsUpdatedEvent {
-  type: 'commits-updated';
+  type: "commits-updated";
   commits: Commit[];
 }
 
 export interface BranchesUpdatedEvent {
-  type: 'branches-updated';
+  type: "branches-updated";
   branches: Branch[];
 }
 
 export interface HeadChangedEvent {
-  type: 'head-changed';
+  type: "head-changed";
   newHead: string;
   oldHead: string;
 }
@@ -170,7 +185,11 @@ export interface GitNetAPI {
   getRepository: (path: string) => Promise<Repository>;
 
   // Git data operations
-  getCommits: (repoPath: string, limit?: number, offset?: number) => Promise<Commit[]>;
+  getCommits: (
+    repoPath: string,
+    limit?: number,
+    offset?: number,
+  ) => Promise<Commit[]>;
   getRecentCommits: (repoPath: string) => Promise<Commit[]>;
   getBranches: (repoPath: string) => Promise<Branch[]>;
   getCurrentHead: (repoPath: string) => Promise<string>;
@@ -185,9 +204,15 @@ export interface GitNetAPI {
   saveSettings: (settings: AppSettings) => Promise<void>;
 
   // Events
-  onRepositoryChanged: (callback: (event: RepositoryChangedEvent) => void) => () => void;
-  onCommitsUpdated: (callback: (event: CommitsUpdatedEvent) => void) => () => void;
-  onBranchesUpdated: (callback: (event: BranchesUpdatedEvent) => void) => () => void;
+  onRepositoryChanged: (
+    callback: (event: RepositoryChangedEvent) => void,
+  ) => () => void;
+  onCommitsUpdated: (
+    callback: (event: CommitsUpdatedEvent) => void,
+  ) => () => void;
+  onBranchesUpdated: (
+    callback: (event: BranchesUpdatedEvent) => void,
+  ) => () => void;
   onHeadChanged: (callback: (event: HeadChangedEvent) => void) => () => void;
 
   // Utility
