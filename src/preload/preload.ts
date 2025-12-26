@@ -6,7 +6,6 @@ import type {
   Commit,
   Branch,
   StashEntry,
-  GitHubProfile, // Add GitHubProfile here
   AppSettings,
 } from "../shared/types";
 
@@ -40,11 +39,6 @@ const gitnetAPI: GitNetAPI = {
 
   getStashList: (repoPath: string): Promise<StashEntry[]> =>
     ipcRenderer.invoke("get-stash-list", repoPath),
-
-  getGitHubProfile: (username: string): Promise<GitHubProfile | null> =>
-    ipcRenderer.invoke("get-github-profile", username),
-
-
 
   // File system operations
   watchRepository: (repoPath: string): Promise<void> =>

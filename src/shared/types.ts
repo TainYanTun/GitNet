@@ -38,14 +38,6 @@ export interface Branch {
 
 export type StashEntry = string;
 
-export interface GitHubProfile {
-  avatar_url: string;
-  html_url: string;
-  login: string;
-}
-
-
-
 export interface Repository {
   path: string;
   name: string;
@@ -128,7 +120,6 @@ export interface AppSettings {
   showTimestamp: boolean;
   compactMode: boolean;
   colorBlindMode: boolean;
-  githubUsernameMap: Record<string, string>; // Mapping from author email to GitHub username
 }
 
 export interface TooltipData {
@@ -184,7 +175,6 @@ export interface GitNetAPI {
   getBranches: (repoPath: string) => Promise<Branch[]>;
   getCurrentHead: (repoPath: string) => Promise<string>;
   getStashList: (repoPath: string) => Promise<StashEntry[]>;
-  getGitHubProfile: (username: string) => Promise<GitHubProfile | null>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;
