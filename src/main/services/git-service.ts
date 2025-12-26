@@ -33,8 +33,14 @@ export class GitService {
     const command = `git log --all --pretty=format:'%H|%P|%an|%ae|%ct|%s' --skip=${offset} -n ${limit}`;
 
     try {
+      const branches = await this.getBranches(repoPath);
+      const branchMap = new Map<string, string>();
+      branches.forEach(branch => {
+        branchMap.set(branch.objectName, branch.name);
+      });
+
       const output = execSync(command, { cwd: repoPath, encoding: "utf8" });
-      return this.parseCommits(output);
+      return this.parseCommits(output, branchMap);
     } catch {
       return [];
     }
@@ -43,7 +49,7 @@ export class GitService {
   async getBranches(repoPath: string): Promise<Branch[]> {
     try {
       const output = execSync(
-        "git branch --format='%(refname:short)|%(objectname)'",
+        "git branch -a --format='%(refname:short)|%(objectname)'",
         {
           cwd: repoPath,
           encoding: "utf8",
@@ -94,7 +100,7 @@ export class GitService {
     }
   }
 
-  private parseCommits(output: string): Commit[] {
+  private parseCommits(output: string, branchMap: Map<string, string>): Commit[] {
     if (!output.trim()) return [];
 
     return output
@@ -117,6 +123,7 @@ export class GitService {
           timestamp: parseInt(timestamp),
           isMerge: parents ? parents.split(" ").length > 1 : false,
           isSquash: false,
+          branchName: branchMap.get(hash),
         };
       });
   }
@@ -129,13 +136,14 @@ export class GitService {
       .split("\n")
       .map((line, index) => {
         const [name, objectName] = line.split("|");
+        const isRemote = name.startsWith('remotes/');
         return {
-          name,
+          name: name.replace(/^remotes\/[^\/]+\//, ''), // remove remote prefix
           type: this.getBranchType(name),
           objectName,
           isHead: false, // Will be determined later
-          isLocal: true,
-          isRemote: false,
+          isLocal: !isRemote,
+          isRemote,
           color: this.getBranchColor(name),
           lane: index,
         };
@@ -182,3 +190,4 @@ export class GitService {
     return colors[type as keyof typeof colors];
   }
 }
+

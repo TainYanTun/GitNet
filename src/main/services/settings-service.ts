@@ -14,7 +14,6 @@ export class SettingsService {
     showTimestamp: true,
     compactMode: false,
     colorBlindMode: false,
-    githubUsernameMap: {}, // New setting for mapping emails to GitHub usernames
   };
 
   constructor() {
@@ -67,9 +66,6 @@ export class SettingsService {
       showTimestamp: Boolean(settings.showTimestamp),
       compactMode: Boolean(settings.compactMode),
       colorBlindMode: Boolean(settings.colorBlindMode),
-      githubUsernameMap: typeof settings.githubUsernameMap === 'object' && settings.githubUsernameMap !== null
-        ? settings.githubUsernameMap
-        : {},
     };
   }
 

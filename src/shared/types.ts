@@ -185,10 +185,10 @@ export interface GitNetAPI {
   saveSettings: (settings: AppSettings) => Promise<void>;
 
   // Events
-  onRepositoryChanged: (callback: (event: RepositoryChangedEvent) => void) => void;
-  onCommitsUpdated: (callback: (event: CommitsUpdatedEvent) => void) => void;
-  onBranchesUpdated: (callback: (event: BranchesUpdatedEvent) => void) => void;
-  onHeadChanged: (callback: (event: HeadChangedEvent) => void) => void;
+  onRepositoryChanged: (callback: (event: RepositoryChangedEvent) => void) => () => void;
+  onCommitsUpdated: (callback: (event: CommitsUpdatedEvent) => void) => () => void;
+  onBranchesUpdated: (callback: (event: BranchesUpdatedEvent) => void) => () => void;
+  onHeadChanged: (callback: (event: HeadChangedEvent) => void) => () => void;
 
   // Utility
   showItemInFolder: (path: string) => Promise<void>;

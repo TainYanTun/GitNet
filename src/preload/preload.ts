@@ -54,24 +54,36 @@ const gitnetAPI: GitNetAPI = {
     ipcRenderer.invoke("save-settings", settings),
 
   // Event listeners
-  onRepositoryChanged: (callback: (event: any) => void): void => {
+  onRepositoryChanged: (callback: (event: any) => void): (() => void) => {
     const wrappedCallback = (_: any, event: any) => callback(event);
     ipcRenderer.on("repository-changed", wrappedCallback);
+    return () => {
+      ipcRenderer.removeListener("repository-changed", wrappedCallback);
+    };
   },
 
-  onCommitsUpdated: (callback: (event: any) => void): void => {
+  onCommitsUpdated: (callback: (event: any) => void): (() => void) => {
     const wrappedCallback = (_: any, event: any) => callback(event);
     ipcRenderer.on("commits-updated", wrappedCallback);
+    return () => {
+      ipcRenderer.removeListener("commits-updated", wrappedCallback);
+    };
   },
 
-  onBranchesUpdated: (callback: (event: any) => void): void => {
+  onBranchesUpdated: (callback: (event: any) => void): (() => void) => {
     const wrappedCallback = (_: any, event: any) => callback(event);
     ipcRenderer.on("branches-updated", wrappedCallback);
+    return () => {
+      ipcRenderer.removeListener("branches-updated", wrappedCallback);
+    };
   },
 
-  onHeadChanged: (callback: (event: any) => void): void => {
+  onHeadChanged: (callback: (event: any) => void): (() => void) => {
     const wrappedCallback = (_: any, event: any) => callback(event);
     ipcRenderer.on("head-changed", wrappedCallback);
+    return () => {
+      ipcRenderer.removeListener("head-changed", wrappedCallback);
+    };
   },
 
   // Utility functions
