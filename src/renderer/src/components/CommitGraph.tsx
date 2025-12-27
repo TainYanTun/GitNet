@@ -8,7 +8,6 @@ import {
   GraphEdge,
 } from "@shared/types";
 import { calculateLayout } from "../utils/graph-layout";
-import { GraphMiniMap } from "./GraphMiniMap";
 
 interface CommitGraphProps {
   commits: Commit[];
@@ -164,7 +163,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       : null;
 
     svg.selectAll("*").remove();
-
+    const defs = svg.append("defs");
     const g = svg.append("g");
 
     // Add zoom behavior
@@ -466,12 +465,15 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       }
 
       if (d.shape === "diamond") {
+        const diamondSize = d.size * 2.0;
+        const halfSize = diamondSize / 2;
+
         group
           .append("rect")
-          .attr("width", d.size * 1.5)
-          .attr("height", d.size * 1.5)
-          .attr("x", -d.size * 0.75)
-          .attr("y", -d.size * 0.75)
+          .attr("width", diamondSize)
+          .attr("height", diamondSize)
+          .attr("x", -halfSize)
+          .attr("y", -halfSize)
           .attr("transform", "rotate(45)")
           .attr("fill", d.color)
           .attr("stroke", isSelected ? "#fff" : "none")
@@ -480,26 +482,37 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         // Avatar for merges
         if (d.commit.author.avatarUrl) {
           const clipId = `clip-${d.id}`;
-          const defs = d3.select(svgRef.current).select("defs");
 
           defs
             .append("clipPath")
             .attr("id", clipId)
             .append("rect")
-            .attr("width", d.size * 1.2)
-            .attr("height", d.size * 1.2)
-            .attr("x", -d.size * 0.6)
-            .attr("y", -d.size * 0.6)
+            .attr("width", diamondSize)
+            .attr("height", diamondSize)
+            .attr("x", -halfSize)
+            .attr("y", -halfSize)
             .attr("transform", "rotate(45)");
 
           group
             .append("image")
             .attr("xlink:href", d.commit.author.avatarUrl)
-            .attr("width", d.size * 1.8)
-            .attr("height", d.size * 1.8)
-            .attr("x", -d.size * 0.9)
-            .attr("y", -d.size * 0.9)
+            .attr("width", diamondSize * 1.4)
+            .attr("height", diamondSize * 1.4)
+            .attr("x", -diamondSize * 0.7)
+            .attr("y", -diamondSize * 0.7)
             .attr("clip-path", `url(#${clipId})`);
+
+          // Add a border on top of the image
+          group
+            .append("rect")
+            .attr("width", diamondSize)
+            .attr("height", diamondSize)
+            .attr("x", -halfSize)
+            .attr("y", -halfSize)
+            .attr("transform", "rotate(45)")
+            .attr("fill", "none")
+            .attr("stroke", isSelected ? "#fff" : d.color)
+            .attr("stroke-width", 2);
         } else {
           const initial = d.commit.author.name.charAt(0).toUpperCase();
           group
@@ -651,16 +664,6 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         <svg ref={svgRef} className="w-full h-full">
           {/* ... existing defs ... */}
         </svg>
-
-        {/* MiniMap Integration */}
-        <div className="absolute bottom-20 right-6 opacity-80 hover:opacity-100 transition-opacity">
-          <GraphMiniMap
-            data={data}
-            mainZoom={zoomRef.current}
-            mainSvgRef={svgRef}
-            selectedCommitHash={selectedCommitHash}
-          />
-        </div>
 
         {/* Legend / Branch Dropdown */}
         <div className="absolute top-4 right-4 flex flex-col items-end pointer-events-none">
