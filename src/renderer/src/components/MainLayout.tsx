@@ -5,6 +5,7 @@ import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
 import { CommitMiniLog } from "./CommitMiniLog";
 import { StashList } from "./StashList";
+import { HotFiles } from "./HotFiles";
 import { CommitGraph } from "./CommitGraph"; // Import CommitGraph
 import { CommitDetails } from "./CommitDetails"; // Import CommitDetails
 
@@ -24,6 +25,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [commits, setCommits] = useState<Commit[]>([]);
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
+  const [currentView, setCurrentView] = useState<"graph" | "insights">("graph");
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -253,18 +255,32 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           </div>
         )}
 
-        {/* Editor Area (Graph) */}
+        {/* Editor Area (Graph or Insights) */}
         <div className="flex-1 flex flex-col bg-zed-bg dark:bg-zed-dark-bg relative">
           {/* Canvas Area */}
           <div className="flex-1 overflow-hidden relative group">
-            <CommitGraph
-              commits={commits}
-              branches={branches}
-              stashes={stashes}
-              headCommitHash={repository.headCommit}
-              selectedCommitHash={selectedCommit?.hash}
-              onCommitSelect={handleCommitSelect}
-            />
+            {currentView === "graph" ? (
+              <CommitGraph
+                commits={commits}
+                branches={branches}
+                stashes={stashes}
+                headCommitHash={repository.headCommit}
+                selectedCommitHash={selectedCommit?.hash}
+                onCommitSelect={handleCommitSelect}
+              />
+            ) : (
+              <div className="p-8 max-w-4xl mx-auto w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4">
+                <div className="mb-8 border-b border-zed-border dark:border-zed-dark-border pb-4">
+                  <h1 className="text-2xl font-bold mb-2">Repository Insights</h1>
+                  <p className="text-zed-muted dark:text-zed-dark-muted">Detailed analysis of file modifications and repository hotspots.</p>
+                </div>
+                
+                <div className="bg-zed-surface dark:bg-zed-dark-surface rounded-xl border border-zed-border dark:border-zed-dark-border p-6 shadow-xl">
+                  <h2 className="text-sm font-bold uppercase tracking-widest text-zed-muted mb-6">Hotspots (Most Modified Files)</h2>
+                  <HotFiles repoPath={repository.path} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -312,7 +328,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       </div>
 
       {/* Status Bar */}
-      <div className="h-6 flex items-center justify-between px-3 bg-zed-surface dark:bg-zed-dark-surface border-t border-zed-border dark:border-zed-dark-border text-[11px] text-zed-text dark:text-zed-dark-text select-none">
+      <div className="h-8 flex items-center justify-between px-3 bg-zed-surface dark:bg-zed-dark-surface border-t border-zed-border dark:border-zed-dark-border text-[11px] text-zed-text dark:text-zed-dark-text select-none py-1">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 hover:text-zed-accent cursor-pointer transition-colors">
             <svg
@@ -330,6 +346,32 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </svg>
             <span>{repository.currentBranch}</span>
           </div>
+          
+          <div className="w-px h-3 bg-zed-border dark:bg-zed-dark-border mx-1"></div>
+
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => setCurrentView("graph")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "graph" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Graph View"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+              </svg>
+            </button>
+            <button 
+              onClick={() => setCurrentView("insights")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "insights" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Insights View"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="w-px h-3 bg-zed-border dark:bg-zed-dark-border mx-1"></div>
+
           <div className="flex items-center gap-1.5 text-zed-muted dark:text-zed-dark-muted">
             <svg
               className="w-3 h-3"

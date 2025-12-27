@@ -18,9 +18,9 @@ export const Legend: React.FC = () => {
   }
 
   return (
-    <div className="bg-zed-surface/95 dark:bg-zed-dark-surface/95 backdrop-blur-xl p-4 rounded-xl border border-zed-border dark:border-zed-dark-border shadow-2xl w-64 animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className="bg-zed-surface/95 dark:bg-zed-dark-surface/95 backdrop-blur-xl p-4 rounded-xl border border-zed-border dark:border-zed-dark-border shadow-2xl w-64 animate-in fade-in slide-in-from-bottom-4 duration-300 ring-1 ring-black/5 dark:ring-white/5">
       <div className="flex items-center justify-between mb-4 border-b border-zed-border dark:border-zed-dark-border pb-2">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-zed-muted">Graph Legend</h3>
+        <h3 className="text-xs font-bold uppercase tracking-wider text-zed-muted dark:text-zed-dark-muted">Graph Legend</h3>
         <button onClick={() => setIsOpen(false)} className="text-zed-muted hover:text-zed-text transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -79,19 +79,19 @@ export const Legend: React.FC = () => {
 
         {/* Connections */}
         <section>
-          <h4 className="text-[10px] font-bold text-zed-muted uppercase mb-2">Connections</h4>
+          <h4 className="text-[10px] font-bold text-zed-muted dark:text-zed-dark-muted uppercase mb-2">Connections</h4>
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-6 h-0.5 bg-zed-muted/50"></div>
-              <span className="text-xs text-zed-text dark:text-zed-dark-text">Direct Path</span>
+              <div className="w-6 h-0.5 bg-zed-muted/40 dark:bg-zed-dark-muted/40"></div>
+              <span className="text-xs text-zed-text dark:text-zed-dark-text opacity-90">Direct Path</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-6 h-0.5 border-t-2 border-dashed border-zed-muted/50"></div>
-              <span className="text-xs text-zed-text dark:text-zed-dark-text">Merge Connection</span>
+              <div className="w-6 h-0.5 border-t-2 border-dashed border-zed-muted/40 dark:border-zed-dark-muted/40"></div>
+              <span className="text-xs text-zed-text dark:text-zed-dark-text opacity-90">Merge Connection</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-zed-accent/40 animate-pulse"></div>
-              <span className="text-xs text-zed-text dark:text-zed-dark-text">Current HEAD</span>
+              <div className="w-3 h-3 rounded-full bg-zed-accent/40 animate-pulse ring-1 ring-zed-accent/50"></div>
+              <span className="text-xs text-zed-text dark:text-zed-dark-text opacity-90">Current HEAD</span>
             </div>
           </div>
         </section>

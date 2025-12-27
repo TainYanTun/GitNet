@@ -171,36 +171,6 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
     // Add pulsing animation for HEAD
     const defsAnim = svg.select("defs");
-    const filter = defsAnim
-      .append("filter")
-      .attr("id", "head-glow")
-      .attr("x", "-50%")
-      .attr("y", "-50%")
-      .attr("width", "200%")
-      .attr("height", "200%");
-
-    filter
-      .append("feGaussianBlur")
-      .attr("stdDeviation", "3")
-      .attr("result", "blur");
-
-    const feMerge = filter.append("feMerge");
-    feMerge.append("feMergeNode").attr("in", "blur");
-    feMerge.append("feMergeNode").attr("in", "SourceGraphic");
-
-    const style = svg.append("style");
-    style.text(`
-      @keyframes pulse {
-        0% { opacity: 0.4; r: 8px; }
-        50% { opacity: 0.8; r: 14px; }
-        100% { opacity: 0.4; r: 8px; }
-      }
-      .head-aura {
-        animation: pulse 2s infinite ease-in-out;
-      }
-    `);
-
-    // Add zoom behavior
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 2])
@@ -251,26 +221,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       .attr("y2", (d) => d.y)
       .attr("stroke", (d) => d.color)
       .attr("stroke-width", 0.5)
-      .attr("opacity", 0.03)
-      .lower();
-
-    // Interaction Overlays (Hidden by default)
-    const hoverGuideX = g
-      .append("line")
-      .attr("class", "hover-guide")
-      .attr("stroke", "#3b82f6")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "4,4")
-      .attr("opacity", 0)
-      .lower();
-
-    const hoverGuideY = g
-      .append("line")
-      .attr("class", "hover-guide")
-      .attr("stroke", "#3b82f6")
-      .attr("stroke-width", 1)
-      .attr("stroke-dasharray", "4,4")
-      .attr("opacity", 0)
+      .attr("opacity", 0.08)
       .lower();
 
     // Draw Edges (Lines) with Arrowheads
@@ -320,7 +271,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       .attr("marker-end", (d) => `url(#arrow-${d.color.replace("#", "")})`)
       .attr("opacity", (d) => {
         if (!highlightedInfo) return 0.8;
-        return highlightedInfo.edges.has(d.id) ? 1.0 : 0.15;
+        return highlightedInfo.edges.has(d.id) ? 1.0 : 0.25;
       });
 
     // Draw Branch & Tag Labels (Pills next to branch tips or tags)
@@ -436,37 +387,18 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       .style("cursor", "pointer")
       .attr("opacity", (d) => {
         if (!highlightedInfo) return 1.0;
-        return highlightedInfo.nodes.has(d.id) ? 1.0 : 0.2;
+        return highlightedInfo.nodes.has(d.id) ? 1.0 : 0.4;
       })
       .on("click", (event, d) => {
         onCommitSelect?.(d.commit);
       })
-      .on("mouseenter", (event, d) => {
+      .on("mouseenter", function(event, d) {
         setHoveredCommitHash(d.id);
-        hoverGuideX
-          .attr("x1", d.x)
-          .attr("y1", -50)
-          .attr("x2", d.x)
-          .attr("y2", data.height + 50)
-          .attr("stroke", d.color)
-          .transition()
-          .duration(100)
-          .attr("opacity", 0.4);
-
-        hoverGuideY
-          .attr("x1", 0)
-          .attr("y1", d.y)
-          .attr("x2", data.width + 100)
-          .attr("y2", d.y)
-          .attr("stroke", d.color)
-          .transition()
-          .duration(100)
-          .attr("opacity", 0.4);
+        d3.select(this).transition().duration(200).attr("transform", `translate(${d.x}, ${d.y}) scale(1.2)`);
       })
-      .on("mouseleave", () => {
+      .on("mouseleave", function(event, d) {
         setHoveredCommitHash(null);
-        hoverGuideX.transition().duration(100).attr("opacity", 0);
-        hoverGuideY.transition().duration(100).attr("opacity", 0);
+        d3.select(this).transition().duration(200).attr("transform", `translate(${d.x}, ${d.y}) scale(1)`);
       });
 
     // Node shape
@@ -570,7 +502,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             .style("pointer-events", "none")
             .text(initial);
         }
-      } else if (d.shape === "square") {
+      }
+      else if (d.shape === "square") {
         const squareSize = d.size * 1.6;
         group
           .append("rect")
@@ -628,13 +561,6 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .text(typeInitial);
       }
     });
-
-    nodeGroups
-      .append("title")
-      .text(
-        (d) =>
-          `${d.commit.shortHash} - ${d.commit.author.name}\n${d.commit.shortMessage}`,
-      );
   }, [
     data,
     onCommitSelect,

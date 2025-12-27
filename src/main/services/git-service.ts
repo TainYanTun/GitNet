@@ -6,6 +6,7 @@ import {
   Branch,
   FileChange,
   CommitParent,
+  HotFile,
 } from "../../shared/types";
 
 export class GitService {
@@ -15,6 +16,33 @@ export class GitService {
       .update(email.trim().toLowerCase())
       .digest("hex");
     return `https://www.gravatar.com/avatar/${hash}?s=64&d=identicon`;
+  }
+
+  async getHotFiles(repoPath: string, limit = 10): Promise<HotFile[]> {
+    try {
+      // Use --all to get hotspots across all branches
+      const output = execSync(
+        `git log --all --format= --name-only | grep . | sort | uniq -c | sort -nr | head -n ${limit}`,
+        { cwd: repoPath, encoding: "utf8" }
+      );
+      
+      const lines = output.trim().split('\n').filter(line => line.trim().length > 0);
+      
+      return lines.map(line => {
+        // Match: [spaces] [count] [spaces] [path]
+        const match = line.trim().match(/^(\d+)\s+(.+)$/);
+        if (match) {
+          return {
+            count: parseInt(match[1], 10),
+            path: match[2].trim()
+          };
+        }
+        return null;
+      }).filter((f): f is HotFile => f !== null && f.count > 0);
+    } catch (error) {
+      console.error("HotFiles analysis failed:", error);
+      return [];
+    }
   }
   async getRepository(path: string): Promise<Repository> {
     // Verify it's a Git repository

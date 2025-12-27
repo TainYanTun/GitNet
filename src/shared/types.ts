@@ -218,6 +218,11 @@ export type AppEvent =
   | BranchesUpdatedEvent
   | HeadChangedEvent;
 
+export interface HotFile {
+  path: string;
+  count: number;
+}
+
 // API interfaces for IPC communication
 export interface GitNetAPI {
   // Repository operations
@@ -240,6 +245,7 @@ export interface GitNetAPI {
     commitHash: string,
     filePath: string,
   ) => Promise<string>;
+  getHotFiles: (repoPath: string, limit?: number) => Promise<HotFile[]>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;

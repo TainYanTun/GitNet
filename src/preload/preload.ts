@@ -42,8 +42,10 @@ const gitnetAPI: GitNetAPI = {
   getCommitDetails: (repoPath: string, commitHash: string): Promise<Commit> =>
     ipcRenderer.invoke("get-commit-details", repoPath, commitHash),
 
-  getDiff: (repoPath: string, commitHash: string, filePath: string): Promise<string> =>
-    ipcRenderer.invoke("get-diff", repoPath, commitHash, filePath),
+  getDiff: (repoPath: string, commitHash: string, filePath: string) =>
+    ipcRenderer.invoke("git:get-diff", repoPath, commitHash, filePath),
+  getHotFiles: (repoPath: string, limit?: number) =>
+    ipcRenderer.invoke("git:get-hot-files", repoPath, limit),
 
   // File system operations
   watchRepository: (repoPath: string): Promise<void> =>
