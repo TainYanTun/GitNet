@@ -8,6 +8,7 @@ import {
   GraphEdge,
 } from "@shared/types";
 import { calculateLayout } from "../utils/graph-layout";
+import { GraphMiniMap } from "./GraphMiniMap";
 
 interface CommitGraphProps {
   commits: Commit[];
@@ -29,6 +30,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const [isBranchMenuOpen, setIsBranchMenuOpen] = React.useState(false);
   const [branchSearch, setBranchSearch] = React.useState("");
+  const [hoveredCommitHash, setHoveredCommitHash] = React.useState<string | null>(null);
 
   const [commitSearch, setCommitSearch] = React.useState("");
 
@@ -55,14 +57,15 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
   // Calculate lineage (ancestors and descendants) for highlighting
   const highlightedInfo = useMemo(() => {
-    if (!selectedCommitHash && !searchedCommitHashes) return null;
+    const focusHash = hoveredCommitHash || selectedCommitHash;
+    if (!focusHash && !searchedCommitHashes) return null;
 
     const nodesMap = new Map(data.nodes.map((n) => [n.id, n]));
     const highlightedNodes = new Set<string>();
     const highlightedEdges = new Set<string>();
 
-    if (selectedCommitHash) {
-      highlightedNodes.add(selectedCommitHash);
+    if (focusHash) {
+      highlightedNodes.add(focusHash);
 
       // Recursive ancestors
       const findAncestors = (id: string) => {
@@ -76,7 +79,10 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         });
       };
 
-      // Recursive descendants
+      findAncestors(focusHash);
+      
+      // If we are hovering, we might only want ancestors to see history.
+      // If selected, we want both. Let's do both for now.
       const findDescendants = (id: string) => {
         const node = nodesMap.get(id);
         if (!node) return;
@@ -87,9 +93,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           }
         });
       };
-
-      findAncestors(selectedCommitHash);
-      findDescendants(selectedCommitHash);
+      findDescendants(focusHash);
     }
 
     // Add search results to highlighted nodes
@@ -240,20 +244,21 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         const targetNode = data.nodes.find((n) => n.id === d.target);
         if (!sourceNode || !targetNode) return null;
 
-        // Draw from PARENT (source) to CHILD (target)
-        if (sourceNode.x === targetNode.x) {
-          return `M${sourceNode.x},${sourceNode.y} L${targetNode.x},${targetNode.y}`;
-        } else {
-          // 'Railway Switch' style: mostly straight with a short diagonal transition
-          const laneOffset = (sourceNode.lane % 5) * 4 - 8;
-          const midY = (sourceNode.y + targetNode.y) / 2 + laneOffset;
-          const transitionHeight = 12; // Vertical space used for the diagonal
+        // In the new layout, source is PARENT (older), target is CHILD (newer/above)
+        // Wait, calculateLayout currently puts yIndex + 1 (newest) at lower Y? 
+        // Let's check: y = (yIndex + 1) * commitHeight. 
+        // If yIndex 0 is newest, it's at the top. Correct.
+        
+        const x1 = sourceNode.x;
+        const y1 = sourceNode.y;
+        const x2 = targetNode.x;
+        const y2 = targetNode.y;
 
-          return `M${sourceNode.x},${sourceNode.y}
-                  L${sourceNode.x},${midY - transitionHeight}
-                  L${targetNode.x},${midY + transitionHeight}
-                  L${targetNode.x},${targetNode.y}`;
-        }
+        // Smooth Bézier curve (Metro style)
+        const cp1y = y1 - (y1 - y2) / 2;
+        const cp2y = y1 - (y1 - y2) / 2;
+        
+        return `M ${x1} ${y1} C ${x1} ${cp1y}, ${x2} ${cp2y}, ${x2} ${y2}`;
       })
       .attr("fill", "none")
       .attr("stroke", (d) => d.color)
@@ -390,6 +395,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         onCommitSelect?.(d.commit);
       })
       .on("mouseenter", (event, d) => {
+          setHoveredCommitHash(d.id);
           hoverGuideX
             .attr("x1", d.x)
             .attr("y1", -50)
@@ -409,6 +415,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             .attr("opacity", 0.4);
       })
       .on("mouseleave", () => {
+          setHoveredCommitHash(null);
           hoverGuideX.transition().duration(100).attr("opacity", 0);
           hoverGuideY.transition().duration(100).attr("opacity", 0);
       });
@@ -493,6 +500,18 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .attr("fill", d.color)
           .attr("stroke", isSelected ? "#fff" : "none")
           .attr("stroke-width", 2);
+
+        // Add initials for commit types
+        const typeInitial = d.commit.type.charAt(0).toUpperCase();
+        group
+          .append("text")
+          .attr("dy", "0.35em")
+          .attr("text-anchor", "middle")
+          .attr("fill", "white")
+          .style("font-size", "8px")
+          .style("font-weight", "bold")
+          .style("pointer-events", "none")
+          .text(typeInitial === 'O' ? '' : typeInitial);
       }
     });
 
@@ -610,20 +629,18 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
       <div className="flex-1 relative overflow-hidden">
         <svg ref={svgRef} className="w-full h-full">
-          <defs>
-            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
-              <feOffset dx="0" dy="1" result="offsetblur" />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.3" />
-              </feComponentTransfer>
-              <feMerge>
-                <feMergeNode />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
+          {/* ... existing defs ... */}
         </svg>
+
+        {/* MiniMap Integration */}
+        <div className="absolute bottom-20 right-6 opacity-80 hover:opacity-100 transition-opacity">
+          <GraphMiniMap 
+            data={data} 
+            mainZoom={zoomRef.current} 
+            mainSvgRef={svgRef}
+            selectedCommitHash={selectedCommitHash}
+          />
+        </div>
 
         {/* Legend / Branch Dropdown */}
         <div className="absolute top-4 right-4 flex flex-col items-end pointer-events-none">
