@@ -8,7 +8,7 @@ Here's the finalized Git Tree Visualization plan:
   2. Commit Node Representation
    * All Nodes are Circles: Consistent circular shape.
    * Node Color-Coded by Branch: Fill matches its branch color.
-   * Content Inside Node (Placeholder) if the node is merge point: Committer's initial letter within the circle for all commits.
+   * Content Inside Node (Placeholder) if the node is merge point (Committer's initial letter within the circle for all commits.) if not then default node with color is fine.
    * HEAD Indicator: Special visual cue for the HEAD commit.
 
   3. Edge (Line) Representation
@@ -26,3 +26,5 @@ Here's the finalized Git Tree Visualization plan:
    * Zoom and Pan: Explore the graph.
    * Branch Filtering: Show/hide branches.
    * "Go to HEAD" Button: Navigate to HEAD.
+
+testing for seperate branches
