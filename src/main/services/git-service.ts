@@ -268,24 +268,52 @@ export class GitService {
   }
 
   private getBranchType(name: string): any {
-    if (name === "main" || name === "master") return "main";
-    if (name === "develop" || name === "dev") return "develop";
-    if (name.startsWith("feature/")) return "feature";
-    if (name.startsWith("release/")) return "release";
-    if (name.startsWith("hotfix/")) return "hotfix";
+    // Clean name by removing remotes/ and origin/ prefixes for classification
+    const cleanName = name
+      .replace(/^remotes\//, "")
+      .replace(/^origin\//, "")
+      .replace(/^[^/]+\//, (match) => {
+        // If it still looks like a remote (e.g., 'upstream/'), remove it
+        const commonRemotes = ["origin/", "upstream/", "github/"];
+        return commonRemotes.includes(match) ? "" : match;
+      });
+
+    if (cleanName === "main" || cleanName === "master") return "main";
+    if (cleanName === "develop" || cleanName === "dev") return "develop";
+    if (cleanName.startsWith("feature/")) return "feature";
+    if (cleanName.startsWith("release/")) return "release";
+    if (cleanName.startsWith("hotfix/")) return "hotfix";
     return "custom";
   }
 
   private getBranchColor(name: string): string {
     const type = this.getBranchType(name);
-    const colors = {
-      main: "#1f2937",
-      develop: "#059669",
-      feature: "#2563eb",
-      release: "#dc2626",
-      hotfix: "#ea580c",
-      custom: "#7c3aed",
-    };
-    return colors[type as keyof typeof colors];
+    
+    // Fixed colors for primary branches
+    if (type === "main") return "#1f2937";
+    if (type === "develop") return "#059669";
+    if (type === "hotfix") return "#ea580c";
+    if (type === "release") return "#dc2626";
+
+    // Dynamic colors for features and custom branches to make them distinguishable
+    const palette = [
+      "#2563eb", // blue
+      "#7c3aed", // violet
+      "#db2777", // pink
+      "#0891b2", // cyan
+      "#4f46e5", // indigo
+      "#9333ea", // purple
+      "#22c55e", // green
+      "#eab308", // yellow
+      "#f97316", // orange
+    ];
+
+    // Simple hash to pick a stable color from the palette
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % palette.length;
+    return palette[index];
   }
 }

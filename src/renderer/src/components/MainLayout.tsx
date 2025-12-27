@@ -245,7 +245,13 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <div className="flex-1 flex flex-col bg-zed-bg dark:bg-zed-dark-bg relative">
           {/* Canvas Area */}
           <div className="flex-1 overflow-hidden relative group">
-            <CommitGraph commits={commits} onCommitSelect={handleCommitSelect} />
+            <CommitGraph
+              commits={commits}
+              branches={branches}
+              headCommitHash={repository.headCommit}
+              selectedCommitHash={selectedCommit?.hash}
+              onCommitSelect={handleCommitSelect}
+            />
           </div>
         </div>
 
