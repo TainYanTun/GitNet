@@ -232,6 +232,7 @@ export interface ContributorStats {
   deletions: number;
   firstCommit: number;
   lastCommit: number;
+  activity: number[]; // Array of commit counts across time buckets
 }
 
 // API interfaces for IPC communication

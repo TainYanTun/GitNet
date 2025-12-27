@@ -57,6 +57,14 @@ export class GitService {
       
       let currentAuthor: { name: string, email: string, timestamp: number } | null = null;
       
+      // First pass: find project-wide bounds
+      const allTimestamps = lines
+        .filter(l => l.includes('|'))
+        .map(l => parseInt(l.split('|')[2], 10));
+      const projectStart = Math.min(...allTimestamps);
+      const projectEnd = Math.max(...allTimestamps);
+      const duration = projectEnd - projectStart || 1;
+
       for (const line of lines) {
         if (line.includes('|')) {
           const [name, email, timestampStr] = line.split('|');
@@ -72,7 +80,8 @@ export class GitService {
               additions: 0,
               deletions: 0,
               firstCommit: timestamp,
-              lastCommit: timestamp
+              lastCommit: timestamp,
+              activity: new Array(20).fill(0)
             });
           }
           
@@ -80,6 +89,13 @@ export class GitService {
           stats.commitCount++;
           stats.firstCommit = Math.min(stats.firstCommit, timestamp);
           stats.lastCommit = Math.max(stats.lastCommit, timestamp);
+
+          // Assign to bucket
+          const bucketIndex = Math.min(
+            19,
+            Math.floor(((timestamp - projectStart) / duration) * 20)
+          );
+          stats.activity[bucketIndex]++;
         } else if (line.includes('insertion') || line.includes('deletion')) {
           if (currentAuthor) {
             const stats = statsMap.get(currentAuthor.email)!;

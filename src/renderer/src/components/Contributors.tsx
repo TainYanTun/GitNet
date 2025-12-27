@@ -26,88 +26,78 @@ export const Contributors: React.FC<ContributorsProps> = ({ repoPath }) => {
   }, [repoPath]);
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-48 bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border shadow-sm" />
-        ))}
-      </div>
-    );
+    return <div className="p-8 text-[10px] font-mono text-zed-muted animate-pulse uppercase tracking-widest text-center">Analyzing team metrics...</div>;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {contributors.map((author, index) => (
-        <div 
-          key={author.email} 
-          className="group relative bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border p-6 hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden"
-        >
-          {/* Subtle Rank Number */}
-          <div className="absolute top-2 right-4 text-6xl font-black text-zed-muted/5 dark:text-zed-dark-muted/5 italic select-none pointer-events-none">
-            {index + 1}
-          </div>
-
-          <div className="flex items-center gap-4 mb-6">
-            <div className="shrink-0 w-14 h-14 border border-zed-border dark:border-zed-dark-border bg-zed-bg dark:bg-zed-dark-bg p-0.5 shadow-sm">
-              <img 
-                src={author.avatarUrl} 
-                alt={author.name} 
-                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
-              />
+    <div className="w-full">
+      <div className="divide-y divide-zed-border/20 dark:divide-zed-dark-border/20">
+        {contributors.map((author, index) => (
+          <div 
+            key={author.email} 
+            className="group flex items-center gap-6 py-4 hover:bg-zed-bg/50 dark:hover:bg-zed-dark-bg/50 transition-colors duration-150 border-zed-border/10 dark:border-zed-dark-border/10 px-2"
+          >
+            {/* Minimal Rank */}
+            <div className="w-4 text-[10px] font-mono text-zed-muted/40 font-bold">
+              {(index + 1).toString().padStart(2, '0')}
             </div>
-            <div className="min-w-0">
-              <h3 className="font-bold text-sm text-zed-text dark:text-zed-dark-text truncate leading-tight">
+
+            {/* Avatar - Tiny & Grayscale */}
+            <div className="w-6 h-6 grayscale opacity-40 group-hover:opacity-100 group-hover:grayscale-0 transition-all duration-300 overflow-hidden">
+              <img src={author.avatarUrl} alt={author.name} className="w-full h-full object-cover" />
+            </div>
+
+            {/* Identity */}
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xs font-bold text-zed-text dark:text-zed-dark-text truncate tracking-tight">
                 {author.name}
               </h3>
-              <p className="text-[10px] text-zed-muted dark:text-zed-dark-muted font-mono truncate opacity-60">
+              <p className="text-[9px] font-mono text-zed-muted dark:text-zed-dark-muted opacity-50 truncate">
                 {author.email}
               </p>
             </div>
-          </div>
 
-          <div className="space-y-4">
-            {/* Main Stats */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-0.5">
-                <div className="text-[9px] uppercase tracking-widest text-zed-muted font-black">Commits</div>
-                <div className="text-lg font-bold font-mono text-zed-text dark:text-zed-dark-text">
+            {/* Hyper-Minimalist Activity Chart */}
+            <div className="w-32 h-6 flex items-end gap-0.5 opacity-20 group-hover:opacity-60 transition-opacity px-4">
+              {(author.activity || []).map((count, i) => {
+                const max = Math.max(...(author.activity || [1]), 1);
+                const height = (count / max) * 100;
+                return (
+                  <div 
+                    key={i} 
+                    className="flex-1 bg-zed-text dark:bg-zed-dark-text" 
+                    style={{ height: `${Math.max(10, height)}%` }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Core Stats - Flat */}
+            <div className="flex items-center gap-12 text-right pr-4">
+              <div className="w-16">
+                <div className="text-[11px] font-bold font-mono text-zed-text dark:text-zed-dark-text leading-none">
                   {author.commitCount}
                 </div>
+                <div className="text-[8px] font-black uppercase tracking-tighter text-zed-muted opacity-40">Commits</div>
               </div>
-              <div className="space-y-0.5">
-                <div className="text-[9px] uppercase tracking-widest text-zed-muted font-black">Impact</div>
-                <div className="text-lg font-bold font-mono text-zed-accent">
-                  +{author.additions + author.deletions}
+              
+              <div className="w-20">
+                <div className="text-[11px] font-bold font-mono text-zed-text dark:text-zed-dark-text leading-none">
+                  {author.additions + author.deletions}
                 </div>
+                <div className="text-[8px] font-black uppercase tracking-tighter text-zed-muted opacity-40">Impact</div>
               </div>
-            </div>
 
-            {/* Line Distribution */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-[9px] font-mono text-zed-muted uppercase opacity-60">
-                <span>Additions</span>
-                <span>Deletions</span>
+              <div className="w-24 hidden md:block">
+                <div className="text-[10px] font-mono text-zed-muted dark:text-zed-dark-muted leading-none">
+                  {moment.unix(author.lastCommit).fromNow(true)}
+                </div>
+                <div className="text-[8px] font-black uppercase tracking-tighter text-zed-muted opacity-40 whitespace-nowrap text-right">Idle</div>
               </div>
-              <div className="h-1.5 w-full bg-zed-element dark:bg-zed-dark-element flex overflow-hidden">
-                <div 
-                  className="bg-green-500/60 h-full transition-all duration-1000" 
-                  style={{ width: `${(author.additions / (author.additions + author.deletions || 1)) * 100}%` }} 
-                />
-                <div 
-                  className="bg-red-500/60 h-full transition-all duration-1000" 
-                  style={{ width: `${(author.deletions / (author.additions + author.deletions || 1)) * 100}%` }} 
-                />
-              </div>
-            </div>
-
-            {/* Dates */}
-            <div className="pt-2 border-t border-zed-border/30 dark:border-zed-dark-border/30 flex justify-between items-center text-[9px] font-mono text-zed-muted opacity-50 italic">
-              <span>Since {moment.unix(author.firstCommit).format("MMM YYYY")}</span>
-              <span>Last {moment.unix(author.lastCommit).fromNow()}</span>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
