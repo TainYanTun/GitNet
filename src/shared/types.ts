@@ -22,6 +22,7 @@ export type BranchType =
 export interface Author {
   name: string;
   email: string;
+  avatarUrl?: string;
 }
 
 export interface FileChange {
