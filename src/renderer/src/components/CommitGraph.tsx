@@ -75,8 +75,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     const highlightedNodes = new Set<string>();
     const highlightedEdges = new Set<string>();
 
-    if (focusHash) {
-      highlightedNodes.add(focusHash);
+    if (selectedCommitHash) {
+      highlightedNodes.add(selectedCommitHash);
 
       // Recursive ancestors
       const findAncestors = (id: string) => {
@@ -104,7 +104,9 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           }
         });
       };
-      findDescendants(focusHash);
+
+      findAncestors(selectedCommitHash);
+      findDescendants(selectedCommitHash);
     }
 
     // Add search results to highlighted nodes
@@ -649,7 +651,19 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
       <div className="flex-1 relative overflow-hidden">
         <svg ref={svgRef} className="w-full h-full">
-          {/* ... existing defs ... */}
+          <defs>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+              <feOffset dx="0" dy="1" result="offsetblur" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.3" />
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
         </svg>
 
         {/* Legend / Branch Dropdown */}

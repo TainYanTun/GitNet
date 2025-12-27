@@ -1,9 +1,5 @@
 import { Commit, Branch, VisualizationData, GraphNode, GraphEdge, LaneSegment } from "@shared/types";
 
-/**
- * Enhanced Git graph layout engine with a "Main Spine".
- * Reserves Lane 0 for main/master to provide a stable visual anchor.
- */
 export const calculateLayout = (
   commits: Commit[],
   branches: Branch[],
@@ -20,153 +16,128 @@ export const calculateLayout = (
     };
   }
 
+  // Step 1: Sort commits by timestamp (oldest first)
+  const sortedCommits = [...commits].sort((a, b) => a.timestamp - b.timestamp);
+
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
+  const commitMap = new Map<string, GraphNode>();
+  const laneSegments: LaneSegment[] = [];
   
-  // Lane management
-  const commitToLane = new Map<string, number>();
-  const activeLanes: (string | null)[] = []; 
-  
-  const laneWidth = 40; 
-  const commitHeight = 50;
+  const laneMap = new Map<string, number>(); // branchName -> lane
+  let nextLane = 1;
 
-  const isMainBranch = (name?: string) => 
-    name === "main" || name === "master" || name === "origin/main" || name === "origin/master";
+  const laneWidth = 80;
+  const commitHeight = 60;
 
-  const getBranchColor = (branchName?: string) => {
-    if (!branchName) return "#7c3aed";
-    const branch = branches.find(b => b.name === branchName);
-    return branch ? branch.color : "#7c3aed";
+  // Find branch info helper
+  const getBranchInfo = (branchName?: string) => {
+    if (!branchName) return { color: "#7c3aed", type: "custom" as const };
+    const branch = branches.find((b) => b.name === branchName);
+    return {
+      color: branch ? branch.color : "#7c3aed",
+      type: branch ? branch.type : ("custom" as const),
+    };
   };
 
-  // 1. Process Commits (Newest to Oldest)
-  commits.forEach((commit, yIndex) => {
-    let lane = activeLanes.indexOf(commit.hash);
-
-    // Enforce "Main Spine" in Lane 0
-    if (isMainBranch(commit.branchName)) {
-      lane = 0;
+  // Helper to get or assign a lane (Wide visualization - one lane per branch)
+  const getLane = (branchName: string): number => {
+    if (laneMap.has(branchName)) {
+      return laneMap.get(branchName)!;
     }
 
-    if (lane === -1) {
-      // Find first empty slot. 
-      // If it's main, we MUST use lane 0. 
-      // If it's not main, we start looking from lane 1.
-      if (isMainBranch(commit.branchName)) {
-        lane = 0;
-      } else {
-        lane = 1;
-        while (lane < activeLanes.length && activeLanes[lane] !== null) {
-          lane++;
-        }
-      }
-
-      // Fill activeLanes up to the required index
-      while (activeLanes.length <= lane) {
-        activeLanes.push(null);
-      }
-      activeLanes[lane] = commit.hash;
+    let assignedLane: number;
+    if (branchName === "main" || branchName === "master") {
+        assignedLane = 0;
     } else {
-      // Commit already has a reserved lane from a child
-      activeLanes[lane] = commit.hash;
+        assignedLane = nextLane++;
     }
 
-    commitToLane.set(commit.hash, lane);
+    laneMap.set(branchName, assignedLane);
+    return assignedLane;
+  };
 
-    // 2. Prepare lanes for parents (Lookahead)
-    const parents = commit.parents || [];
-    if (parents.length > 0) {
-      // Primary parent usually continues the current lane
-      const primaryParent = parents[0];
-      
-      // If we are on main, we keep lane 0 occupied for the parent
-      if (lane === 0) {
-        activeLanes[0] = primaryParent;
-      } else {
-        // If the primary parent is already in a lane (e.g. lane 0), don't overwrite it
-        const existingLane = activeLanes.indexOf(primaryParent);
-        if (existingLane === -1) {
-           activeLanes[lane] = primaryParent;
-        } else {
-           activeLanes[lane] = null; // Current lane ends here if parent is elsewhere
-        }
-      }
-
-      // Other parents (merges) get new lanes if they don't have one
-      for (let i = 1; i < parents.length; i++) {
-        const pHash = parents[i];
-        if (activeLanes.indexOf(pHash) === -1) {
-          // Find a slot starting from lane 1
-          let nextSlot = 1;
-          while (nextSlot < activeLanes.length && activeLanes[nextSlot] !== null) {
-            nextSlot++;
-          }
-          if (nextSlot === activeLanes.length) {
-            activeLanes.push(pHash);
-          } else {
-            activeLanes[nextSlot] = pHash;
-          }
-        }
-      }
-    } else {
-      // Root commit - clear its lane
-      activeLanes[lane] = null;
-    }
-
+  // Step 2: Create Nodes
+  sortedCommits.forEach((commit, index) => {
     const branchName = commit.branchName || "main";
-    const color = getBranchColor(branchName);
+    const lane = getLane(branchName);
+    const { color } = getBranchInfo(branchName);
     const isHead = commit.hash === headCommitHash;
 
-    nodes.push({
+    const node: GraphNode = {
       id: commit.hash,
       commit: { ...commit, branchName },
       x: (lane + 1) * laneWidth,
-      y: (yIndex + 1) * commitHeight,
+      y: (index + 1) * commitHeight,
       lane,
       color,
       shape: commit.isMerge ? "diamond" : "circle",
-      size: isHead ? 10 : 7,
+      size: isHead ? 14 : 10,
       children: [],
       parents: commit.parents || [],
-    });
+    };
+
+    nodes.push(node);
+    commitMap.set(commit.hash, node);
   });
 
-  // 3. Create Edges
-  const nodeMap = new Map<string, GraphNode>();
-  nodes.forEach(n => nodeMap.set(n.id, n));
+  // Create full-height lane segments for the wide visualization
+  laneMap.forEach((lane, branchName) => {
+      const { color } = getBranchInfo(branchName);
+      const laneNodes = nodes.filter(n => n.lane === lane);
+      if (laneNodes.length > 0) {
+          const startY = Math.min(...laneNodes.map(n => n.y));
+          const endY = Math.max(...laneNodes.map(n => n.y));
+          
+          laneSegments.push({
+              lane,
+              x: (lane + 1) * laneWidth,
+              startY: startY,
+              endY: endY,
+              color,
+              branchName
+          });
+      }
+  });
 
-  nodes.forEach(node => {
-    node.parents.forEach((parentHash, pIndex) => {
-      const parentNode = nodeMap.get(parentHash);
+  // Step 3: Create Edges
+  nodes.forEach((node) => {
+    node.parents.forEach((parentHash) => {
+      const parentNode = commitMap.get(parentHash);
       if (parentNode) {
-        // Edge follows the color of the branch line
-        const color = pIndex === 0 ? node.color : (parentNode.color || node.color);
-        
-        edges.push({
+        const edgeColor = node.color; 
+        const edge: GraphEdge = {
           id: `${parentHash}-${node.id}`,
           source: parentHash,
           target: node.id,
-          color,
-          type: pIndex > 0 ? "merge" : "normal",
+          color: edgeColor,
+          type: node.commit.isMerge ? "merge" : "normal",
           points: [
             { x: parentNode.x, y: parentNode.y },
             { x: node.x, y: node.y },
           ],
-        });
+        };
+        edges.push(edge);
         parentNode.children.push(node.id);
       }
     });
   });
 
-  const maxX = Math.max(...nodes.map(n => n.x), 0) + laneWidth * 2;
-  const maxY = Math.max(...nodes.map(n => n.y), 0) + commitHeight;
+  // Calculate bounds
+  const maxX = Math.max(...nodes.map((n) => n.x), 0) + laneWidth;
+  const maxY = Math.max(...nodes.map((n) => n.y), 0) + commitHeight;
 
   return {
     nodes,
     edges,
-    laneSegments: [],
+    laneSegments,
     width: maxX,
     height: maxY,
-    bounds: { minX: 0, maxX, minY: 0, maxY },
+    bounds: {
+      minX: 0,
+      maxX,
+      minY: 0,
+      maxY,
+    },
   };
 };
