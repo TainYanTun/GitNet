@@ -46,6 +46,7 @@ export interface CommitStats {
 export interface Commit {
   hash: string;
   shortHash: string;
+  parents: string[];
   message: string;
   shortMessage: string;
   type: CommitType;

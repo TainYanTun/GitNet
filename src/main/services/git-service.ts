@@ -152,6 +152,7 @@ export class GitService {
     return {
       hash,
       shortHash: hash.substring(0, 7),
+      parents: parentsHashes.split(" ").filter(Boolean),
       message: subject, // subject is usually the first line
       shortMessage: subject.split('\n')[0],
       type: this.getCommitType(subject), // Re-using existing helper
