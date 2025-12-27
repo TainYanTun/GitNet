@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Commit, FileChange } from "@shared/types";
 import moment from "moment";
 import { DiffModal } from "./DiffModal";
+import { FileTree } from "./FileTree";
 
 interface CommitDetailsProps {
   commit: Commit;
@@ -119,9 +120,19 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
 
   return (
     <div className="p-4 space-y-4 text-zed-text dark:text-zed-dark-text text-sm">
-      <div className="flex items-center gap-2">
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-zed-surface-2 dark:bg-zed-dark-surface-2 flex items-center justify-center text-xs text-zed-muted dark:text-zed-dark-muted font-medium">
-          {getAuthorInitials(displayCommit.author.name)}
+      <div className="flex items-center gap-3">
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border flex items-center justify-center overflow-hidden shadow-sm">
+          {displayCommit.author.avatarUrl ? (
+            <img 
+              src={displayCommit.author.avatarUrl} 
+              alt={displayCommit.author.name} 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="text-xs text-zed-muted dark:text-zed-dark-muted font-bold">
+              {getAuthorInitials(displayCommit.author.name)}
+            </span>
+          )}
         </div>
         <div>
           <div className="font-semibold">{displayCommit.author.name}</div>
@@ -287,29 +298,14 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
 
       {displayCommit.fileChanges && displayCommit.fileChanges.length > 0 && (
         <div className="space-y-1">
-          <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
+          <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase px-1">
             File Changes ({displayCommit.fileChanges.length})
           </div>
-          <div className="max-h-60 overflow-y-auto border border-zed-border dark:border-zed-dark-border rounded">
-            {displayCommit.fileChanges.map((change, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 text-xs px-2 py-1 border-b border-zed-border dark:border-zed-dark-border last:border-b-0 hover:bg-zed-element dark:hover:bg-zed-dark-element cursor-pointer"
-                onClick={() => handleFileClick(change)}
-              >
-                <span
-                  className={`font-mono w-4 text-center ${getFileStatusColor(change.status)}`}
-                >
-                  {change.status}
-                </span>
-                <span className="flex-1 truncate">{change.path}</span>
-                {change.previousPath && (
-                  <span className="text-zed-muted dark:text-zed-dark-muted text-xs italic">
-                    (from {change.previousPath})
-                  </span>
-                )}
-              </div>
-            ))}
+          <div className="max-h-80 overflow-y-auto custom-scrollbar border border-zed-border dark:border-zed-dark-border rounded bg-zed-bg/30">
+            <FileTree 
+              files={displayCommit.fileChanges} 
+              onFileClick={handleFileClick} 
+            />
           </div>
         </div>
       )}

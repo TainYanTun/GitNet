@@ -106,6 +106,15 @@ export interface LaneInfo {
   endCommit?: string;
 }
 
+export interface LaneSegment {
+  lane: number;
+  x: number;
+  startY: number;
+  endY: number;
+  color: string;
+  branchName: string;
+}
+
 export interface GraphNode {
   id: string;
   commit: Commit;
@@ -131,6 +140,7 @@ export interface GraphEdge {
 export interface VisualizationData {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  laneSegments: LaneSegment[];
   width: number;
   height: number;
   bounds: {

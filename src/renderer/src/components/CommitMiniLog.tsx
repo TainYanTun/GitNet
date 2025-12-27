@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Commit } from '@shared/types';
 import { useToast } from './ToastContext';
+import moment from 'moment';
 
 interface CommitMiniLogProps {
   repoPath: string;
@@ -71,19 +72,29 @@ export const CommitMiniLog: React.FC<CommitMiniLogProps> = ({ repoPath, onCommit
         return (
           <div
             key={commit.hash}
-            className="flex items-center gap-1 px-2 py-1 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element cursor-pointer"
+            className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element cursor-pointer group transition-colors"
             title={`${commit.author.name} - ${commit.shortMessage}`}
             onClick={() => onCommitSelect?.(commit)}
           >
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-zed-surface-2 dark:bg-zed-dark-surface-2 flex items-center justify-center text-xs text-zed-muted dark:text-zed-dark-muted">
-              {getAuthorInitials(commit.author.name)}
+            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border flex items-center justify-center overflow-hidden shadow-sm">
+              {commit.author.avatarUrl ? (
+                <img 
+                  src={commit.author.avatarUrl} 
+                  alt={commit.author.name} 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-[10px] font-bold text-zed-muted dark:text-zed-dark-muted">
+                  {getAuthorInitials(commit.author.name)}
+                </span>
+              )}
             </div>
             <div className="flex-1 overflow-hidden">
-              <div className="text-sm truncate text-zed-text dark:text-zed-dark-text">
+              <div className="text-sm truncate text-zed-text dark:text-zed-dark-text group-hover:text-zed-accent transition-colors">
                 {commit.shortMessage}
               </div>
-              <div className="text-xs text-zed-muted dark:text-zed-dark-muted truncate opacity-70">
-                {commit.author.name} - {new Date(commit.timestamp * 1000).toLocaleDateString()}
+              <div className="text-[10px] text-zed-muted dark:text-zed-dark-muted truncate opacity-70">
+                {commit.author.name} • {moment.unix(commit.timestamp).fromNow()}
               </div>
             </div>
           </div>

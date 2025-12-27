@@ -1,4 +1,4 @@
-import { Commit, Branch, VisualizationData, GraphNode, GraphEdge } from "@shared/types";
+import { Commit, Branch, VisualizationData, GraphNode, GraphEdge, LaneSegment } from "@shared/types";
 
 export const calculateLayout = (
   commits: Commit[],
@@ -9,6 +9,7 @@ export const calculateLayout = (
     return {
       nodes: [],
       edges: [],
+      laneSegments: [],
       width: 0,
       height: 0,
       bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 },
@@ -21,32 +22,15 @@ export const calculateLayout = (
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
   const commitMap = new Map<string, GraphNode>();
+  const laneSegments: LaneSegment[] = [];
+  
   const laneMap = new Map<string, number>(); // branchName -> lane
-  const activeLanes: (string | null)[] = []; // index is lane, value is branchName
+  let nextLane = 1;
 
   const laneWidth = 80;
   const commitHeight = 60;
 
-  // Helper to get or assign a lane for a branch
-  const getLane = (branchName: string): number => {
-    if (laneMap.has(branchName)) {
-      return laneMap.get(branchName)!;
-    }
-
-    // Find first empty lane or push new
-    let lane = activeLanes.indexOf(null);
-    if (lane === -1) {
-      lane = activeLanes.length;
-      activeLanes.push(branchName);
-    } else {
-      activeLanes[lane] = branchName;
-    }
-
-    laneMap.set(branchName, lane);
-    return lane;
-  };
-
-  // Find branch info
+  // Find branch info helper
   const getBranchInfo = (branchName?: string) => {
     if (!branchName) return { color: "#7c3aed", type: "custom" as const };
     const branch = branches.find((b) => b.name === branchName);
@@ -56,16 +40,33 @@ export const calculateLayout = (
     };
   };
 
+  // Helper to get or assign a lane (Wide visualization - one lane per branch)
+  const getLane = (branchName: string): number => {
+    if (laneMap.has(branchName)) {
+      return laneMap.get(branchName)!;
+    }
+
+    let assignedLane: number;
+    if (branchName === "main" || branchName === "master") {
+        assignedLane = 0;
+    } else {
+        assignedLane = nextLane++;
+    }
+
+    laneMap.set(branchName, assignedLane);
+    return assignedLane;
+  };
+
   // Step 2: Create Nodes
   sortedCommits.forEach((commit, index) => {
     const branchName = commit.branchName || "main";
     const lane = getLane(branchName);
-    const { color, type: branchType } = getBranchInfo(branchName);
+    const { color } = getBranchInfo(branchName);
     const isHead = commit.hash === headCommitHash;
 
     const node: GraphNode = {
       id: commit.hash,
-      commit: { ...commit, branchName }, // Ensure branchName is present
+      commit: { ...commit, branchName },
       x: (lane + 1) * laneWidth,
       y: (index + 1) * commitHeight,
       lane,
@@ -80,17 +81,31 @@ export const calculateLayout = (
     commitMap.set(commit.hash, node);
   });
 
+  // Create full-height lane segments for the wide visualization
+  laneMap.forEach((lane, branchName) => {
+      const { color } = getBranchInfo(branchName);
+      const laneNodes = nodes.filter(n => n.lane === lane);
+      if (laneNodes.length > 0) {
+          const startY = Math.min(...laneNodes.map(n => n.y));
+          const endY = Math.max(...laneNodes.map(n => n.y));
+          
+          laneSegments.push({
+              lane,
+              x: (lane + 1) * laneWidth,
+              startY: startY,
+              endY: endY,
+              color,
+              branchName
+          });
+      }
+  });
+
   // Step 3: Create Edges
   nodes.forEach((node) => {
     node.parents.forEach((parentHash) => {
       const parentNode = commitMap.get(parentHash);
       if (parentNode) {
-        // Child -> Parent edge (drawing backwards in time from child to parent)
-        // Since we want history flowing DOWN, oldest is at TOP.
-        // So edges go from parent (top) to child (bottom).
-        
-        const edgeColor = node.color; // Edge usually takes color of the child branch
-        
+        const edgeColor = node.color; 
         const edge: GraphEdge = {
           id: `${parentHash}-${node.id}`,
           source: parentHash,
@@ -115,6 +130,7 @@ export const calculateLayout = (
   return {
     nodes,
     edges,
+    laneSegments,
     width: maxX,
     height: maxY,
     bounds: {

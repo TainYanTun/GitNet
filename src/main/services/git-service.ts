@@ -44,7 +44,7 @@ export class GitService {
     limit = 100,
     offset = 0,
   ): Promise<Commit[]> {
-    const command = `git log --all --pretty=format:'%H|%P|%an|%ae|%ct|%s' --skip=${offset} -n ${limit}`;
+    const command = `git log --all --pretty=format:'%H|%P|%an|%ae|%ct|%s|%D' --skip=${offset} -n ${limit}`;
 
     try {
       const branches = await this.getBranches(repoPath);
@@ -53,10 +53,35 @@ export class GitService {
         branchMap.set(branch.objectName, branch.name);
       });
 
+      const tagMap = await this.getTags(repoPath);
+
       const output = execSync(command, { cwd: repoPath, encoding: "utf8" });
-      return this.parseCommits(output, branchMap);
+      return this.parseCommits(output, branchMap, tagMap);
     } catch {
       return [];
+    }
+  }
+
+  async getTags(repoPath: string): Promise<Map<string, string[]>> {
+    try {
+      const output = execSync(
+        "git show-ref --tags --dereference",
+        { cwd: repoPath, encoding: "utf8" }
+      );
+      const tagMap = new Map<string, string[]>();
+      output.split('\n').forEach(line => {
+        if (!line) return;
+        const [hash, ref] = line.split(' ');
+        const tagName = ref.replace('refs/tags/', '').replace('^{}', '');
+        const list = tagMap.get(hash) || [];
+        if (!list.includes(tagName)) {
+            list.push(tagName);
+            tagMap.set(hash, list);
+        }
+      });
+      return tagMap;
+    } catch {
+      return new Map();
     }
   }
 
@@ -222,40 +247,75 @@ export class GitService {
   private parseCommits(
     output: string,
     branchMap: Map<string, string>,
+    tagMap: Map<string, string[]>,
   ): Commit[] {
     if (!output.trim()) return [];
 
-    return output
-      .trim()
-      .split("\n")
-      .map((line) => {
-        const [hash, parents, author, email, timestamp, ...messageParts] =
-          line.split("|");
-        const message = messageParts.join("|");
+    const commits: Commit[] = [];
+    const lines = output.trim().split("\n");
+    
+    // We'll process from newest to oldest, but we need to track active branches
+    // for commits that don't have explicit decorations.
+    const activeBranchMap = new Map<string, string>();
 
-        return {
-          hash,
-          shortHash: hash.substring(0, 7),
-          parents: parents ? parents.split(" ") : [],
-          message,
-          shortMessage: message.split("\n")[0],
-          type: this.getCommitType(message),
-          author: {
-            name: author,
-            email,
-            avatarUrl: this.getAvatarUrl(email),
-          },
-          committer: {
-            name: author,
-            email,
-            avatarUrl: this.getAvatarUrl(email),
-          },
-          timestamp: parseInt(timestamp),
-          isMerge: parents ? parents.split(" ").length > 1 : false,
-          isSquash: false,
-          branchName: branchMap.get(hash),
-        };
-      });
+    return lines.map((line) => {
+      const parts = line.split("|");
+      const [hash, parents, author, email, timestamp, subject, decoration] = parts;
+
+      let branchName = branchMap.get(hash);
+
+      if (!branchName && decoration) {
+        const refs = decoration.split(", ").map(r => r.trim());
+        for (const ref of refs) {
+          const match = ref.match(/^(?:HEAD -> )?(.+)$/);
+          if (match) {
+            let name = match[1].replace(/^origin\//, "").replace(/^remotes\/origin\//, "");
+            if (!name.includes("tag: ") && !name.includes("HEAD")) {
+              branchName = name;
+              break;
+            }
+          }
+        }
+      }
+
+      // If we found a branch tip, all its ancestors (until a merge or another tip)
+      // belong to this branch. In a simple log, the next commit is usually the parent.
+      if (branchName) {
+          const parentHashes = parents ? parents.split(" ") : [];
+          parentHashes.forEach(p => activeBranchMap.set(p, branchName!));
+      } else {
+          // Inherit branch from child
+          branchName = activeBranchMap.get(hash);
+          const parentHashes = parents ? parents.split(" ") : [];
+          if (branchName) {
+              parentHashes.forEach(p => activeBranchMap.set(p, branchName!));
+          }
+      }
+
+      return {
+        hash,
+        shortHash: hash.substring(0, 7),
+        parents: parents ? parents.split(" ") : [],
+        message: subject,
+        shortMessage: subject.split("\n")[0],
+        type: this.getCommitType(subject),
+        author: {
+          name: author,
+          email,
+          avatarUrl: this.getAvatarUrl(email),
+        },
+        committer: {
+          name: author,
+          email,
+          avatarUrl: this.getAvatarUrl(email),
+        },
+        timestamp: parseInt(timestamp),
+        isMerge: parents ? parents.split(" ").length > 1 : false,
+        isSquash: false,
+        branchName,
+        tags: tagMap.get(hash) || [],
+      };
+    });
   }
 
   private parseBranches(output: string): Branch[] {

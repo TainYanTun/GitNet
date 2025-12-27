@@ -176,26 +176,52 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       svg.call(zoom.transform, d3.zoomIdentity.translate(40, 60).scale(0.8));
     }
 
-    // Draw Lane Tracks (Background lines)
-    const lanes = Array.from(new Set(data.nodes.map((n) => n.lane))).sort(
-      (a, b) => a - b,
-    );
-    lanes.forEach((lane) => {
-      const laneNodes = data.nodes.filter((n) => n.lane === lane);
-      const firstNode = laneNodes[0];
-      if (firstNode) {
-        g.append("line")
-          .attr("x1", firstNode.x)
-          .attr("y1", -50)
-          .attr("x2", firstNode.x)
-          .attr("y2", data.height + 50)
-          .attr("stroke", firstNode.color)
-          .attr("stroke-width", 2)
-          .attr("stroke-dasharray", "4,4")
-          .attr("opacity", highlightedInfo ? 0.05 : 0.25) // Dim tracks if highlighting
-          .lower();
-      }
-    });
+    // Draw Lane Tracks (Background segments)
+    g.selectAll(".lane-track")
+      .data(data.laneSegments)
+      .enter()
+      .append("line")
+      .attr("class", "lane-track")
+      .attr("x1", (d) => d.x)
+      .attr("y1", (d) => d.startY - 20)
+      .attr("x2", (d) => d.x)
+      .attr("y2", (d) => d.endY + 20)
+      .attr("stroke", (d) => d.color)
+      .attr("stroke-width", 1)
+      .attr("opacity", highlightedInfo ? 0.04 : 0.08)
+      .lower();
+
+    // Draw Horizontal Row Guides (Full width)
+    g.selectAll(".row-guide")
+      .data(data.nodes)
+      .enter()
+      .append("line")
+      .attr("class", "row-guide")
+      .attr("x1", 0)
+      .attr("y1", d => d.y)
+      .attr("x2", data.width + 100)
+      .attr("y2", d => d.y)
+      .attr("stroke", d => d.color)
+      .attr("stroke-width", 0.5)
+      .attr("opacity", 0.03)
+      .lower();
+
+    // Interaction Overlays (Hidden by default)
+    const hoverGuideX = g.append("line")
+        .attr("class", "hover-guide")
+        .attr("stroke", "#3b82f6")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4,4")
+        .attr("opacity", 0)
+        .lower();
+
+    const hoverGuideY = g.append("line")
+        .attr("class", "hover-guide")
+        .attr("stroke", "#3b82f6")
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4,4")
+        .attr("opacity", 0)
+        .lower();
 
     // Draw Edges (Lines) with Arrowheads
     const lineGenerator = d3
@@ -214,21 +240,20 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         const targetNode = data.nodes.find((n) => n.id === d.target);
         if (!sourceNode || !targetNode) return null;
 
-        const points = [
-          { x: sourceNode.x, y: sourceNode.y },
-          { x: targetNode.x, y: targetNode.y },
-        ];
+        // Draw from PARENT (source) to CHILD (target)
+        if (sourceNode.x === targetNode.x) {
+          return `M${sourceNode.x},${sourceNode.y} L${targetNode.x},${targetNode.y}`;
+        } else {
+          // 'Railway Switch' style: mostly straight with a short diagonal transition
+          const laneOffset = (sourceNode.lane % 5) * 4 - 8;
+          const midY = (sourceNode.y + targetNode.y) / 2 + laneOffset;
+          const transitionHeight = 12; // Vertical space used for the diagonal
 
-        if (sourceNode.x !== targetNode.x) {
-          const midY = (sourceNode.y + targetNode.y) / 2;
-          return lineGenerator([
-            { x: sourceNode.x, y: sourceNode.y },
-            { x: sourceNode.x, y: midY },
-            { x: targetNode.x, y: midY },
-            { x: targetNode.x, y: targetNode.y },
-          ]);
+          return `M${sourceNode.x},${sourceNode.y}
+                  L${sourceNode.x},${midY - transitionHeight}
+                  L${targetNode.x},${midY + transitionHeight}
+                  L${targetNode.x},${targetNode.y}`;
         }
-        return lineGenerator(points);
       })
       .attr("fill", "none")
       .attr("stroke", (d) => d.color)
@@ -246,8 +271,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         return highlightedInfo.edges.has(d.id) ? 1.0 : 0.15;
       });
 
-    // Draw Branch Labels (Pills next to branch tips)
-    const branchLabelsGroup = g.append("g").attr("class", "branch-labels");
+    // Draw Branch & Tag Labels (Pills next to branch tips or tags)
+    const labelsGroup = g.append("g").attr("class", "labels");
     const commitToBranches = new Map<string, Branch[]>();
     branches.forEach((b) => {
       const list = commitToBranches.get(b.objectName) || [];
@@ -257,13 +282,60 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
     data.nodes.forEach((node) => {
       const nodeBranches = commitToBranches.get(node.id);
-      if (nodeBranches && nodeBranches.length > 0) {
+      const nodeTags = node.commit.tags || [];
+
+      if ((nodeBranches && nodeBranches.length > 0) || nodeTags.length > 0) {
         let offset = 20;
-        nodeBranches.forEach((branch) => {
-          const labelText = branch.name;
+
+        // Draw Branch Pills
+        if (nodeBranches) {
+          nodeBranches.forEach((branch) => {
+            const labelText = branch.name;
+            const labelWidth = labelText.length * 6 + 12;
+
+            const labelG = labelsGroup
+              .append("g")
+              .attr("transform", `translate(${node.x + offset}, ${node.y - 9})`)
+              .attr(
+                "opacity",
+                highlightedInfo && !highlightedInfo.nodes.has(node.id)
+                  ? 0.3
+                  : 1.0,
+              );
+
+            labelG
+              .append("rect")
+              .attr("width", labelWidth)
+              .attr("height", 18)
+              .attr("rx", 4)
+              .attr("fill", branch.color)
+              .attr("stroke", "white")
+              .attr("stroke-width", 0.5)
+              .attr("opacity", 0.9);
+
+            labelG
+              .append("text")
+              .attr("x", labelWidth / 2)
+              .attr("y", 9)
+              .attr("dy", "0.35em")
+              .attr("text-anchor", "middle")
+              .attr("fill", "white")
+              .style("font-size", "9px")
+              .style("font-weight", "bold")
+              .style("font-family", "monospace")
+              .style("pointer-events", "none")
+              .text(labelText);
+
+            offset += labelWidth + 5;
+          });
+        }
+
+        // Draw Tag Pills (Yellow)
+        nodeTags.forEach((tag) => {
+          const labelText = tag;
           const labelWidth = labelText.length * 6 + 12;
 
-          const labelG = branchLabelsGroup
+          const labelG = labelsGroup
             .append("g")
             .attr("transform", `translate(${node.x + offset}, ${node.y - 9})`)
             .attr(
@@ -278,7 +350,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             .attr("width", labelWidth)
             .attr("height", 18)
             .attr("rx", 4)
-            .attr("fill", branch.color)
+            .attr("fill", "#eab308") // Yellow for tags
             .attr("stroke", "white")
             .attr("stroke-width", 0.5)
             .attr("opacity", 0.9);
@@ -289,7 +361,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             .attr("y", 9)
             .attr("dy", "0.35em")
             .attr("text-anchor", "middle")
-            .attr("fill", "white")
+            .attr("fill", "#1f2937") // Dark text for yellow background
             .style("font-size", "9px")
             .style("font-weight", "bold")
             .style("font-family", "monospace")
@@ -316,6 +388,29 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       })
       .on("click", (event, d) => {
         onCommitSelect?.(d.commit);
+      })
+      .on("mouseenter", (event, d) => {
+          hoverGuideX
+            .attr("x1", d.x)
+            .attr("y1", -50)
+            .attr("x2", d.x)
+            .attr("y2", data.height + 50)
+            .attr("stroke", d.color)
+            .transition().duration(100)
+            .attr("opacity", 0.4);
+          
+          hoverGuideY
+            .attr("x1", 0)
+            .attr("y1", d.y)
+            .attr("x2", data.width + 100)
+            .attr("y2", d.y)
+            .attr("stroke", d.color)
+            .transition().duration(100)
+            .attr("opacity", 0.4);
+      })
+      .on("mouseleave", () => {
+          hoverGuideX.transition().duration(100).attr("opacity", 0);
+          hoverGuideY.transition().duration(100).attr("opacity", 0);
       });
 
     // Node shape
@@ -329,11 +424,20 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         .append("line")
         .attr("x1", 0)
         .attr("y1", 0)
-        .attr("x2", -15)
+        .attr("x2", -20)
         .attr("y2", 0)
         .attr("stroke", d.color)
-        .attr("stroke-width", 1)
-        .attr("opacity", isSelected ? 0.8 : 0.3);
+        .attr("stroke-width", isSelected ? 2 : 1)
+        .attr("opacity", isSelected ? 0.8 : 0.2);
+
+      // Glow effect for selection
+      if (isSelected) {
+        group.append("circle")
+          .attr("r", d.size + 6)
+          .attr("fill", d.color)
+          .attr("opacity", 0.2)
+          .style("filter", "blur(4px)");
+      }
 
       if (d.shape === "diamond") {
         group
@@ -346,39 +450,41 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .attr("fill", d.color)
           .attr("stroke", isSelected ? "#fff" : "none")
           .attr("stroke-width", 2);
-        
+
         // Avatar for merges
         if (d.commit.author.avatarUrl) {
-            const clipId = `clip-${d.id}`;
-            const defs = d3.select(svgRef.current).select("defs");
-            
-            defs.append("clipPath")
-                .attr("id", clipId)
-                .append("rect")
-                .attr("width", d.size * 1.2)
-                .attr("height", d.size * 1.2)
-                .attr("x", -d.size * 0.6)
-                .attr("y", -d.size * 0.6)
-                .attr("transform", "rotate(45)");
+          const clipId = `clip-${d.id}`;
+          const defs = d3.select(svgRef.current).select("defs");
 
-            group.append("image")
-                .attr("xlink:href", d.commit.author.avatarUrl)
-                .attr("width", d.size * 1.8)
-                .attr("height", d.size * 1.8)
-                .attr("x", -d.size * 0.9)
-                .attr("y", -d.size * 0.9)
-                .attr("clip-path", `url(#${clipId})`);
+          defs
+            .append("clipPath")
+            .attr("id", clipId)
+            .append("rect")
+            .attr("width", d.size * 1.2)
+            .attr("height", d.size * 1.2)
+            .attr("x", -d.size * 0.6)
+            .attr("y", -d.size * 0.6)
+            .attr("transform", "rotate(45)");
+
+          group
+            .append("image")
+            .attr("xlink:href", d.commit.author.avatarUrl)
+            .attr("width", d.size * 1.8)
+            .attr("height", d.size * 1.8)
+            .attr("x", -d.size * 0.9)
+            .attr("y", -d.size * 0.9)
+            .attr("clip-path", `url(#${clipId})`);
         } else {
-            const initial = d.commit.author.name.charAt(0).toUpperCase();
-            group
-              .append("text")
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .attr("fill", "white")
-              .style("font-size", "10px")
-              .style("font-weight", "bold")
-              .style("pointer-events", "none")
-              .text(initial);
+          const initial = d.commit.author.name.charAt(0).toUpperCase();
+          group
+            .append("text")
+            .attr("dy", "0.35em")
+            .attr("text-anchor", "middle")
+            .attr("fill", "white")
+            .style("font-size", "10px")
+            .style("font-weight", "bold")
+            .style("pointer-events", "none")
+            .text(initial);
         }
       } else {
         group
