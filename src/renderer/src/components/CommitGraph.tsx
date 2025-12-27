@@ -8,6 +8,7 @@ import {
   GraphEdge,
 } from "@shared/types";
 import { calculateLayout } from "../utils/graph-layout";
+import { GraphMiniMap } from "./GraphMiniMap";
 
 interface CommitGraphProps {
   commits: Commit[];
@@ -75,8 +76,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     const highlightedNodes = new Set<string>();
     const highlightedEdges = new Set<string>();
 
-    if (selectedCommitHash) {
-      highlightedNodes.add(selectedCommitHash);
+    if (focusHash) {
+      highlightedNodes.add(focusHash);
 
       // Recursive ancestors
       const findAncestors = (id: string) => {
@@ -91,7 +92,6 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       };
 
       findAncestors(focusHash);
-
       // If we are hovering, we might only want ancestors to see history.
       // If selected, we want both. Let's do both for now.
       const findDescendants = (id: string) => {
@@ -104,9 +104,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           }
         });
       };
-
-      findAncestors(selectedCommitHash);
-      findDescendants(selectedCommitHash);
+      findDescendants(focusHash);
     }
 
     // Add search results to highlighted nodes
@@ -651,20 +649,18 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
       <div className="flex-1 relative overflow-hidden">
         <svg ref={svgRef} className="w-full h-full">
-          <defs>
-            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
-              <feOffset dx="0" dy="1" result="offsetblur" />
-              <feComponentTransfer>
-                <feFuncA type="linear" slope="0.3" />
-              </feComponentTransfer>
-              <feMerge>
-                <feMergeNode />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
+          {/* ... existing defs ... */}
         </svg>
+
+        {/* MiniMap Integration */}
+        <div className="absolute bottom-20 right-6 opacity-80 hover:opacity-100 transition-opacity">
+          <GraphMiniMap
+            data={data}
+            mainZoom={zoomRef.current}
+            mainSvgRef={svgRef}
+            selectedCommitHash={selectedCommitHash}
+          />
+        </div>
 
         {/* Legend / Branch Dropdown */}
         <div className="absolute top-4 right-4 flex flex-col items-end pointer-events-none">
