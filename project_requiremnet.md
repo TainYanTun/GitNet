@@ -32,6 +32,7 @@ Electron Main Process
            D3 Graph Renderer
 ```
 
+sidebar text for test
 ---
 
 ## 4. Functional Requirements
