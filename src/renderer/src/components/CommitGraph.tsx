@@ -372,9 +372,9 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       .enter()
       .append("g")
       .attr("class", "node")
-      .attr("transform", (d) => `translate(${d.x}, ${d.y})`)
+      .attr("transform", (d: GraphNode) => `translate(${d.x}, ${d.y})`)
       .style("cursor", "pointer")
-      .attr("opacity", (d) => {
+      .attr("opacity", (d: GraphNode) => {
         if (!highlightedInfo) return 1.0;
         return highlightedInfo.nodes.has(d.id) ? 1.0 : 0.4;
       })
@@ -522,7 +522,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .style("font-size", "10px")
           .style("font-weight", "bold")
           .style("pointer-events", "none")
-          .text((d) => {
+          .text((d: any) => {
             if (d.id.startsWith("stash@{")) return "S";
             return "R";
           });
