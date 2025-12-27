@@ -13,7 +13,7 @@ export const HotFiles: React.FC<HotFilesProps> = ({ repoPath }) => {
     const fetchHotFiles = async () => {
       setLoading(true);
       try {
-        const files = await window.gitnetAPI.getHotFiles(repoPath, 15);
+        const files = await window.gitnetAPI.getHotFiles(repoPath, 24);
         setHotFiles(files);
       } catch (error) {
         console.error("Failed to fetch hot files:", error);
@@ -25,48 +25,50 @@ export const HotFiles: React.FC<HotFilesProps> = ({ repoPath }) => {
   }, [repoPath]);
 
   if (loading) {
-    return <div className="text-[10px] text-zed-muted px-3 py-2 italic animate-pulse">Analyzing hotspots...</div>;
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-24 bg-zed-element/30 dark:bg-zed-dark-element/30 rounded-none border border-zed-border dark:border-zed-dark-border animate-pulse" />
+        ))}
+      </div>
+    );
   }
 
-  if (hotFiles.length === 0) {
-    return <div className="text-[10px] text-zed-muted px-3 py-2 italic">No hotspots detected.</div>;
-  }
+  const maxCount = hotFiles.length > 0 ? hotFiles[0].count : 1;
 
   return (
-    <div className="space-y-1 py-1">
-      {hotFiles.map((file, index) => (
-        <div 
-          key={file.path} 
-          className="flex items-center gap-2 px-2 py-1.5 hover:bg-zed-element dark:hover:bg-zed-dark-element rounded group transition-colors"
-          title={`${file.count} modifications in ${file.path}`}
-        >
-          <div className="relative shrink-0">
-             <svg className="w-3.5 h-3.5 text-zed-muted opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-             </svg>
-             {index < 3 && (
-                <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_4px_#ef4444]" />
-             )}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0.5 bg-zed-border/50 dark:bg-zed-dark-border/50 border border-zed-border dark:border-zed-dark-border overflow-hidden rounded-none shadow-2xl">
+      {hotFiles.map((file, index) => {
+        const filename = file.path.split("/").pop();
+        const dir = file.path.split("/").slice(0, -1).join("/") || "/";
+        const intensity = file.count / maxCount;
+        
+        return (
+          <div 
+            key={file.path} 
+            className="group relative bg-zed-surface dark:bg-zed-dark-surface p-4 flex flex-col justify-between hover:bg-zed-element dark:hover:bg-zed-dark-element transition-all duration-200 cursor-default border-r border-b border-zed-border/30 dark:border-zed-dark-border/30 last:border-r-0"
+          >
+            <div className="space-y-1 relative z-10">
+              <div className="flex items-start justify-between">
+                <span className="text-xs font-semibold tracking-tight text-zed-text dark:text-zed-dark-text truncate pr-4">
+                  {filename}
+                </span>
+                <span className={`text-xs font-mono font-bold ${index < 3 ? 'text-zed-accent' : 'text-zed-muted dark:text-zed-dark-muted'}`}>
+                  {file.count}
+                </span>
+              </div>
+              <div className="text-[10px] text-zed-muted dark:text-zed-dark-muted truncate opacity-60 group-hover:opacity-100 transition-opacity">
+                {dir}
+              </div>
+            </div>
+
+            {/* Subtle number background */}
+            <div className="absolute right-3 bottom-1 text-5xl font-bold text-zed-muted/5 dark:text-zed-dark-muted/5 pointer-events-none select-none leading-none">
+              {index + 1}
+            </div>
           </div>
-          <span className="text-[11px] text-zed-text dark:text-zed-dark-text truncate flex-1 font-mono tracking-tight opacity-80 group-hover:opacity-100">
-            {file.path.split('/').pop()}
-            <span className="text-[9px] text-zed-muted ml-2 font-sans opacity-50 block truncate">
-              {file.path.split('/').slice(0, -1).join('/') || '/'}
-            </span>
-          </span>
-          <div className="shrink-0 flex items-center gap-1">
-             <span className={`text-[10px] font-bold ${index < 3 ? 'text-red-400' : 'text-zed-muted'}`}>
-                {file.count}
-             </span>
-             <div className="w-8 h-1 bg-zed-border dark:bg-zed-dark-border rounded-full overflow-hidden">
-                <div 
-                  className={`h-full ${index < 3 ? 'bg-red-400/60' : 'bg-zed-accent/40'}`} 
-                  style={{ width: `${(file.count / hotFiles[0].count) * 100}%` }} 
-                />
-             </div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

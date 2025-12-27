@@ -269,15 +269,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onCommitSelect={handleCommitSelect}
               />
             ) : (
-              <div className="p-8 max-w-4xl mx-auto w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4">
-                <div className="mb-8 border-b border-zed-border dark:border-zed-dark-border pb-4">
-                  <h1 className="text-2xl font-bold mb-2">Repository Insights</h1>
-                  <p className="text-zed-muted dark:text-zed-dark-muted">Detailed analysis of file modifications and repository hotspots.</p>
-                </div>
-                
-                <div className="bg-zed-surface dark:bg-zed-dark-surface rounded-xl border border-zed-border dark:border-zed-dark-border p-6 shadow-xl">
-                  <h2 className="text-sm font-bold uppercase tracking-widest text-zed-muted mb-6">Hotspots (Most Modified Files)</h2>
-                  <HotFiles repoPath={repository.path} />
+              <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
+                <div className="p-12 max-w-5xl mx-auto">
+                  <div className="mb-10">
+                    <h1 className="text-2xl font-bold text-zed-text dark:text-zed-dark-text tracking-tight">
+                      Repository Insights
+                    </h1>
+                    <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
+                      Analysis of file modification frequency and repository hotspots.
+                    </p>
+                  </div>
+                  
+                  <div className="bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border relative overflow-hidden shadow-sm">
+                    <div className="p-1 border-b border-zed-border dark:border-zed-dark-border bg-zed-element/30 dark:bg-zed-dark-element/30 flex items-center justify-between px-4 py-2">
+                      <h2 className="text-[10px] font-bold uppercase tracking-wider text-zed-muted dark:text-zed-dark-muted">
+                        Hotspots / Top Modified
+                      </h2>
+                    </div>
+                    <HotFiles repoPath={repository.path} />
+                  </div>
                 </div>
               </div>
             )}
