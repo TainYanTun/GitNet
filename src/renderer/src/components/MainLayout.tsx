@@ -22,6 +22,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [commits, setCommits] = useState<Commit[]>([]);
+  const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
 
   useEffect(() => {
@@ -50,8 +51,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       }
     };
 
+    const fetchStashes = async () => {
+      try {
+        const fetchedStashes = await window.gitnetAPI.getStashList(repository.path);
+        setStashes(fetchedStashes);
+      } catch (error) {
+        console.error("Failed to fetch stashes:", error);
+      }
+    };
+
     fetchBranches();
     fetchCommits();
+    fetchStashes();
 
     const handleBranchesUpdated = () => {
       fetchBranches(); // Re-fetch branches when updated
@@ -249,6 +260,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             <CommitGraph
               commits={commits}
               branches={branches}
+              stashes={stashes}
               headCommitHash={repository.headCommit}
               selectedCommitHash={selectedCommit?.hash}
               onCommitSelect={handleCommitSelect}

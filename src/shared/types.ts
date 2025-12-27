@@ -9,6 +9,7 @@ export type CommitType =
   | "perf"
   | "test"
   | "chore"
+  | "revert"
   | "other";
 
 export type BranchType =

@@ -341,6 +341,8 @@ export class GitService {
   }
 
   private getCommitType(message: string): any {
+    if (message.toLowerCase().startsWith("revert")) return "revert";
+
     const match = message.match(/^(\w+)(?:\(.+\))?:/);
     if (!match) return "other";
 
@@ -354,6 +356,7 @@ export class GitService {
       "perf",
       "test",
       "chore",
+      "revert",
     ];
     return validTypes.includes(type) ? type : "other";
   }

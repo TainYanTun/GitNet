@@ -8,6 +8,7 @@ import {
   GraphEdge,
 } from "@shared/types";
 import { calculateLayout } from "../utils/graph-layout";
+import { Legend } from "./Legend";
 
 interface CommitGraphProps {
   commits: Commit[];
@@ -15,6 +16,7 @@ interface CommitGraphProps {
   headCommitHash?: string;
   onCommitSelect?: (commit: Commit) => void;
   selectedCommitHash?: string;
+  stashes?: string[];
 }
 
 export const CommitGraph: React.FC<CommitGraphProps> = ({
@@ -23,6 +25,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
   headCommitHash,
   onCommitSelect,
   selectedCommitHash,
+  stashes = [],
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -36,8 +39,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
   const [commitSearch, setCommitSearch] = React.useState("");
 
   const data: VisualizationData = useMemo(
-    () => calculateLayout(commits, branches, headCommitHash),
-    [commits, branches, headCommitHash],
+    () => calculateLayout(commits, branches, headCommitHash, stashes),
+    [commits, branches, headCommitHash, stashes],
   );
 
   // Filter nodes based on commit search
@@ -166,6 +169,35 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     const defs = svg.append("defs");
     const g = svg.append("g");
 
+    // Add pulsing animation for HEAD
+    const defsAnim = svg.select("defs");
+    const filter = defsAnim.append("filter")
+      .attr("id", "head-glow")
+      .attr("x", "-50%")
+      .attr("y", "-50%")
+      .attr("width", "200%")
+      .attr("height", "200%");
+    
+    filter.append("feGaussianBlur")
+      .attr("stdDeviation", "3")
+      .attr("result", "blur");
+    
+    const feMerge = filter.append("feMerge");
+    feMerge.append("feMergeNode").attr("in", "blur");
+    feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+
+    const style = svg.append("style");
+    style.text(`
+      @keyframes pulse {
+        0% { opacity: 0.4; r: 8px; }
+        50% { opacity: 0.8; r: 14px; }
+        100% { opacity: 0.4; r: 8px; }
+      }
+      .head-aura {
+        animation: pulse 2s infinite ease-in-out;
+      }
+    `);
+
     // Add zoom behavior
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
@@ -274,6 +306,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       })
       .attr("fill", "none")
       .attr("stroke", (d) => d.color)
+      .attr("stroke-dasharray", (d) => d.type === "merge" ? "4,4" : "none")
       .attr("stroke-width", (d) => {
         const isHighlighted = highlightedInfo?.edges.has(d.id);
         const sourceNode = data.nodes.find((n) => n.id === d.source);
@@ -451,6 +484,15 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         .attr("stroke-width", isSelected ? 2 : 1)
         .attr("opacity", isSelected ? 0.8 : 0.2);
 
+      // HEAD Pulse Aura
+      if (isHead) {
+        group.insert("circle", ":first-child")
+          .attr("r", 12)
+          .attr("fill", d.color)
+          .attr("class", "head-aura")
+          .attr("style", "pointer-events: none;");
+      }
+
       // Special highlighting for search matches
       const isDirectMatch = directMatches?.has(d.id);
       if (isDirectMatch) {
@@ -525,6 +567,31 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             .style("pointer-events", "none")
             .text(initial);
         }
+      } else if (d.shape === "square") {
+        const squareSize = d.size * 1.6;
+        group
+          .append("rect")
+          .attr("width", squareSize)
+          .attr("height", squareSize)
+          .attr("x", -squareSize / 2)
+          .attr("y", -squareSize / 2)
+          .attr("rx", 2)
+          .attr("fill", d.color)
+          .attr("stroke", isSelected ? "#fff" : "none")
+          .attr("stroke-width", 2);
+
+        group
+          .append("text")
+          .attr("dy", "0.35em")
+          .attr("text-anchor", "middle")
+          .attr("fill", "white")
+          .style("font-size", "10px")
+          .style("font-weight", "bold")
+          .style("pointer-events", "none")
+          .text((d) => {
+            if (d.id.startsWith("stash@{")) return "S";
+            return "R";
+          });
       } else {
         group
           .append("circle")
@@ -664,6 +731,11 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         <svg ref={svgRef} className="w-full h-full">
           {/* ... existing defs ... */}
         </svg>
+
+        {/* Legend Panel */}
+        <div className="absolute top-4 left-4 z-10">
+          <Legend />
+        </div>
 
         {/* Legend / Branch Dropdown */}
         <div className="absolute top-4 right-4 flex flex-col items-end pointer-events-none">

@@ -7,7 +7,8 @@ import { Commit, Branch, VisualizationData, GraphNode, GraphEdge, LaneSegment } 
 export const calculateLayout = (
   commits: Commit[],
   branches: Branch[],
-  headCommitHash?: string
+  headCommitHash?: string,
+  stashes: string[] = []
 ): VisualizationData => {
   if (commits.length === 0) {
     return {
@@ -124,14 +125,62 @@ export const calculateLayout = (
       y: (yIndex + 1) * commitHeight,
       lane,
       color,
-      shape: commit.isMerge ? "diamond" : "circle",
+      shape: commit.isMerge ? "diamond" : (commit.type === "revert" ? "square" : "circle"),
       size: isHead ? 10 : 7,
       children: [],
       parents: commit.parents || [],
     });
   });
 
-  // 3. Create Edges
+  // 3. Process Stashes
+  stashes.forEach((stash, index) => {
+    // stash format is usually "stash@{0}: On master: some message"
+    const parts = stash.split(':');
+    const id = parts[0].trim(); // "stash@{0}"
+    
+    // Find where this stash belongs (usually relative to current branch or a commit)
+    // For simplicity in visualization, we'll place them in a special lane or near HEAD
+    const stashLane = Math.max(...Array.from(commitToLane.values()), 0) + 1;
+    
+    nodes.push({
+      id,
+      commit: {
+        hash: id,
+        shortHash: id,
+        message: stash,
+        shortMessage: parts.slice(2).join(':').trim() || parts[1]?.trim() || stash,
+        author: { name: 'Stash', email: '' },
+        timestamp: Date.now(),
+        parents: headCommitHash ? [headCommitHash] : [],
+        type: 'other',
+        isMerge: false,
+        isSquash: false,
+        parentsDetails: [],
+        shortMessageEmoji: '📦'
+      } as any,
+      x: (stashLane + 1) * laneWidth,
+      y: commitHeight * (index + 1), // At the top
+      lane: stashLane,
+      color: '#cbd5e1', // Slate color for stashes
+      shape: 'square' as any,
+      size: 6,
+      children: [],
+      parents: headCommitHash ? [headCommitHash] : [],
+    });
+
+    if (headCommitHash) {
+        edges.push({
+            id: `stash-${id}`,
+            source: headCommitHash,
+            target: id,
+            color: '#cbd5e1',
+            type: 'normal',
+            points: []
+        });
+    }
+  });
+
+  // 4. Create Edges
   const nodeMap = new Map<string, GraphNode>();
   nodes.forEach(n => nodeMap.set(n.id, n));
 

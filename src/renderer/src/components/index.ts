@@ -4,3 +4,4 @@ export { WelcomeScreen } from "./WelcomeScreen";
 export { MainLayout } from "./MainLayout";
 export { LoadingScreen } from "./LoadingScreen";
 export { ErrorBoundary } from "./ErrorBoundary";
+export { Legend } from "./Legend";
