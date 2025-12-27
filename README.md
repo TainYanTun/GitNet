@@ -4,6 +4,8 @@ A Railway-style desktop Git visualizer that displays commit history as an intera
 
 ![GitNet Screenshot](assets/screenshot.png)
 
+This is a test again
+
 ## 🌟 Features
 
 - **Interactive Commit Graph**: Railway-style visualization with semantic coloring
