@@ -1,12 +1,6 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import * as d3 from "d3";
-import {
-  Commit,
-  Branch,
-  VisualizationData,
-  GraphNode,
-  GraphEdge,
-} from "@shared/types";
+import { Commit, Branch, VisualizationData, GraphNode } from "@shared/types";
 import { calculateLayout } from "../utils/graph-layout";
 import { Legend } from "./Legend";
 
@@ -127,21 +121,24 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     return { nodes: highlightedNodes, edges: highlightedEdges };
   }, [selectedCommitHash, directMatches, data, hoveredCommitHash]);
 
-  const centerOnCommit = (hash: string) => {
-    if (!svgRef.current || !zoomRef.current) return;
-    const targetNode = data.nodes.find((n) => n.id === hash);
-    if (!targetNode) return;
+  const centerOnCommit = React.useCallback(
+    (hash: string) => {
+      if (!svgRef.current || !zoomRef.current) return;
+      const targetNode = data.nodes.find((n) => n.id === hash);
+      if (!targetNode) return;
 
-    const svg = d3.select(svgRef.current);
-    const width = containerRef.current?.clientWidth || 800;
-    const height = containerRef.current?.clientHeight || 600;
+      const svg = d3.select(svgRef.current);
+      const width = containerRef.current?.clientWidth || 800;
+      const height = containerRef.current?.clientHeight || 600;
 
-    const transform = d3.zoomIdentity
-      .translate(width / 2 - targetNode.x, height / 2 - targetNode.y)
-      .scale(1);
+      const transform = d3.zoomIdentity
+        .translate(width / 2 - targetNode.x, height / 2 - targetNode.y)
+        .scale(1);
 
-    svg.transition().duration(750).call(zoomRef.current.transform, transform);
-  };
+      svg.transition().duration(750).call(zoomRef.current.transform, transform);
+    },
+    [data.nodes],
+  );
 
   const goToHead = () => {
     if (headCommitHash) centerOnCommit(headCommitHash);
@@ -170,7 +167,6 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     const g = svg.append("g");
 
     // Add pulsing animation for HEAD
-    const defsAnim = svg.select("defs");
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 2])
@@ -223,13 +219,6 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       .attr("stroke-width", 0.5)
       .attr("opacity", 0.08)
       .lower();
-
-    // Draw Edges (Lines) with Arrowheads
-    const lineGenerator = d3
-      .line<{ x: number; y: number }>()
-      .x((d) => d.x)
-      .y((d) => d.y)
-      .curve(d3.curveMonotoneY);
 
     g.selectAll(".edge")
       .data(data.edges)
@@ -389,20 +378,30 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         if (!highlightedInfo) return 1.0;
         return highlightedInfo.nodes.has(d.id) ? 1.0 : 0.4;
       })
-      .on("click", (event, d) => {
+      .on("click", (event, data) => {
+        const d = data as GraphNode;
         onCommitSelect?.(d.commit);
       })
-      .on("mouseenter", function(event, d) {
+      .on("mouseenter", function (event, data) {
+        const d = data as GraphNode;
         setHoveredCommitHash(d.id);
-        d3.select(this).transition().duration(200).attr("transform", `translate(${d.x}, ${d.y}) scale(1.2)`);
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr("transform", `translate(${d.x}, ${d.y}) scale(1.2)`);
       })
-      .on("mouseleave", function(event, d) {
+      .on("mouseleave", function (event, data) {
+        const d = data as GraphNode;
         setHoveredCommitHash(null);
-        d3.select(this).transition().duration(200).attr("transform", `translate(${d.x}, ${d.y}) scale(1)`);
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr("transform", `translate(${d.x}, ${d.y}) scale(1)`);
       });
 
     // Node shape
-    nodeGroups.each(function (d) {
+    nodeGroups.each(function (data) {
+      const d = data as GraphNode;
       const group = d3.select(this);
       const isSelected = d.id === selectedCommitHash;
       const isHead = d.id === headCommitHash;
@@ -502,8 +501,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             .style("pointer-events", "none")
             .text(initial);
         }
-      }
-      else if (d.shape === "square") {
+      } else if (d.shape === "square") {
         const squareSize = d.size * 1.6;
         group
           .append("rect")
@@ -568,6 +566,9 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     headCommitHash,
     highlightedInfo,
     directMatches,
+    branches,
+    centerOnCommit,
+    commits,
   ]);
 
   return (

@@ -28,24 +28,24 @@ export const HotFiles: React.FC<HotFilesProps> = ({ repoPath }) => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-24 bg-zed-element/30 dark:bg-zed-dark-element/30 rounded-none border border-zed-border dark:border-zed-dark-border animate-pulse" />
+          <div
+            key={i}
+            className="h-24 bg-zed-element/30 dark:bg-zed-dark-element/30 rounded-none border border-zed-border dark:border-zed-dark-border animate-pulse"
+          />
         ))}
       </div>
     );
   }
-
-  const maxCount = hotFiles.length > 0 ? hotFiles[0].count : 1;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0.5 bg-zed-border/50 dark:bg-zed-dark-border/50 border border-zed-border dark:border-zed-dark-border overflow-hidden rounded-none shadow-2xl">
       {hotFiles.map((file, index) => {
         const filename = file.path.split("/").pop();
         const dir = file.path.split("/").slice(0, -1).join("/") || "/";
-        const intensity = file.count / maxCount;
-        
+
         return (
-          <div 
-            key={file.path} 
+          <div
+            key={file.path}
             className="group relative bg-zed-surface dark:bg-zed-dark-surface p-4 flex flex-col justify-between hover:bg-zed-element dark:hover:bg-zed-dark-element transition-all duration-200 cursor-default border-r border-b border-zed-border/30 dark:border-zed-dark-border/30 last:border-r-0"
           >
             <div className="space-y-1 relative z-10">
@@ -53,7 +53,9 @@ export const HotFiles: React.FC<HotFilesProps> = ({ repoPath }) => {
                 <span className="text-xs font-semibold tracking-tight text-zed-text dark:text-zed-dark-text truncate pr-4">
                   {filename}
                 </span>
-                <span className={`text-xs font-mono font-bold ${index < 3 ? 'text-zed-accent' : 'text-zed-muted dark:text-zed-dark-muted'}`}>
+                <span
+                  className={`text-xs font-mono font-bold ${index < 3 ? "text-zed-accent" : "text-zed-muted dark:text-zed-dark-muted"}`}
+                >
                   {file.count}
                 </span>
               </div>

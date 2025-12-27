@@ -101,23 +101,6 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
     .unix(displayCommit.timestamp)
     .format("MMM D, YYYY h:mm A");
 
-  const getFileStatusColor = (status: FileChange["status"]) => {
-    switch (status) {
-      case "A":
-        return "text-green-500";
-      case "M":
-        return "text-yellow-500";
-      case "D":
-        return "text-red-500";
-      case "R":
-        return "text-blue-500";
-      case "C":
-        return "text-purple-500";
-      default:
-        return "text-gray-500";
-    }
-  };
-
   return (
     <div className="p-4 space-y-4 text-zed-text dark:text-zed-dark-text text-sm">
       <div className="flex items-center gap-3">

@@ -1,4 +1,4 @@
-import { Commit, Branch, VisualizationData, GraphNode, GraphEdge, LaneSegment } from "@shared/types";
+import { Commit, Branch, VisualizationData, GraphNode, GraphEdge } from "@shared/types";
 
 /**
  * Enhanced Git graph layout engine with a "Main Spine".

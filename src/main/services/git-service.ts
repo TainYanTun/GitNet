@@ -357,7 +357,6 @@ export class GitService {
   ): Commit[] {
     if (!output.trim()) return [];
 
-    const commits: Commit[] = [];
     const lines = output.trim().split("\n");
     
     // We'll process from newest to oldest, but we need to track active branches
@@ -375,7 +374,7 @@ export class GitService {
         for (const ref of refs) {
           const match = ref.match(/^(?:HEAD -> )?(.+)$/);
           if (match) {
-            let name = match[1].replace(/^origin\//, "").replace(/^remotes\/origin\//, "");
+            const name = match[1].replace(/^origin\//, "").replace(/^remotes\/origin\//, "");
             if (!name.includes("tag: ") && !name.includes("HEAD")) {
               branchName = name;
               break;
