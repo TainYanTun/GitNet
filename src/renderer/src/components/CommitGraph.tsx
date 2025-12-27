@@ -8,7 +8,6 @@ import {
   GraphEdge,
 } from "@shared/types";
 import { calculateLayout } from "../utils/graph-layout";
-import { GraphMiniMap } from "./GraphMiniMap";
 
 interface CommitGraphProps {
   commits: Commit[];
@@ -42,17 +41,27 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
   );
 
   // Filter nodes based on commit search
-  const searchedCommitHashes = useMemo(() => {
+  const directMatches = useMemo(() => {
     if (!commitSearch.trim()) return null;
     const search = commitSearch.toLowerCase();
+    const isTagSearch = search.startsWith("tag:");
+    const query = isTagSearch ? search.substring(4) : search;
+
+    if (!query) return null;
+
     return new Set(
       commits
-        .filter(
-          (c) =>
-            c.message.toLowerCase().includes(search) ||
-            c.author.name.toLowerCase().includes(search) ||
-            c.hash.toLowerCase().includes(search),
-        )
+        .filter((c) => {
+          if (isTagSearch) {
+            return c.tags?.some((t) => t.toLowerCase().includes(query));
+          }
+          return (
+            c.message.toLowerCase().includes(query) ||
+            c.author.name.toLowerCase().includes(query) ||
+            c.hash.toLowerCase().includes(query) ||
+            c.tags?.some((t) => t.toLowerCase().includes(query))
+          );
+        })
         .map((c) => c.hash),
     );
   }, [commits, commitSearch]);
@@ -60,7 +69,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
   // Calculate lineage (ancestors and descendants) for highlighting
   const highlightedInfo = useMemo(() => {
     const focusHash = hoveredCommitHash || selectedCommitHash;
-    if (!focusHash && !searchedCommitHashes) return null;
+    if (!focusHash && !directMatches) return null;
 
     const nodesMap = new Map(data.nodes.map((n) => [n.id, n]));
     const highlightedNodes = new Set<string>();
@@ -99,8 +108,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     }
 
     // Add search results to highlighted nodes
-    if (searchedCommitHashes) {
-      searchedCommitHashes.forEach((h) => highlightedNodes.add(h));
+    if (directMatches) {
+      directMatches.forEach((h) => highlightedNodes.add(h));
     }
 
     // Identify edges that connect two highlighted nodes
@@ -114,7 +123,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     });
 
     return { nodes: highlightedNodes, edges: highlightedEdges };
-  }, [selectedCommitHash, searchedCommitHashes, data]);
+  }, [selectedCommitHash, directMatches, data, hoveredCommitHash]);
 
   const centerOnCommit = (hash: string) => {
     if (!svgRef.current || !zoomRef.current) return;
@@ -443,14 +452,17 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         .attr("stroke-width", isSelected ? 2 : 1)
         .attr("opacity", isSelected ? 0.8 : 0.2);
 
-      // Glow effect for selection
-      if (isSelected) {
+      // Special highlighting for search matches
+      const isDirectMatch = directMatches?.has(d.id);
+      if (isDirectMatch) {
         group
           .append("circle")
-          .attr("r", d.size + 6)
-          .attr("fill", d.color)
-          .attr("opacity", 0.2)
-          .style("filter", "blur(4px)");
+          .attr("r", d.size + 4)
+          .attr("fill", "none")
+          .attr("stroke", "#3b82f6")
+          .attr("stroke-width", 2)
+          .attr("class", "search-highlight-ring")
+          .style("filter", "drop-shadow(0 0 4px #3b82f6)");
       }
 
       if (d.shape === "diamond") {
@@ -534,6 +546,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
     selectedCommitHash,
     headCommitHash,
     highlightedInfo,
+    directMatches,
   ]);
 
   return (
@@ -563,7 +576,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             </div>
             <input
               type="text"
-              placeholder="Search messages, authors, hashes..."
+              placeholder="Search (use 'tag:' for tags)..."
               value={commitSearch}
               onChange={(e) => setCommitSearch(e.target.value)}
               className="w-full bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border rounded-md pl-8 pr-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-zed-accent focus:border-zed-accent text-zed-text dark:text-zed-dark-text placeholder-zed-muted/60 dark:placeholder-zed-dark-muted/60 transition-all"
@@ -638,16 +651,6 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         <svg ref={svgRef} className="w-full h-full">
           {/* ... existing defs ... */}
         </svg>
-
-        {/* MiniMap Integration */}
-        <div className="absolute bottom-20 right-6 opacity-80 hover:opacity-100 transition-opacity">
-          <GraphMiniMap
-            data={data}
-            mainZoom={zoomRef.current}
-            mainSvgRef={svgRef}
-            selectedCommitHash={selectedCommitHash}
-          />
-        </div>
 
         {/* Legend / Branch Dropdown */}
         <div className="absolute top-4 right-4 flex flex-col items-end pointer-events-none">
