@@ -225,26 +225,42 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       .enter()
       .append("path")
       .attr("class", "edge")
-      .attr("d", (d) => {
+      .attr("d", (d: any) => {
         const sourceNode = data.nodes.find((n) => n.id === d.source);
         const targetNode = data.nodes.find((n) => n.id === d.target);
         if (!sourceNode || !targetNode) return null;
-
-        // In the new layout, source is PARENT (older), target is CHILD (newer/above)
-        // Wait, calculateLayout currently puts yIndex + 1 (newest) at lower Y?
-        // Let's check: y = (yIndex + 1) * commitHeight.
-        // If yIndex 0 is newest, it's at the top. Correct.
 
         const x1 = sourceNode.x;
         const y1 = sourceNode.y;
         const x2 = targetNode.x;
         const y2 = targetNode.y;
 
-        // Smooth Bézier curve (Metro style)
-        const cp1y = y1 - (y1 - y2) / 2;
-        const cp2y = y1 - (y1 - y2) / 2;
+        // Orthogonal Layout (Circuit Board style)
+        if (Math.abs(x1 - x2) < 1) {
+          // Same lane - straight line
+          return `M ${x1} ${y1} L ${x2} ${y2}`;
+        }
 
-        return `M ${x1} ${y1} C ${x1} ${cp1y}, ${x2} ${cp2y}, ${x2} ${y2}`;
+        const radius = 12;
+        // y1 is parent (bottom/larger Y), y2 is child (top/smaller Y)
+        const yMid = (y1 + y2) / 2;
+        
+        // Ensure radius fits in the vertical space
+        const vDist = Math.abs(y1 - y2);
+        const r = Math.min(radius, vDist / 2);
+
+        // Horizontal direction: 1 (right), -1 (left)
+        const sx = x2 > x1 ? 1 : -1;
+
+        // Draw path: Up -> Curve -> Across -> Curve -> Up
+        return [
+          `M ${x1} ${y1}`,
+          `L ${x1} ${yMid + r}`,
+          `Q ${x1} ${yMid} ${x1 + r * sx} ${yMid}`,
+          `L ${x2 - r * sx} ${yMid}`,
+          `Q ${x2} ${yMid} ${x2} ${yMid - r}`,
+          `L ${x2} ${y2}`
+        ].join(" ");
       })
       .attr("fill", "none")
       .attr("stroke", (d) => d.color)
@@ -257,7 +273,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           branchName === "main" || branchName === "master" ? 3 : 1.5;
         return isHighlighted ? baseWidth + 1 : baseWidth;
       })
-      .attr("marker-end", (d) => `url(#arrow-${d.color.replace("#", "")})`)
+      // Arrowheads removed for cleaner look
       .attr("opacity", (d) => {
         if (!highlightedInfo) return 0.8;
         return highlightedInfo.edges.has(d.id) ? 1.0 : 0.25;
