@@ -338,7 +338,15 @@ export class GitService {
         encoding: "utf8",
       }).trim();
     } catch {
-      return "HEAD";
+      try {
+        // Fallback for detached HEAD: show short hash
+        return execSync("git rev-parse --short HEAD", {
+          cwd: repoPath,
+          encoding: "utf8",
+        }).trim() || "Detached";
+      } catch {
+        return "Unknown";
+      }
     }
   }
 
