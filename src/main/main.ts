@@ -244,6 +244,9 @@ class GitNetApp {
     ipcMain.handle("git:get-hot-files", (_, repoPath, limit) =>
       this.gitService.getHotFiles(repoPath, limit),
     );
+    ipcMain.handle("git:get-contributors", (_, repoPath) =>
+      this.gitService.getContributors(repoPath),
+    );
 
     // File system operations
     ipcMain.handle("watch-repository", (_, repoPath: string) => {

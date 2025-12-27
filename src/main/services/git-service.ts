@@ -7,6 +7,7 @@ import {
   FileChange,
   CommitParent,
   HotFile,
+  ContributorStats,
 } from "../../shared/types";
 
 export class GitService {
@@ -41,6 +42,59 @@ export class GitService {
       }).filter((f): f is HotFile => f !== null && f.count > 0);
     } catch (error) {
       console.error("HotFiles analysis failed:", error);
+      return [];
+    }
+  }
+
+  async getContributors(repoPath: string): Promise<ContributorStats[]> {
+    try {
+      // Use git log to get stats per author
+      const command = `git log --all --pretty=format:'%an|%ae|%ct' --shortstat`;
+      const output = execSync(command, { cwd: repoPath, encoding: "utf8" });
+      
+      const lines = output.split('\n');
+      const statsMap = new Map<string, ContributorStats>();
+      
+      let currentAuthor: { name: string, email: string, timestamp: number } | null = null;
+      
+      for (const line of lines) {
+        if (line.includes('|')) {
+          const [name, email, timestampStr] = line.split('|');
+          const timestamp = parseInt(timestampStr, 10);
+          currentAuthor = { name, email, timestamp };
+          
+          if (!statsMap.has(email)) {
+            statsMap.set(email, {
+              name,
+              email,
+              avatarUrl: this.getAvatarUrl(email),
+              commitCount: 0,
+              additions: 0,
+              deletions: 0,
+              firstCommit: timestamp,
+              lastCommit: timestamp
+            });
+          }
+          
+          const stats = statsMap.get(email)!;
+          stats.commitCount++;
+          stats.firstCommit = Math.min(stats.firstCommit, timestamp);
+          stats.lastCommit = Math.max(stats.lastCommit, timestamp);
+        } else if (line.includes('insertion') || line.includes('deletion')) {
+          if (currentAuthor) {
+            const stats = statsMap.get(currentAuthor.email)!;
+            const addMatch = line.match(/(\d+) insertion/);
+            const delMatch = line.match(/(\d+) deletion/);
+            
+            if (addMatch) stats.additions += parseInt(addMatch[1], 10);
+            if (delMatch) stats.deletions += parseInt(delMatch[1], 10);
+          }
+        }
+      }
+      
+      return Array.from(statsMap.values()).sort((a, b) => b.commitCount - a.commitCount);
+    } catch (error) {
+      console.error("Failed to get contributors:", error);
       return [];
     }
   }

@@ -6,3 +6,5 @@ export { LoadingScreen } from "./LoadingScreen";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { Legend } from "./Legend";
 export { HotFiles } from "./HotFiles";
+export { CommitHistory } from "./CommitHistory";
+export { Contributors } from "./Contributors";

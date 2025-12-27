@@ -6,6 +6,8 @@ import { BranchExplorer } from "./BranchExplorer";
 import { CommitMiniLog } from "./CommitMiniLog";
 import { StashList } from "./StashList";
 import { HotFiles } from "./HotFiles";
+import { CommitHistory } from "./CommitHistory";
+import { Contributors } from "./Contributors";
 import { CommitGraph } from "./CommitGraph"; // Import CommitGraph
 import { CommitDetails } from "./CommitDetails"; // Import CommitDetails
 
@@ -25,7 +27,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [commits, setCommits] = useState<Commit[]>([]);
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
-  const [currentView, setCurrentView] = useState<"graph" | "insights">("graph");
+  const [currentView, setCurrentView] = useState<"graph" | "insights" | "history" | "contributors">("graph");
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -268,6 +270,26 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 selectedCommitHash={selectedCommit?.hash}
                 onCommitSelect={handleCommitSelect}
               />
+            ) : currentView === "history" ? (
+              <CommitHistory 
+                commits={commits}
+                onCommitSelect={handleCommitSelect}
+                selectedCommitHash={selectedCommit?.hash}
+              />
+            ) : currentView === "contributors" ? (
+              <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
+                <div className="p-12 max-w-6xl mx-auto">
+                  <div className="mb-10">
+                    <h1 className="text-2xl font-bold text-zed-text dark:text-zed-dark-text tracking-tight">
+                      Team Insights
+                    </h1>
+                    <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
+                      Analysis of contributor activity, development impact, and chronological engagement.
+                    </p>
+                  </div>
+                  <Contributors repoPath={repository.path} />
+                </div>
+              </div>
             ) : (
               <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
                 <div className="p-12 max-w-5xl mx-auto">
@@ -370,12 +392,30 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </svg>
             </button>
             <button 
+              onClick={() => setCurrentView("history")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "history" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Commit History"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+            <button 
               onClick={() => setCurrentView("insights")}
               className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "insights" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
               title="Insights View"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </button>
+            <button 
+              onClick={() => setCurrentView("contributors")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "contributors" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Contributors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
             </button>
           </div>

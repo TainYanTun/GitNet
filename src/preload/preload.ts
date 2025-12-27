@@ -46,6 +46,8 @@ const gitnetAPI: GitNetAPI = {
     ipcRenderer.invoke("git:get-diff", repoPath, commitHash, filePath),
   getHotFiles: (repoPath: string, limit?: number) =>
     ipcRenderer.invoke("git:get-hot-files", repoPath, limit),
+  getContributors: (repoPath: string) =>
+    ipcRenderer.invoke("git:get-contributors", repoPath),
 
   // File system operations
   watchRepository: (repoPath: string): Promise<void> =>

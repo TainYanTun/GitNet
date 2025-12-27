@@ -123,9 +123,9 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
       <div className="flex items-center gap-3">
         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-zed-element dark:bg-zed-dark-element border border-zed-border dark:border-zed-dark-border flex items-center justify-center overflow-hidden shadow-sm">
           {displayCommit.author.avatarUrl ? (
-            <img 
-              src={displayCommit.author.avatarUrl} 
-              alt={displayCommit.author.name} 
+            <img
+              src={displayCommit.author.avatarUrl}
+              alt={displayCommit.author.name}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -139,6 +139,24 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
           <div className="text-xs text-zed-muted dark:text-zed-dark-muted">
             {displayCommit.author.email}
           </div>
+          
+          {/* Stats Summary Under Profile */}
+          {displayCommit.stats && (
+            <div className="flex items-center gap-3 mt-1.5 opacity-80">
+              <div className="flex items-center gap-1 font-mono text-[10px]">
+                <span className="text-green-500 font-bold">+</span>
+                <span className="text-zed-text dark:text-zed-dark-text">{displayCommit.stats.additions}</span>
+              </div>
+              <div className="flex items-center gap-1 font-mono text-[10px]">
+                <span className="text-red-500 font-bold">-</span>
+                <span className="text-zed-text dark:text-zed-dark-text">{displayCommit.stats.deletions}</span>
+              </div>
+              <div className="flex items-center gap-1 font-mono text-[10px] ml-1">
+                <span className="text-zed-muted opacity-60 uppercase">Files:</span>
+                <span className="text-zed-text dark:text-zed-dark-text">{displayCommit.fileChanges?.length || 0}</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -302,9 +320,9 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
             File Changes ({displayCommit.fileChanges.length})
           </div>
           <div className="max-h-80 overflow-y-auto custom-scrollbar border border-zed-border dark:border-zed-dark-border rounded bg-zed-bg/30 dark:bg-zed-dark-bg/30">
-            <FileTree 
-              files={displayCommit.fileChanges} 
-              onFileClick={handleFileClick} 
+            <FileTree
+              files={displayCommit.fileChanges}
+              onFileClick={handleFileClick}
             />
           </div>
         </div>

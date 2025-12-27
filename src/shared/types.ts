@@ -223,6 +223,17 @@ export interface HotFile {
   count: number;
 }
 
+export interface ContributorStats {
+  name: string;
+  email: string;
+  avatarUrl: string;
+  commitCount: number;
+  additions: number;
+  deletions: number;
+  firstCommit: number;
+  lastCommit: number;
+}
+
 // API interfaces for IPC communication
 export interface GitNetAPI {
   // Repository operations
@@ -246,6 +257,7 @@ export interface GitNetAPI {
     filePath: string,
   ) => Promise<string>;
   getHotFiles: (repoPath: string, limit?: number) => Promise<HotFile[]>;
+  getContributors: (repoPath: string) => Promise<ContributorStats[]>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;
