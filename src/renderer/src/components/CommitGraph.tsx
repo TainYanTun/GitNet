@@ -171,17 +171,19 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
     // Add pulsing animation for HEAD
     const defsAnim = svg.select("defs");
-    const filter = defsAnim.append("filter")
+    const filter = defsAnim
+      .append("filter")
       .attr("id", "head-glow")
       .attr("x", "-50%")
       .attr("y", "-50%")
       .attr("width", "200%")
       .attr("height", "200%");
-    
-    filter.append("feGaussianBlur")
+
+    filter
+      .append("feGaussianBlur")
       .attr("stdDeviation", "3")
       .attr("result", "blur");
-    
+
     const feMerge = filter.append("feMerge");
     feMerge.append("feMergeNode").attr("in", "blur");
     feMerge.append("feMergeNode").attr("in", "SourceGraphic");
@@ -306,7 +308,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       })
       .attr("fill", "none")
       .attr("stroke", (d) => d.color)
-      .attr("stroke-dasharray", (d) => d.type === "merge" ? "4,4" : "none")
+      .attr("stroke-dasharray", (d) => (d.type === "merge" ? "4,4" : "none"))
       .attr("stroke-width", (d) => {
         const isHighlighted = highlightedInfo?.edges.has(d.id);
         const sourceNode = data.nodes.find((n) => n.id === d.source);
@@ -486,7 +488,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
       // HEAD Pulse Aura
       if (isHead) {
-        group.insert("circle", ":first-child")
+        group
+          .insert("circle", ":first-child")
           .attr("r", 12)
           .attr("fill", d.color)
           .attr("class", "head-aura")
@@ -601,7 +604,19 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .attr("stroke-width", 2);
 
         // Add initials for commit types
-        const typeInitial = d.commit.type.charAt(0).toUpperCase();
+        const typeInitialMap: Record<string, string> = {
+          feat: "F",
+          fix: "X",
+          docs: "D",
+          style: "S",
+          refactor: "R",
+          perf: "P",
+          test: "T",
+          chore: "C",
+          revert: "V",
+        };
+        const typeInitial = typeInitialMap[d.commit.type] || "";
+
         group
           .append("text")
           .attr("dy", "0.35em")
@@ -610,7 +625,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .style("font-size", "8px")
           .style("font-weight", "bold")
           .style("pointer-events", "none")
-          .text(typeInitial === "O" ? "" : typeInitial);
+          .text(typeInitial);
       }
     });
 

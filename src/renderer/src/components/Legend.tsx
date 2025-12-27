@@ -32,11 +32,34 @@ export const Legend: React.FC = () => {
         {/* Node Shapes */}
         <section>
           <h4 className="text-[10px] font-bold text-zed-muted uppercase mb-2">Commit Types</h4>
-          <div className="grid grid-cols-1 gap-2">
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-zed-muted/50 flex items-center justify-center text-[8px] font-bold text-white">F</div>
-              <span className="text-xs text-zed-text dark:text-zed-dark-text">Regular Commit</span>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#3b82f6] flex items-center justify-center text-[8px] font-bold text-white shadow-sm">F</div>
+              <span className="text-[10px] text-zed-text dark:text-zed-dark-text">Feat</span>
             </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#ef4444] flex items-center justify-center text-[8px] font-bold text-white shadow-sm">X</div>
+              <span className="text-[10px] text-zed-text dark:text-zed-dark-text">Fix</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#10b981] flex items-center justify-center text-[8px] font-bold text-white shadow-sm">T</div>
+              <span className="text-[10px] text-zed-text dark:text-zed-dark-text">Test</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#f59e0b] flex items-center justify-center text-[8px] font-bold text-white shadow-sm">C</div>
+              <span className="text-[10px] text-zed-text dark:text-zed-dark-text">Chore</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#6366f1] flex items-center justify-center text-[8px] font-bold text-white shadow-sm">R</div>
+              <span className="text-[10px] text-zed-text dark:text-zed-dark-text">Refactor</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded-full bg-[#ec4899] flex items-center justify-center text-[8px] font-bold text-white shadow-sm">D</div>
+              <span className="text-[10px] text-zed-text dark:text-zed-dark-text">Docs</span>
+            </div>
+          </div>
+          
+          <div className="mt-3 space-y-2 border-t border-zed-border dark:border-zed-dark-border pt-2">
             <div className="flex items-center gap-3">
               <div className="w-4 h-4 bg-zed-muted/50 rotate-45 flex items-center justify-center border border-white/20 shadow-sm overflow-hidden">
                  <div className="w-full h-full bg-zed-muted/20 -rotate-45 flex items-center justify-center text-[6px]">👤</div>
@@ -44,7 +67,7 @@ export const Legend: React.FC = () => {
               <span className="text-xs text-zed-text dark:text-zed-dark-text">Merge (Diamond)</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-sm bg-zed-muted/50 flex items-center justify-center text-[8px] font-bold text-white">R</div>
+              <div className="w-4 h-4 rounded-sm bg-zed-muted/50 flex items-center justify-center text-[8px] font-bold text-white">V</div>
               <span className="text-xs text-zed-text dark:text-zed-dark-text">Revert (Square)</span>
             </div>
             <div className="flex items-center gap-3">
@@ -69,29 +92,6 @@ export const Legend: React.FC = () => {
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 rounded-full bg-zed-accent/40 animate-pulse"></div>
               <span className="text-xs text-zed-text dark:text-zed-dark-text">Current HEAD</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Branch Colors */}
-        <section>
-          <h4 className="text-[10px] font-bold text-zed-muted uppercase mb-2">Branch Colors</h4>
-          <div className="grid grid-cols-1 gap-2 text-[11px]">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#1f2937]"></div>
-              <span className="text-zed-text dark:text-zed-dark-text">Main / Master</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#059669]"></div>
-              <span className="text-zed-text dark:text-zed-dark-text">Develop</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#ea580c]"></div>
-              <span className="text-zed-text dark:text-zed-dark-text">Hotfix</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#2563eb]"></div>
-              <span className="text-zed-text dark:text-zed-dark-text">Feature / Others</span>
             </div>
           </div>
         </section>
