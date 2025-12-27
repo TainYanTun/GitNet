@@ -202,29 +202,140 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       .append("line")
       .attr("class", "lane-track")
       .attr("x1", (d) => d.x)
-      .attr("y1", (d) => d.startY - 20)
+      .attr("y1", 0)
       .attr("x2", (d) => d.x)
-      .attr("y2", (d) => d.endY + 20)
+      .attr("y2", data.height)
       .attr("stroke", (d) => d.color)
-      .attr("stroke-width", 1)
-      .attr("opacity", highlightedInfo ? 0.04 : 0.08)
+      .attr("stroke-width", 2)
+      .attr("opacity", highlightedInfo ? 0.05 : 0.15)
       .lower();
 
-    // Draw Horizontal Row Guides (Full width)
-    g.selectAll(".row-guide")
-      .data(data.nodes)
-      .enter()
-      .append("line")
-      .attr("class", "row-guide")
-      .attr("x1", 0)
-      .attr("y1", (d) => d.y)
-      .attr("x2", data.width + 100)
-      .attr("y2", (d) => d.y)
-      .attr("stroke", (d) => d.color)
-      .attr("stroke-width", 0.5)
-      .attr("opacity", 0.08)
-      .lower();
+    // Draw Commit Information & Labels next to nodes
+    const commitInfoGroup = g.append("g").attr("class", "commit-info-labels");
+    
+    // Find the rightmost node X to avoid overlapping labels with the graph
+    const maxGraphX = Math.max(...data.nodes.map(n => n.x), 0);
+    const infoXOffset = maxGraphX + 60;
 
+    const commitToBranches = new Map<string, Branch[]>();
+    branches.forEach((b) => {
+      const list = commitToBranches.get(b.objectName) || [];
+      list.push(b);
+      commitToBranches.set(b.objectName, list);
+    });
+
+    data.nodes.forEach((node) => {
+      const nodeBranches = commitToBranches.get(node.id) || [];
+      const nodeTags = node.commit.tags || [];
+      
+      const rowG = commitInfoGroup
+        .append("g")
+        .attr("transform", `translate(${infoXOffset}, ${node.y})`)
+        .attr(
+          "opacity",
+          highlightedInfo && !highlightedInfo.nodes.has(node.id) ? 0.3 : 1.0,
+        )
+        .style("cursor", "pointer")
+        .on("click", () => onCommitSelect?.(node.commit));
+
+      // Draw horizontal connector from node to info
+      rowG.append("line")
+        .attr("x1", -(infoXOffset - node.x))
+        .attr("y1", 0)
+        .attr("x2", -10)
+        .attr("y2", 0)
+        .attr("stroke", node.color)
+        .attr("stroke-width", 1)
+        .attr("opacity", 0.2);
+
+      let labelXOffset = 0;
+
+      // 1. Draw Branch Pills
+      nodeBranches.forEach((branch) => {
+        const labelText = branch.name;
+        const labelWidth = labelText.length * 6.5 + 14; // Slightly wider for safety
+
+        const pillG = rowG.append("g")
+          .attr("transform", `translate(${labelXOffset}, -9)`);
+
+        pillG.append("rect")
+          .attr("width", labelWidth)
+          .attr("height", 18)
+          .attr("rx", 9) // Rounded ends like GitKraken
+          .attr("fill", branch.color)
+          .attr("stroke", "white")
+          .attr("stroke-width", 0.5)
+          .attr("opacity", 0.9);
+
+        pillG.append("text")
+          .attr("x", labelWidth / 2)
+          .attr("y", 9)
+          .attr("dy", "0.35em")
+          .attr("text-anchor", "middle")
+          .attr("fill", "white")
+          .style("font-size", "9px")
+          .style("font-weight", "800")
+          .style("font-family", "ui-sans-serif, system-ui, sans-serif")
+          .text(labelText);
+
+        labelXOffset += labelWidth + 8;
+      });
+
+      // 2. Draw Tag Pills
+      nodeTags.forEach((tag) => {
+        const labelText = tag;
+        const labelWidth = labelText.length * 6.5 + 14;
+
+        const pillG = rowG.append("g")
+          .attr("transform", `translate(${labelXOffset}, -9)`);
+
+        pillG.append("rect")
+          .attr("width", labelWidth)
+          .attr("height", 18)
+          .attr("rx", 4)
+          .attr("fill", "#eab308")
+          .attr("stroke", "white")
+          .attr("stroke-width", 0.5)
+          .attr("opacity", 0.9);
+
+        pillG.append("text")
+          .attr("x", labelWidth / 2)
+          .attr("y", 9)
+          .attr("dy", "0.35em")
+          .attr("text-anchor", "middle")
+          .attr("fill", "#1f2937")
+          .style("font-size", "9px")
+          .style("font-weight", "800")
+          .style("font-family", "monospace")
+          .text(labelText);
+
+        labelXOffset += labelWidth + 8;
+      });
+
+      // 3. Draw Commit Message
+      rowG.append("text")
+        .attr("x", labelXOffset)
+        .attr("y", 0)
+        .attr("dy", "0.35em")
+        .attr("class", "commit-message")
+        .style("font-size", "13px")
+        .style("font-weight", "500")
+        .attr("fill", "currentColor")
+        .text(node.commit.shortMessage);
+
+      const dateStr = new Date(node.commit.timestamp * 1000).toLocaleDateString();
+      rowG.append("text")
+        .attr("x", labelXOffset)
+        .attr("y", 18)
+        .attr("class", "commit-meta")
+        .style("font-size", "10px")
+        .style("font-family", "monospace")
+        .attr("fill", "currentColor")
+        .attr("opacity", 0.4)
+        .text(`${node.commit.author.name} • ${node.commit.shortHash} • ${dateStr}`);
+    });
+
+    // Draw Edges
     g.selectAll(".edge")
       .data(data.edges)
       .enter()
@@ -240,32 +351,15 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         const x2 = targetNode.x;
         const y2 = targetNode.y;
 
-        // Orthogonal Layout (Circuit Board style)
+        // Smooth Bezier curve like GitKraken
         if (Math.abs(x1 - x2) < 1) {
-          // Same lane - straight line
           return `M ${x1} ${y1} L ${x2} ${y2}`;
         }
 
-        const radius = 12;
-        // y1 is parent (bottom/larger Y), y2 is child (top/smaller Y)
-        const yMid = (y1 + y2) / 2;
-
-        // Ensure radius fits in the vertical space
-        const vDist = Math.abs(y1 - y2);
-        const r = Math.min(radius, vDist / 2);
-
-        // Horizontal direction: 1 (right), -1 (left)
-        const sx = x2 > x1 ? 1 : -1;
-
-        // Draw path: Up -> Curve -> Across -> Curve -> Up
-        return [
-          `M ${x1} ${y1}`,
-          `L ${x1} ${yMid + r}`,
-          `Q ${x1} ${yMid} ${x1 + r * sx} ${yMid}`,
-          `L ${x2 - r * sx} ${yMid}`,
-          `Q ${x2} ${yMid} ${x2} ${yMid - r}`,
-          `L ${x2} ${y2}`,
-        ].join(" ");
+        // Curves for branches and merges
+        const cp1y = y1 - (y1 - y2) / 2;
+        const cp2y = y1 - (y1 - y2) / 2;
+        return `M ${x1} ${y1} C ${x1} ${cp1y}, ${x2} ${cp2y}, ${x2} ${y2}`;
       })
       .attr("fill", "none")
       .attr("stroke", (d) => d.color)
@@ -278,113 +372,10 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           branchName === "main" || branchName === "master" ? 3 : 1.5;
         return isHighlighted ? baseWidth + 1 : baseWidth;
       })
-      // Arrowheads removed for cleaner look
       .attr("opacity", (d) => {
-        if (!highlightedInfo) return 0.8;
-        return highlightedInfo.edges.has(d.id) ? 1.0 : 0.25;
+        if (!highlightedInfo) return 0.6;
+        return highlightedInfo.edges.has(d.id) ? 1.0 : 0.2;
       });
-
-    // Draw Branch & Tag Labels (Pills next to branch tips or tags)
-    const labelsGroup = g.append("g").attr("class", "labels");
-    const commitToBranches = new Map<string, Branch[]>();
-    branches.forEach((b) => {
-      const list = commitToBranches.get(b.objectName) || [];
-      list.push(b);
-      commitToBranches.set(b.objectName, list);
-    });
-
-    data.nodes.forEach((node) => {
-      const nodeBranches = commitToBranches.get(node.id);
-      const nodeTags = node.commit.tags || [];
-
-      if ((nodeBranches && nodeBranches.length > 0) || nodeTags.length > 0) {
-        let offset = 20;
-
-        // Draw Branch Pills
-        if (nodeBranches) {
-          nodeBranches.forEach((branch) => {
-            const labelText = branch.name;
-            const labelWidth = labelText.length * 6 + 12;
-
-            const labelG = labelsGroup
-              .append("g")
-              .attr("transform", `translate(${node.x + offset}, ${node.y - 9})`)
-              .attr(
-                "opacity",
-                highlightedInfo && !highlightedInfo.nodes.has(node.id)
-                  ? 0.3
-                  : 1.0,
-              );
-
-            labelG
-              .append("rect")
-              .attr("width", labelWidth)
-              .attr("height", 18)
-              .attr("rx", 4)
-              .attr("fill", branch.color)
-              .attr("stroke", "white")
-              .attr("stroke-width", 0.5)
-              .attr("opacity", 0.9);
-
-            labelG
-              .append("text")
-              .attr("x", labelWidth / 2)
-              .attr("y", 9)
-              .attr("dy", "0.35em")
-              .attr("text-anchor", "middle")
-              .attr("fill", "white")
-              .style("font-size", "9px")
-              .style("font-weight", "bold")
-              .style("font-family", "monospace")
-              .style("pointer-events", "none")
-              .text(labelText);
-
-            offset += labelWidth + 5;
-          });
-        }
-
-        // Draw Tag Pills (Yellow)
-        nodeTags.forEach((tag) => {
-          const labelText = tag;
-          const labelWidth = labelText.length * 6 + 12;
-
-          const labelG = labelsGroup
-            .append("g")
-            .attr("transform", `translate(${node.x + offset}, ${node.y - 9})`)
-            .attr(
-              "opacity",
-              highlightedInfo && !highlightedInfo.nodes.has(node.id)
-                ? 0.3
-                : 1.0,
-            );
-
-          labelG
-            .append("rect")
-            .attr("width", labelWidth)
-            .attr("height", 18)
-            .attr("rx", 4)
-            .attr("fill", "#eab308") // Yellow for tags
-            .attr("stroke", "white")
-            .attr("stroke-width", 0.5)
-            .attr("opacity", 0.9);
-
-          labelG
-            .append("text")
-            .attr("x", labelWidth / 2)
-            .attr("y", 9)
-            .attr("dy", "0.35em")
-            .attr("text-anchor", "middle")
-            .attr("fill", "#1f2937") // Dark text for yellow background
-            .style("font-size", "9px")
-            .style("font-weight", "bold")
-            .style("font-family", "monospace")
-            .style("pointer-events", "none")
-            .text(labelText);
-
-          offset += labelWidth + 5;
-        });
-      }
-    });
 
     // Draw Nodes
     const nodeGroups = g
