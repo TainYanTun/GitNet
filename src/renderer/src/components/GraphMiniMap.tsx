@@ -76,12 +76,13 @@ export const GraphMiniMap: React.FC<GraphMiniMapProps> = ({
         const mainWidth = mainSvgRef.current.clientWidth;
         const mainHeight = mainSvgRef.current.clientHeight;
 
-        const targetX = - (x0 / scale) + (mainWidth / 2);
-        const targetY = - (y0 / scale) + (mainHeight / 2);
+        const targetX = -((x0 - 5) / scale);
+        const targetY = -((y0 - 5) / scale);
 
         // We don't want to infinite loop, so we only apply if it's a manual brush move
-        if (event.sourceEvent.type === "mousemove" || event.sourceEvent.type === "mousedown") {
-             // mainSvg.call(mainZoom.transform, d3.zoomIdentity.translate(targetX, targetY));
+        if (event.sourceEvent.type === "mousemove" || event.sourceEvent.type === "mousedown" || event.sourceEvent.type === "touchstart") {
+             const currentTransform = d3.zoomTransform(mainSvgRef.current);
+             mainSvg.call(mainZoom.transform, d3.zoomIdentity.translate(-x0/scale * currentTransform.k + mainWidth/2, -y0/scale * currentTransform.k + mainHeight/2).scale(currentTransform.k));
         }
       });
 
