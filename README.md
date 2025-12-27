@@ -2,8 +2,6 @@
 
 A Railway-style desktop Git visualizer that displays commit history as an interactive graph with semantic coloring and clear merge representation.
 
-![GitNet Screenshot](assets/screenshot.png)
-
 ## 🌟 Features
 
 - **Interactive Commit Graph**: Railway-style visualization with semantic coloring using D3.js.
