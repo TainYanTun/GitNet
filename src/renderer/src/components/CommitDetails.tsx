@@ -122,21 +122,29 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
           <div className="text-xs text-zed-muted dark:text-zed-dark-muted">
             {displayCommit.author.email}
           </div>
-          
+
           {/* Stats Summary Under Profile */}
           {displayCommit.stats && (
             <div className="flex items-center gap-3 mt-1.5 opacity-80">
               <div className="flex items-center gap-1 font-mono text-[10px]">
                 <span className="text-green-500 font-bold">+</span>
-                <span className="text-zed-text dark:text-zed-dark-text">{displayCommit.stats.additions}</span>
+                <span className="text-zed-text dark:text-zed-dark-text">
+                  {displayCommit.stats.additions}
+                </span>
               </div>
               <div className="flex items-center gap-1 font-mono text-[10px]">
                 <span className="text-red-500 font-bold">-</span>
-                <span className="text-zed-text dark:text-zed-dark-text">{displayCommit.stats.deletions}</span>
+                <span className="text-zed-text dark:text-zed-dark-text">
+                  {displayCommit.stats.deletions}
+                </span>
               </div>
               <div className="flex items-center gap-1 font-mono text-[10px] ml-1">
-                <span className="text-zed-muted opacity-60 uppercase">Files:</span>
-                <span className="text-zed-text dark:text-zed-dark-text">{displayCommit.fileChanges?.length || 0}</span>
+                <span className="text-zed-muted opacity-60 uppercase">
+                  Files:
+                </span>
+                <span className="text-zed-text dark:text-zed-dark-text">
+                  {displayCommit.fileChanges?.length || 0}
+                </span>
               </div>
             </div>
           )}
@@ -162,7 +170,7 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
           Hash
         </div>
         <div
-          className="font-mono text-zed-text dark:text-zed-dark-text text-xs truncate flex-grow min-w-0 cursor-pointer hover:bg-zed-element dark:hover:bg-zed-dark-element p-1 rounded inline-flex items-center"
+          className="font-mono text-zed-text dark:text-zed-dark-text text-xs truncate flex-grow min-w-0 cursor-pointer hover:bg-zed-element dark:hover:bg-zed-dark-element p-1 rounded inline-flex items-center mr-2"
           onClick={() => handleCopy(displayCommit.hash, displayCommit.hash)}
           title="Click to copy hash"
         >
