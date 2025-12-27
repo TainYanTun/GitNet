@@ -25,7 +25,7 @@ export interface Author {
 }
 
 export interface FileChange {
-  status: 'A' | 'M' | 'D' | 'R' | 'C' | 'U'; // Added, Modified, Deleted, Renamed, Copied, Unmerged
+  status: "A" | "M" | "D" | "R" | "C" | "U"; // Added, Modified, Deleted, Renamed, Copied, Unmerged
   path: string;
   previousPath?: string; // For renamed/copied files
 }
@@ -55,7 +55,7 @@ export interface Commit {
   isMerge: boolean;
   isSquash: boolean;
   branchName?: string;
-  
+
   // New properties for detailed view
   parentsDetails?: CommitParent[]; // Detailed parent info
   fileChanges?: FileChange[];
@@ -222,7 +222,11 @@ export interface GitNetAPI {
   getCurrentHead: (repoPath: string) => Promise<string>;
   getStashList: (repoPath: string) => Promise<StashEntry[]>;
   getCommitDetails: (repoPath: string, commitHash: string) => Promise<Commit>;
-  getDiff: (repoPath: string, commitHash: string, filePath: string) => Promise<string>;
+  getDiff: (
+    repoPath: string,
+    commitHash: string,
+    filePath: string,
+  ) => Promise<string>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;
