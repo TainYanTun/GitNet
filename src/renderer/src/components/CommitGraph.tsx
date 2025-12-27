@@ -30,7 +30,9 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
   const [isBranchMenuOpen, setIsBranchMenuOpen] = React.useState(false);
   const [branchSearch, setBranchSearch] = React.useState("");
-  const [hoveredCommitHash, setHoveredCommitHash] = React.useState<string | null>(null);
+  const [hoveredCommitHash, setHoveredCommitHash] = React.useState<
+    string | null
+  >(null);
 
   const [commitSearch, setCommitSearch] = React.useState("");
 
@@ -80,7 +82,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       };
 
       findAncestors(focusHash);
-      
+
       // If we are hovering, we might only want ancestors to see history.
       // If selected, we want both. Let's do both for now.
       const findDescendants = (id: string) => {
@@ -202,30 +204,32 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       .append("line")
       .attr("class", "row-guide")
       .attr("x1", 0)
-      .attr("y1", d => d.y)
+      .attr("y1", (d) => d.y)
       .attr("x2", data.width + 100)
-      .attr("y2", d => d.y)
-      .attr("stroke", d => d.color)
+      .attr("y2", (d) => d.y)
+      .attr("stroke", (d) => d.color)
       .attr("stroke-width", 0.5)
       .attr("opacity", 0.03)
       .lower();
 
     // Interaction Overlays (Hidden by default)
-    const hoverGuideX = g.append("line")
-        .attr("class", "hover-guide")
-        .attr("stroke", "#3b82f6")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "4,4")
-        .attr("opacity", 0)
-        .lower();
+    const hoverGuideX = g
+      .append("line")
+      .attr("class", "hover-guide")
+      .attr("stroke", "#3b82f6")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4")
+      .attr("opacity", 0)
+      .lower();
 
-    const hoverGuideY = g.append("line")
-        .attr("class", "hover-guide")
-        .attr("stroke", "#3b82f6")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "4,4")
-        .attr("opacity", 0)
-        .lower();
+    const hoverGuideY = g
+      .append("line")
+      .attr("class", "hover-guide")
+      .attr("stroke", "#3b82f6")
+      .attr("stroke-width", 1)
+      .attr("stroke-dasharray", "4,4")
+      .attr("opacity", 0)
+      .lower();
 
     // Draw Edges (Lines) with Arrowheads
     const lineGenerator = d3
@@ -245,10 +249,10 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         if (!sourceNode || !targetNode) return null;
 
         // In the new layout, source is PARENT (older), target is CHILD (newer/above)
-        // Wait, calculateLayout currently puts yIndex + 1 (newest) at lower Y? 
-        // Let's check: y = (yIndex + 1) * commitHeight. 
+        // Wait, calculateLayout currently puts yIndex + 1 (newest) at lower Y?
+        // Let's check: y = (yIndex + 1) * commitHeight.
         // If yIndex 0 is newest, it's at the top. Correct.
-        
+
         const x1 = sourceNode.x;
         const y1 = sourceNode.y;
         const x2 = targetNode.x;
@@ -257,7 +261,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         // Smooth Bézier curve (Metro style)
         const cp1y = y1 - (y1 - y2) / 2;
         const cp2y = y1 - (y1 - y2) / 2;
-        
+
         return `M ${x1} ${y1} C ${x1} ${cp1y}, ${x2} ${cp2y}, ${x2} ${y2}`;
       })
       .attr("fill", "none")
@@ -395,29 +399,31 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         onCommitSelect?.(d.commit);
       })
       .on("mouseenter", (event, d) => {
-          setHoveredCommitHash(d.id);
-          hoverGuideX
-            .attr("x1", d.x)
-            .attr("y1", -50)
-            .attr("x2", d.x)
-            .attr("y2", data.height + 50)
-            .attr("stroke", d.color)
-            .transition().duration(100)
-            .attr("opacity", 0.4);
-          
-          hoverGuideY
-            .attr("x1", 0)
-            .attr("y1", d.y)
-            .attr("x2", data.width + 100)
-            .attr("y2", d.y)
-            .attr("stroke", d.color)
-            .transition().duration(100)
-            .attr("opacity", 0.4);
+        setHoveredCommitHash(d.id);
+        hoverGuideX
+          .attr("x1", d.x)
+          .attr("y1", -50)
+          .attr("x2", d.x)
+          .attr("y2", data.height + 50)
+          .attr("stroke", d.color)
+          .transition()
+          .duration(100)
+          .attr("opacity", 0.4);
+
+        hoverGuideY
+          .attr("x1", 0)
+          .attr("y1", d.y)
+          .attr("x2", data.width + 100)
+          .attr("y2", d.y)
+          .attr("stroke", d.color)
+          .transition()
+          .duration(100)
+          .attr("opacity", 0.4);
       })
       .on("mouseleave", () => {
-          setHoveredCommitHash(null);
-          hoverGuideX.transition().duration(100).attr("opacity", 0);
-          hoverGuideY.transition().duration(100).attr("opacity", 0);
+        setHoveredCommitHash(null);
+        hoverGuideX.transition().duration(100).attr("opacity", 0);
+        hoverGuideY.transition().duration(100).attr("opacity", 0);
       });
 
     // Node shape
@@ -439,7 +445,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
       // Glow effect for selection
       if (isSelected) {
-        group.append("circle")
+        group
+          .append("circle")
           .attr("r", d.size + 6)
           .attr("fill", d.color)
           .attr("opacity", 0.2)
@@ -511,7 +518,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .style("font-size", "8px")
           .style("font-weight", "bold")
           .style("pointer-events", "none")
-          .text(typeInitial === 'O' ? '' : typeInitial);
+          .text(typeInitial === "O" ? "" : typeInitial);
       }
     });
 
@@ -634,9 +641,9 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
         {/* MiniMap Integration */}
         <div className="absolute bottom-20 right-6 opacity-80 hover:opacity-100 transition-opacity">
-          <GraphMiniMap 
-            data={data} 
-            mainZoom={zoomRef.current} 
+          <GraphMiniMap
+            data={data}
+            mainZoom={zoomRef.current}
             mainSvgRef={svgRef}
             selectedCommitHash={selectedCommitHash}
           />
