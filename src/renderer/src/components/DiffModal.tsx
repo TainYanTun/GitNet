@@ -110,7 +110,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
       width="80%"
       style={{ top: 20 }}
       closeIcon={
-        <div className="absolute top-3 right-3 text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text p-1 rounded transition-colors duration-200">
+        <div className="text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text p-1 rounded transition-colors duration-200">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
