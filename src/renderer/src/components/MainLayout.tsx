@@ -61,16 +61,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       fetchCommits(); // Re-fetch commits when updated
     };
 
+    let unsubscribeBranches: (() => void) | undefined;
+    let unsubscribeCommits: (() => void) | undefined;
+
     if (window.gitnetAPI) {
-      window.gitnetAPI.onBranchesUpdated(handleBranchesUpdated);
-      window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
+      unsubscribeBranches = window.gitnetAPI.onBranchesUpdated(handleBranchesUpdated);
+      unsubscribeCommits = window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
     }
 
     return () => {
-      if (window.gitnetAPI) {
-        window.gitnetAPI.onBranchesUpdated(handleBranchesUpdated)(); // Cleanup
-        window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated)(); // Cleanup
-      }
+      unsubscribeBranches?.();
+      unsubscribeCommits?.();
     };
   }, [repository.path, showToast]);
 

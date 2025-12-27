@@ -35,12 +35,13 @@ export const CommitMiniLog: React.FC<CommitMiniLogProps> = ({ repoPath, onCommit
         fetchRecentCommits();
     };
 
+    let unsubscribe: (() => void) | undefined;
     if (window.gitnetAPI) {
-        window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
+        unsubscribe = window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
     }
 
     return () => {
-        // Cleanup listener if API provides an unsubscribe
+        unsubscribe?.();
     };
   }, [repoPath, showToast]);
 

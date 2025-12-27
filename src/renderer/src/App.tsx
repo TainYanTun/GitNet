@@ -105,14 +105,17 @@ const App: React.FC = () => {
     };
 
     // Set up event listeners
+    let unsubscribeRepo: (() => void) | undefined;
+    let unsubscribeHead: (() => void) | undefined;
+
     if (window.gitnetAPI) {
-      window.gitnetAPI.onRepositoryChanged(handleRepositoryChanged);
-      window.gitnetAPI.onHeadChanged(handleHeadChanged);
+      unsubscribeRepo = window.gitnetAPI.onRepositoryChanged(handleRepositoryChanged);
+      unsubscribeHead = window.gitnetAPI.onHeadChanged(handleHeadChanged);
     }
 
-    // Cleanup function would go here if the API returned cleanup functions
     return () => {
-      // Cleanup listeners if needed
+      unsubscribeRepo?.();
+      unsubscribeHead?.();
     };
   }, [state.repository]);
 

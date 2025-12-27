@@ -1,7 +1,21 @@
 import { execSync } from "child_process";
-import { Repository, Commit, Branch, FileChange, CommitParent } from "../../shared/types";
+import * as crypto from "crypto";
+import {
+  Repository,
+  Commit,
+  Branch,
+  FileChange,
+  CommitParent,
+} from "../../shared/types";
 
 export class GitService {
+  private getAvatarUrl(email: string): string {
+    const hash = crypto
+      .createHash("md5")
+      .update(email.trim().toLowerCase())
+      .digest("hex");
+    return `https://www.gravatar.com/avatar/${hash}?s=64&d=identicon`;
+  }
   async getRepository(path: string): Promise<Repository> {
     // Verify it's a Git repository
     try {
@@ -156,8 +170,16 @@ export class GitService {
       message: subject, // subject is usually the first line
       shortMessage: subject.split('\n')[0],
       type: this.getCommitType(subject), // Re-using existing helper
-      author: { name: authorName, email: authorEmail },
-      committer: { name: authorName, email: authorEmail }, // Assuming committer is same for now
+      author: {
+        name: authorName,
+        email: authorEmail,
+        avatarUrl: this.getAvatarUrl(authorEmail),
+      },
+      committer: {
+        name: authorName,
+        email: authorEmail,
+        avatarUrl: this.getAvatarUrl(authorEmail),
+      }, // Assuming committer is same for now
       timestamp: parseInt(authorTimestamp.split(' ')[0]), // git show --date=raw gives "timestamp timezone", we only need timestamp
       isMerge: parentsHashes.split(" ").filter(Boolean).length > 1,
       isSquash: false, // Cannot determine from 'git show' easily without more complex logic
@@ -218,8 +240,16 @@ export class GitService {
           message,
           shortMessage: message.split("\n")[0],
           type: this.getCommitType(message),
-          author: { name: author, email },
-          committer: { name: author, email },
+          author: {
+            name: author,
+            email,
+            avatarUrl: this.getAvatarUrl(email),
+          },
+          committer: {
+            name: author,
+            email,
+            avatarUrl: this.getAvatarUrl(email),
+          },
           timestamp: parseInt(timestamp),
           isMerge: parents ? parents.split(" ").length > 1 : false,
           isSquash: false,

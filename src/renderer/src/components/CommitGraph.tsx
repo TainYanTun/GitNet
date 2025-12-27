@@ -346,6 +346,40 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .attr("fill", d.color)
           .attr("stroke", isSelected ? "#fff" : "none")
           .attr("stroke-width", 2);
+        
+        // Avatar for merges
+        if (d.commit.author.avatarUrl) {
+            const clipId = `clip-${d.id}`;
+            const defs = d3.select(svgRef.current).select("defs");
+            
+            defs.append("clipPath")
+                .attr("id", clipId)
+                .append("rect")
+                .attr("width", d.size * 1.2)
+                .attr("height", d.size * 1.2)
+                .attr("x", -d.size * 0.6)
+                .attr("y", -d.size * 0.6)
+                .attr("transform", "rotate(45)");
+
+            group.append("image")
+                .attr("xlink:href", d.commit.author.avatarUrl)
+                .attr("width", d.size * 1.8)
+                .attr("height", d.size * 1.8)
+                .attr("x", -d.size * 0.9)
+                .attr("y", -d.size * 0.9)
+                .attr("clip-path", `url(#${clipId})`);
+        } else {
+            const initial = d.commit.author.name.charAt(0).toUpperCase();
+            group
+              .append("text")
+              .attr("dy", "0.35em")
+              .attr("text-anchor", "middle")
+              .attr("fill", "white")
+              .style("font-size", "10px")
+              .style("font-weight", "bold")
+              .style("pointer-events", "none")
+              .text(initial);
+        }
       } else {
         group
           .append("circle")
@@ -353,29 +387,6 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .attr("fill", d.color)
           .attr("stroke", isSelected ? "#fff" : "none")
           .attr("stroke-width", 2);
-      }
-
-      if (isHead) {
-        group
-          .append("circle")
-          .attr("r", d.size + 4)
-          .attr("fill", "none")
-          .attr("stroke", d.color)
-          .attr("stroke-width", 1)
-          .attr("stroke-dasharray", "2,2");
-      }
-
-      if (d.commit.isMerge) {
-        const initial = d.commit.author.name.charAt(0).toUpperCase();
-        group
-          .append("text")
-          .attr("dy", "0.35em")
-          .attr("text-anchor", "middle")
-          .attr("fill", "white")
-          .style("font-size", "10px")
-          .style("font-weight", "bold")
-          .style("pointer-events", "none")
-          .text(initial);
       }
     });
 
@@ -455,20 +466,36 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             Contributors
           </span>
           <div className="flex -space-x-2">
-            {Array.from(new Set(commits.map((c) => c.author.name)))
+            {Array.from(new Set(commits.map((c) => c.author.email)))
               .slice(0, 5)
-              .map((name, i) => (
-                <div
-                  key={name}
-                  className="w-7 h-7 rounded-full border-2 border-zed-bg dark:border-zed-dark-bg bg-zed-element dark:bg-zed-dark-element flex items-center justify-center text-[10px] font-bold text-zed-text dark:text-zed-dark-text shadow-sm"
-                  title={name}
-                >
-                  {name.charAt(0).toUpperCase()}
-                </div>
-              ))}
-            {new Set(commits.map((c) => c.author.name)).size > 5 && (
+              .map((email) => {
+                const commit = commits.find((c) => c.author.email === email);
+                const name = commit?.author.name || "Unknown";
+                const avatarUrl = commit?.author.avatarUrl;
+
+                return (
+                  <div
+                    key={email}
+                    className="w-7 h-7 rounded-full border-2 border-zed-bg dark:border-zed-dark-bg bg-zed-element dark:bg-zed-dark-element flex items-center justify-center overflow-hidden shadow-sm group relative"
+                    title={name}
+                  >
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt={name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-[10px] font-bold text-zed-text dark:text-zed-dark-text">
+                        {name.charAt(0).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            {new Set(commits.map((c) => c.author.email)).size > 5 && (
               <div className="w-7 h-7 rounded-full border-2 border-zed-bg dark:border-zed-dark-bg bg-zed-element dark:bg-zed-dark-element flex items-center justify-center text-[8px] font-bold text-zed-muted shadow-sm">
-                +{new Set(commits.map((c) => c.author.name)).size - 5}
+                +{new Set(commits.map((c) => c.author.email)).size - 5}
               </div>
             )}
           </div>

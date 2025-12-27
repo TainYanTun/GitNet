@@ -56,13 +56,15 @@
     "vite-plugin-electron": "^0.28.1"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "antd": "^5.12.2",
+    "crypto-js": "^4.2.0",
     "d3": "^7.8.5",
     "lru-cache": "^11.2.4",
     "moment": "^2.30.1",
     "node-fetch": "2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "antd": "^5.12.2"
+    "react-dom": "^18.2.0"
   },
   "build": {
     "appId": "com.gitnet.app",
