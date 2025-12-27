@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useMemo } from "react";
 import * as d3 from "d3";
-import { Commit, Branch, VisualizationData, GraphNode } from "@shared/types";
+import {
+  Commit,
+  Branch,
+  VisualizationData,
+  GraphNode,
+} from "@src/shared/types";
 import { calculateLayout } from "../utils/graph-layout";
 import { Legend } from "./Legend";
 
@@ -244,7 +249,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
         const radius = 12;
         // y1 is parent (bottom/larger Y), y2 is child (top/smaller Y)
         const yMid = (y1 + y2) / 2;
-        
+
         // Ensure radius fits in the vertical space
         const vDist = Math.abs(y1 - y2);
         const r = Math.min(radius, vDist / 2);
@@ -259,7 +264,7 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           `Q ${x1} ${yMid} ${x1 + r * sx} ${yMid}`,
           `L ${x2 - r * sx} ${yMid}`,
           `Q ${x2} ${yMid} ${x2} ${yMid - r}`,
-          `L ${x2} ${y2}`
+          `L ${x2} ${y2}`,
         ].join(" ");
       })
       .attr("fill", "none")
@@ -538,7 +543,8 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
           .style("font-size", "10px")
           .style("font-weight", "bold")
           .style("pointer-events", "none")
-          .text((d: any) => {
+          .text((datum) => {
+            const d = datum as GraphNode;
             if (d.id.startsWith("stash@{")) return "S";
             return "R";
           });

@@ -20,6 +20,7 @@
     "outDir": "./dist",
     "baseUrl": "./src",
     "paths": {
+      "@src/*": ["*"],
       "@main/*": ["main/*"],
       "@renderer/*": ["renderer/*"],
       "@preload/*": ["preload/*"],

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Repository, Branch, Commit } from "@shared/types";
+import { Repository, Branch, Commit } from "@src/shared/types";
 import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
@@ -27,7 +27,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [commits, setCommits] = useState<Commit[]>([]);
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
-  const [currentView, setCurrentView] = useState<"graph" | "insights" | "history" | "contributors">("graph");
+  const [currentView, setCurrentView] = useState<
+    "graph" | "insights" | "history" | "contributors"
+  >("graph");
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -57,7 +59,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
     const fetchStashes = async () => {
       try {
-        const fetchedStashes = await window.gitnetAPI.getStashList(repository.path);
+        const fetchedStashes = await window.gitnetAPI.getStashList(
+          repository.path,
+        );
         setStashes(fetchedStashes);
       } catch (error) {
         console.error("Failed to fetch stashes:", error);
@@ -80,8 +84,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     let unsubscribeCommits: (() => void) | undefined;
 
     if (window.gitnetAPI) {
-      unsubscribeBranches = window.gitnetAPI.onBranchesUpdated(handleBranchesUpdated);
-      unsubscribeCommits = window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
+      unsubscribeBranches = window.gitnetAPI.onBranchesUpdated(
+        handleBranchesUpdated,
+      );
+      unsubscribeCommits =
+        window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
     }
 
     return () => {
@@ -251,7 +258,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
                   <span>Recent Commits</span>
                 </div>
-                <CommitMiniLog repoPath={repository.path} onCommitSelect={handleCommitSelect} />
+                <CommitMiniLog
+                  repoPath={repository.path}
+                  onCommitSelect={handleCommitSelect}
+                />
               </div>
             </div>
           </div>
@@ -271,7 +281,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 onCommitSelect={handleCommitSelect}
               />
             ) : currentView === "history" ? (
-              <CommitHistory 
+              <CommitHistory
                 commits={commits}
                 onCommitSelect={handleCommitSelect}
                 selectedCommitHash={selectedCommit?.hash}
@@ -284,7 +294,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                       Team Insights
                     </h1>
                     <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
-                      Analysis of contributor activity, development impact, and chronological engagement.
+                      Analysis of contributor activity, development impact, and
+                      chronological engagement.
                     </p>
                   </div>
                   <Contributors repoPath={repository.path} />
@@ -298,10 +309,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                       Repository Insights
                     </h1>
                     <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
-                      Analysis of file modification frequency and repository hotspots.
+                      Analysis of file modification frequency and repository
+                      hotspots.
                     </p>
                   </div>
-                  
+
                   <div className="bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border relative overflow-hidden shadow-sm">
                     <div className="p-1 border-b border-zed-border dark:border-zed-dark-border bg-zed-element/30 dark:bg-zed-dark-element/30 flex items-center justify-between px-4 py-2">
                       <h2 className="text-[10px] font-bold uppercase tracking-wider text-zed-muted dark:text-zed-dark-muted">
@@ -346,7 +358,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 commit={selectedCommit}
                 repoPath={repository.path}
                 onSelectCommit={(hashToSelect) => {
-                  const commitToSelect = commits.find(c => c.hash === hashToSelect);
+                  const commitToSelect = commits.find(
+                    (c) => c.hash === hashToSelect,
+                  );
                   if (commitToSelect) {
                     setSelectedCommit(commitToSelect);
                   } else {
@@ -378,44 +392,84 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </svg>
             <span>{repository.currentBranch}</span>
           </div>
-          
+
           <div className="w-px h-3 bg-zed-border dark:bg-zed-dark-border mx-1"></div>
 
           <div className="flex items-center gap-1">
-            <button 
+            <button
               onClick={() => setCurrentView("graph")}
               className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "graph" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
               title="Graph View"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+                />
               </svg>
             </button>
-            <button 
+            <button
               onClick={() => setCurrentView("history")}
               className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "history" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
               title="Commit History"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
             </button>
-            <button 
+            <button
               onClick={() => setCurrentView("insights")}
               className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "insights" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
               title="Insights View"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
               </svg>
             </button>
-            <button 
+            <button
               onClick={() => setCurrentView("contributors")}
               className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "contributors" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
               title="Contributors"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
               </svg>
             </button>
           </div>

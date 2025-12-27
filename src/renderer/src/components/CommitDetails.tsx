@@ -170,7 +170,7 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
           Hash
         </div>
         <div
-          className="font-mono text-zed-text dark:text-zed-dark-text text-xs truncate flex-grow min-w-0 cursor-pointer hover:bg-zed-element dark:hover:bg-zed-dark-element p-1 rounded inline-flex items-center mr-2"
+          className="font-mono text-zed-text dark:text-zed-dark-text text-xs truncate flex-grow min-w-0 cursor-pointer hover:bg-zed-element dark:hover:bg-zed-dark-element p-1 rounded inline-flex items-center"
           onClick={() => handleCopy(displayCommit.hash, displayCommit.hash)}
           title="Click to copy hash"
         >
