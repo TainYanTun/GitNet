@@ -1,6 +1,6 @@
 import { app, BrowserWindow, Menu, shell, ipcMain, dialog } from "electron";
 import { join } from "path";
-import { isDev } from "./utils";
+import { isDev, checkGitInstallation } from "./utils";
 import { GitService } from "./services/git-service";
 import { RepositoryWatcher } from "./services/repository-watcher";
 import { SettingsService } from "./services/settings-service";
@@ -21,7 +21,7 @@ class GitNetApp {
   private initializeApp(): void {
     // Handle app ready
     app.whenReady().then(async () => {
-      const isGitInstalled = await require("./utils").checkGitInstallation();
+      const isGitInstalled = await checkGitInstallation();
       if (!isGitInstalled) {
         dialog.showErrorBox(
           "Git Not Found",
@@ -100,14 +100,22 @@ class GitNetApp {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-
         preload: join(__dirname, "../../preload/preload/preload.js"),
         webSecurity: true,
         allowRunningInsecureContent: false,
       },
     });
 
-    // ... (rest of the method)
+    if (isDev) {
+      this.mainWindow.loadURL("http://localhost:3000");
+      this.mainWindow.webContents.openDevTools();
+    } else {
+      this.mainWindow.loadFile(join(__dirname, "../../renderer/index.html"));
+    }
+
+    this.mainWindow.once("ready-to-show", () => {
+      this.mainWindow?.show();
+    });
 
     // Handle window closed
     this.mainWindow.on("close", async () => {
@@ -324,10 +332,11 @@ class GitNetApp {
     }
 
     const repoPath = result.filePaths[0];
-          try {
-            const repository = await this.gitService.getRepository(repoPath);
-            await this.settingsService.addRecentRepository(repoPath);
-            return repository;    } catch (error) {
+    try {
+      const repository = await this.gitService.getRepository(repoPath);
+      await this.settingsService.addRecentRepository(repoPath);
+      return repository;
+    } catch (error) {
       console.error("Failed to load repository:", error);
 
       dialog.showErrorBox(
