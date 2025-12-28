@@ -20,7 +20,17 @@ class GitNetApp {
 
   private initializeApp(): void {
     // Handle app ready
-    app.whenReady().then(() => {
+    app.whenReady().then(async () => {
+      const isGitInstalled = await require("./utils").checkGitInstallation();
+      if (!isGitInstalled) {
+        dialog.showErrorBox(
+          "Git Not Found",
+          "Git is required to run GitNet. Please install Git and add it to your PATH, then restart the application."
+        );
+        app.quit();
+        return;
+      }
+
       this.createWindow();
       this.setupIpcHandlers();
       this.setupMenu();

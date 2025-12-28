@@ -1,6 +1,20 @@
 import { app } from 'electron';
 import { existsSync, mkdirSync, statSync } from 'fs';
 import { join } from 'path';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
+// Check if Git is installed
+export const checkGitInstallation = async (): Promise<boolean> => {
+  try {
+    await execAsync('git --version');
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 // Check if running in development mode
 export const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;

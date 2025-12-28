@@ -1,5 +1,8 @@
-import { execSync } from "child_process";
+import { exec } from "child_process";
+import { promisify } from "util";
 import * as crypto from "crypto";
+
+const execAsync = promisify(exec);
 import {
   Repository,
   Commit,
@@ -19,12 +22,26 @@ export class GitService {
     return `https://www.gravatar.com/avatar/${hash}?s=64&d=identicon`;
   }
 
+  private async run(command: string, cwd: string): Promise<string> {
+    try {
+      const { stdout } = await execAsync(command, { 
+        cwd, 
+        encoding: "utf8", 
+        maxBuffer: 10 * 1024 * 1024 
+      });
+      return stdout;
+    } catch (error) {
+      console.error(`Git command failed: ${command}`, error);
+      throw error;
+    }
+  }
+
   async getHotFiles(repoPath: string, limit = 10): Promise<HotFile[]> {
     try {
       // Use --all to get hotspots across all branches
-      const output = execSync(
+      const output = await this.run(
         `git log --all --format= --name-only | grep . | sort | uniq -c | sort -nr | head -n ${limit}`,
-        { cwd: repoPath, encoding: "utf8" }
+        repoPath
       );
       
       const lines = output.trim().split('\n').filter(line => line.trim().length > 0);
@@ -41,7 +58,6 @@ export class GitService {
         return null;
       }).filter((f): f is HotFile => f !== null && f.count > 0);
     } catch (error) {
-      console.error("HotFiles analysis failed:", error);
       return [];
     }
   }
@@ -50,7 +66,7 @@ export class GitService {
     try {
       // Use git log to get stats per author
       const command = `git log --all --pretty=format:'%an|%ae|%ct' --shortstat`;
-      const output = execSync(command, { cwd: repoPath, encoding: "utf8" });
+      const output = await this.run(command, repoPath);
       
       const lines = output.split('\n');
       const statsMap = new Map<string, ContributorStats>();
@@ -61,6 +77,9 @@ export class GitService {
       const allTimestamps = lines
         .filter(l => l.includes('|'))
         .map(l => parseInt(l.split('|')[2], 10));
+      
+      if (allTimestamps.length === 0) return [];
+      
       const projectStart = Math.min(...allTimestamps);
       const projectEnd = Math.max(...allTimestamps);
       const duration = projectEnd - projectStart || 1;
@@ -110,20 +129,19 @@ export class GitService {
       
       return Array.from(statsMap.values()).sort((a, b) => b.commitCount - a.commitCount);
     } catch (error) {
-      console.error("Failed to get contributors:", error);
       return [];
     }
   }
   async getRepository(path: string): Promise<Repository> {
     // Verify it's a Git repository
     try {
-      execSync("git rev-parse --is-inside-work-tree", { cwd: path });
+      await this.run("git rev-parse --is-inside-work-tree", path);
     } catch {
       throw new Error("Not a Git repository");
     }
 
     const name = path.split("/").pop() || "Unknown";
-    const currentBranch = this.getCurrentBranch(path);
+    const currentBranch = await this.getCurrentBranch(path);
     const headCommit = await this.getCurrentHead(path);
 
     return {
@@ -145,15 +163,17 @@ export class GitService {
     const command = `git log --all --pretty=format:'%H|%P|%an|%ae|%ct|%s|%D' --skip=${offset} -n ${limit}`;
 
     try {
-      const branches = await this.getBranches(repoPath);
+      const [branches, tagMap] = await Promise.all([
+        this.getBranches(repoPath),
+        this.getTags(repoPath)
+      ]);
+
       const branchMap = new Map<string, string>();
       branches.forEach((branch) => {
         branchMap.set(branch.objectName, branch.name);
       });
 
-      const tagMap = await this.getTags(repoPath);
-
-      const output = execSync(command, { cwd: repoPath, encoding: "utf8" });
+      const output = await this.run(command, repoPath);
       return this.parseCommits(output, branchMap, tagMap);
     } catch {
       return [];
@@ -162,9 +182,9 @@ export class GitService {
 
   async getTags(repoPath: string): Promise<Map<string, string[]>> {
     try {
-      const output = execSync(
+      const output = await this.run(
         "git show-ref --tags --dereference",
-        { cwd: repoPath, encoding: "utf8" }
+        repoPath
       );
       const tagMap = new Map<string, string[]>();
       output.split('\n').forEach(line => {
@@ -185,12 +205,9 @@ export class GitService {
 
   async getBranches(repoPath: string): Promise<Branch[]> {
     try {
-      const output = execSync(
+      const output = await this.run(
         "git branch -a --format='%(refname:short)|%(objectname)'",
-        {
-          cwd: repoPath,
-          encoding: "utf8",
-        },
+        repoPath
       );
       return this.parseBranches(output);
     } catch {
@@ -200,10 +217,8 @@ export class GitService {
 
   async getCurrentHead(repoPath: string): Promise<string> {
     try {
-      return execSync("git rev-parse HEAD", {
-        cwd: repoPath,
-        encoding: "utf8",
-      }).trim();
+      const output = await this.run("git rev-parse HEAD", repoPath);
+      return output.trim();
     } catch {
       return "";
     }
@@ -211,20 +226,9 @@ export class GitService {
 
   async getStashList(repoPath: string): Promise<string[]> {
     try {
-      const output = execSync("git stash list --pretty=format:'%gd: %gs'", {
-        cwd: repoPath,
-        encoding: "utf8",
-      }).trim();
-      return output.split("\n").filter((line) => line.length > 0);
+      const output = await this.run("git stash list --pretty=format:'%gd: %gs'", repoPath);
+      return output.trim().split("\n").filter((line) => line.length > 0);
     } catch (error) {
-      // If there's no stash, git stash list returns an empty string and exits with 0.
-      // If there's an actual error, log it.
-      if (
-        error instanceof Error &&
-        !error.message.includes("No stashed changes found")
-      ) {
-        console.error("Failed to get stash list:", error);
-      }
       return [];
     }
   }
@@ -236,9 +240,11 @@ export class GitService {
     const branchCommand = `git branch --contains ${commitHash} --format='%(refname:short)'`;
 
     try {
-      const output = execSync(command, { cwd: repoPath, encoding: "utf8" });
-      const tagsOutput = execSync(tagCommand, { cwd: repoPath, encoding: "utf8" });
-      const branchesOutput = execSync(branchCommand, { cwd: repoPath, encoding: "utf8" });
+      const [output, tagsOutput, branchesOutput] = await Promise.all([
+        this.run(command, repoPath),
+        this.run(tagCommand, repoPath).catch(() => ""),
+        this.run(branchCommand, repoPath).catch(() => "")
+      ]);
 
       return this.parseDetailedCommit(output, tagsOutput, branchesOutput);
     } catch (error) {
@@ -323,27 +329,22 @@ export class GitService {
     try {
       // For a single commit, diff against its parent(s)
       const command = `git diff ${commitHash}^ ${commitHash} -- ${filePath}`;
-      const output = execSync(command, { cwd: repoPath, encoding: "utf8" });
-      return output;
+      return await this.run(command, repoPath);
     } catch (error) {
       console.error(`Failed to get diff for ${filePath} at commit ${commitHash}:`, error);
       throw error;
     }
   }
 
-  private getCurrentBranch(repoPath: string): string {
+  private async getCurrentBranch(repoPath: string): Promise<string> {
     try {
-      return execSync("git symbolic-ref --short HEAD", {
-        cwd: repoPath,
-        encoding: "utf8",
-      }).trim();
+      const output = await this.run("git symbolic-ref --short HEAD", repoPath);
+      return output.trim();
     } catch {
       try {
         // Fallback for detached HEAD: show short hash
-        return execSync("git rev-parse --short HEAD", {
-          cwd: repoPath,
-          encoding: "utf8",
-        }).trim() || "Detached";
+        const output = await this.run("git rev-parse --short HEAD", repoPath);
+        return output.trim() || "Detached";
       } catch {
         return "Unknown";
       }
