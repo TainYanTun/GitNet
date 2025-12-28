@@ -251,8 +251,8 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
                     isTip 
                       ? "bg-zed-accent/10 border-zed-accent text-zed-accent font-bold" 
                       : isInferred
-                        ? "bg-zed-element border-zed-muted text-zed-text font-medium"
-                        : "bg-zed-element/30 border-transparent text-zed-muted dark:text-zed-dark-muted opacity-70"
+                        ? "bg-zed-element dark:bg-zed-dark-element border-zed-muted dark:border-zed-dark-border text-zed-text dark:text-zed-dark-text font-medium shadow-sm"
+                        : "bg-zed-element dark:bg-zed-dark-element border-transparent text-zed-muted dark:text-zed-dark-text opacity-90"
                   }`}
                   title={isTip ? "Branch Tip" : isInferred ? "Inferred Original Branch" : "Contains Commit"}
                 >
