@@ -101,17 +101,18 @@ const App: React.FC = () => {
 
   // Set up event listeners for repository changes
   useEffect(() => {
-    const handleRepositoryChanged = (event: any) => {
+    const handleRepositoryChanged = async (event: any) => {
       console.log("Repository changed:", event);
-      // Handle repository changes from file system watcher
-      if (
-        event.repository &&
-        state.repository?.path === event.repository.path
-      ) {
-        setState((prev) => ({
-          ...prev,
-          repository: event.repository,
-        }));
+      if (state.repository) {
+        try {
+          const updatedRepo = await window.gitnetAPI.getRepository(state.repository.path);
+          setState((prev) => ({
+            ...prev,
+            repository: updatedRepo,
+          }));
+        } catch (error) {
+          console.error("Failed to refresh repository on change:", error);
+        }
       }
     };
 

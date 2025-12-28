@@ -32,71 +32,41 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     "graph" | "insights" | "history" | "contributors" | "stashes" | "checkout"
   >("graph");
 
+  const refreshData = React.useCallback(async () => {
+    try {
+      const [fetchedBranches, fetchedCommits, fetchedStashes] = await Promise.all([
+        window.gitnetAPI.getBranches(repository.path),
+        window.gitnetAPI.getCommits(repository.path, 1000),
+        window.gitnetAPI.getStashList(repository.path)
+      ]);
+      setBranches(fetchedBranches);
+      setCommits(fetchedCommits);
+      setStashes(fetchedStashes);
+    } catch (error) {
+      console.error("Failed to refresh data:", error);
+      showToast("Failed to refresh repository data.", "error");
+    }
+  }, [repository.path, showToast]);
+
   useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const fetchedBranches = await window.gitnetAPI.getBranches(
-          repository.path,
-        );
-        setBranches(fetchedBranches);
-      } catch (error) {
-        console.error("Failed to fetch branches:", error);
-        showToast("Failed to load branches.", "error");
-      }
-    };
-
-    const fetchCommits = async () => {
-      try {
-        const fetchedCommits = await window.gitnetAPI.getCommits(
-          repository.path,
-          1000,
-        ); // Fetch up to 1000 commits
-        setCommits(fetchedCommits);
-      } catch (error) {
-        console.error("Failed to fetch commits:", error);
-        showToast("Failed to load commits.", "error");
-      }
-    };
-
-    const fetchStashes = async () => {
-      try {
-        const fetchedStashes = await window.gitnetAPI.getStashList(
-          repository.path,
-        );
-        setStashes(fetchedStashes);
-      } catch (error) {
-        console.error("Failed to fetch stashes:", error);
-      }
-    };
-
-    fetchBranches();
-    fetchCommits();
-    fetchStashes();
-
-    const handleBranchesUpdated = () => {
-      fetchBranches(); // Re-fetch branches when updated
-    };
-
-    const handleCommitsUpdated = () => {
-      fetchCommits(); // Re-fetch commits when updated
-    };
+    refreshData();
 
     let unsubscribeBranches: (() => void) | undefined;
     let unsubscribeCommits: (() => void) | undefined;
+    let unsubscribeHead: (() => void) | undefined;
 
     if (window.gitnetAPI) {
-      unsubscribeBranches = window.gitnetAPI.onBranchesUpdated(
-        handleBranchesUpdated,
-      );
-      unsubscribeCommits =
-        window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
+      unsubscribeBranches = window.gitnetAPI.onBranchesUpdated(refreshData);
+      unsubscribeCommits = window.gitnetAPI.onCommitsUpdated(refreshData);
+      unsubscribeHead = window.gitnetAPI.onHeadChanged(refreshData);
     }
 
     return () => {
       unsubscribeBranches?.();
       unsubscribeCommits?.();
+      unsubscribeHead?.();
     };
-  }, [repository.path, repository.currentBranch, showToast]);
+  }, [repository.path, repository.currentBranch, refreshData]);
 
   const handleBranchSelect = async (branchName: string) => {
     if (branchName === repository.currentBranch) return;
@@ -108,18 +78,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       try {
         showToast(`Checking out ${branchName}...`, "info");
         await window.gitnetAPI.checkoutBranch(repository.path, branchName);
-                showToast(`Checked out ${branchName}`, "success");
-                
-                // Refresh local state (this will also be triggered by the watcher)
-                const [fetchedBranches, updatedRepo] = await Promise.all([
-                  window.gitnetAPI.getBranches(repository.path),
-                  window.gitnetAPI.getRepository(repository.path)
-                ]);
-                setBranches(fetchedBranches);
-                // This will update the parent state in App.tsx if we had a callback, 
-                // but since it's passed as a prop, the watcher 'head-changed' is the primary sync.
-                // However, we can at least make sure local fetching is triggered.
-              } catch (error) {        console.error("Checkout failed:", error);
+        showToast(`Checked out ${branchName}`, "success");
+        
+        // Refresh local state
+        refreshData();
+      } catch (error) {
+        console.error("Checkout failed:", error);
         showToast(
           `Checkout failed: ${error instanceof Error ? error.message : "Unknown error"}`,
           "error",
@@ -134,11 +98,16 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     setSelectedCommit(commit);
   };
 
-  // Keyboard shortcut for closing the right sidebar
+  // Keyboard shortcut for closing the right sidebar and manual refresh
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setSelectedCommit(null);
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === "r") {
+        event.preventDefault();
+        refreshData();
+        showToast("Refreshing repository...", "info");
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -541,11 +510,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
           </div>
 
-          <div className="w-px h-3 bg-zed-border dark:bg-zed-dark-border mx-1"></div>
+          <div className="w-px h-3 bg-zed-border dark:border-zed-dark-border mx-1"></div>
 
-          <div className="flex items-center gap-1.5 text-zed-muted dark:text-zed-dark-muted">
+          <button
+            onClick={() => {
+              refreshData();
+              showToast("Refreshing repository data...", "info");
+            }}
+            className="flex items-center gap-1.5 text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text transition-colors group"
+          >
             <svg
-              className="w-3 h-3"
+              className="w-3 h-3 group-active:animate-spin"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -557,8 +532,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
               />
             </svg>
-            <span>Sync</span>
-          </div>
+            <span className="font-medium">Sync</span>
+          </button>
         </div>
         <div className="flex items-center gap-4 text-zed-muted dark:text-zed-dark-muted">
           <span>UTF-8</span>

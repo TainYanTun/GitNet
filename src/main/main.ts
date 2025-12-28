@@ -334,7 +334,8 @@ class GitNetApp {
     // File system operations
     ipcMain.handle("watch-repository", (_, repoPath: string) => {
       this.repositoryWatcher.watchRepository(repoPath, (event) => {
-        this.mainWindow?.webContents.send("repository-event", event);
+        // Send specific event type to renderer
+        this.mainWindow?.webContents.send(event.type, event);
       });
     });
     ipcMain.handle("unwatch-repository", (_, repoPath: string) =>

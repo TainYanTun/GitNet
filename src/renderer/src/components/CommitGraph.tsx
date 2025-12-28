@@ -188,10 +188,12 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
 
     if (currentTransform && !isNewRepo) {
       svg.call(zoom.transform, currentTransform);
-    } else if (headCommitHash) {
+    } else if (isNewRepo && headCommitHash) {
+      // Only auto-center on HEAD for a brand new repo load
       centerOnCommit(headCommitHash);
-      if (commits.length > 0) lastRepoPathRef.current = commits[0].hash;
-    } else {
+      lastRepoPathRef.current = commits[0].hash;
+    } else if (!currentTransform) {
+      // Default view if no transform exists
       svg.call(zoom.transform, d3.zoomIdentity.translate(40, 60).scale(0.8));
     }
 

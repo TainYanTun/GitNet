@@ -116,25 +116,6 @@ const gitnetAPI: GitNetAPI = {
 console.log("Exposing gitnetAPI with keys:", Object.keys(gitnetAPI));
 contextBridge.exposeInMainWorld("gitnetAPI", gitnetAPI);
 
-// Listen for repository events from main process
-ipcRenderer.on("repository-event", (_, event: AppEvent) => {
-  // Forward events to the appropriate listeners
-  switch (event.type) {
-    case "repository-changed":
-      ipcRenderer.emit("repository-changed", null, event);
-      break;
-    case "commits-updated":
-      ipcRenderer.emit("commits-updated", null, event);
-      break;
-    case "branches-updated":
-      ipcRenderer.emit("branches-updated", null, event);
-      break;
-    case "head-changed":
-      ipcRenderer.emit("head-changed", null, event);
-      break;
-  }
-});
-
 // Log that preload script has loaded (development only)
 if (process.env.NODE_ENV === "development") {
   console.log("🔧 GitNet preload script loaded");
