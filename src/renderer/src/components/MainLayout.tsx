@@ -15,11 +15,13 @@ import { BranchCheckout } from "./BranchCheckout";
 interface MainLayoutProps {
   repository: Repository;
   onCloseRepository: () => void;
+  onRefreshRepository?: () => void;
 }
 
 export const MainLayout: React.FC<MainLayoutProps> = ({
   repository,
   onCloseRepository,
+  onRefreshRepository,
 }) => {
   const { toggleTheme } = useTheme();
   const { showToast } = useToast();
@@ -42,6 +44,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       setBranches(fetchedBranches);
       setCommits(fetchedCommits);
       setStashes(fetchedStashes);
+      onRefreshRepository?.();
     } catch (error) {
       console.error("Failed to refresh data:", error);
       showToast("Failed to refresh repository data.", "error");

@@ -80,6 +80,20 @@ const App: React.FC = () => {
     showToast("Repository closed", "info");
   };
 
+  const refreshRepository = async () => {
+    if (state.repository) {
+      try {
+        const updatedRepo = await window.gitnetAPI.getRepository(state.repository.path);
+        setState((prev) => ({
+          ...prev,
+          repository: updatedRepo,
+        }));
+      } catch (error) {
+        console.error("Failed to refresh repository:", error);
+      }
+    }
+  };
+
   // Check for initial repository from CLI
   useEffect(() => {
     const checkInitialRepo = async () => {
@@ -202,6 +216,7 @@ const App: React.FC = () => {
           <MainLayout
             repository={state.repository}
             onCloseRepository={handleCloseRepository}
+            onRefreshRepository={refreshRepository}
           />
         ) : (
           <WelcomeScreen onSelectRepository={handleSelectRepository} />
