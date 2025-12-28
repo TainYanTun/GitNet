@@ -8,6 +8,7 @@ import { StashList } from "./StashList";
 import { HotFiles } from "./HotFiles";
 import { CommitHistory } from "./CommitHistory";
 import { Contributors } from "./Contributors";
+import { StashGallery } from "./StashGallery";
 import { CommitGraph } from "./CommitGraph"; // Import CommitGraph
 import { CommitDetails } from "./CommitDetails"; // Import CommitDetails
 
@@ -28,7 +29,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
   const [currentView, setCurrentView] = useState<
-    "graph" | "insights" | "history" | "contributors"
+    "graph" | "insights" | "history" | "contributors" | "stashes"
   >("graph");
 
   useEffect(() => {
@@ -236,7 +237,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </div>
 
               <div className="space-y-1">
-                <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
+                <div className="px-3 py-2 text-[10px] font-bold text-zed-muted dark:text-zed-dark-muted uppercase tracking-[0.1em] flex items-center justify-between group opacity-50">
                   <span>Branches</span>
                 </div>
                 <BranchExplorer
@@ -246,17 +247,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 />
               </div>
 
-              {/* Stash List */}
               <div className="space-y-1">
-                <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
-                  <span>Stash List</span>
-                </div>
-                <StashList repoPath={repository.path} />
-              </div>
-
-              <div className="space-y-1">
-                <div className="px-3 py-2 text-xs text-zed-muted dark:text-zed-dark-muted uppercase tracking-wider flex items-center justify-between group">
-                  <span>Recent Commits</span>
+                <div className="px-3 py-2 text-[10px] font-bold text-zed-muted dark:text-zed-dark-muted uppercase tracking-[0.1em] flex items-center justify-between group opacity-50">
+                  <span>Recent</span>
                 </div>
                 <CommitMiniLog
                   repoPath={repository.path}
@@ -283,6 +276,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             ) : currentView === "history" ? (
               <CommitHistory
                 commits={commits}
+                branches={branches}
+                headCommitHash={repository.headCommit}
                 onCommitSelect={handleCommitSelect}
                 selectedCommitHash={selectedCommit?.hash}
               />
@@ -301,7 +296,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   <Contributors repoPath={repository.path} />
                 </div>
               </div>
-            ) : (
+            ) : currentView === "insights" ? (
               <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
                 <div className="p-12 max-w-5xl mx-auto">
                   <div className="mb-10">
@@ -324,6 +319,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   </div>
                 </div>
               </div>
+            ) : (
+              <StashGallery repoPath={repository.path} />
             )}
           </div>
         </div>
@@ -376,25 +373,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Status Bar */}
       <div className="h-8 flex items-center justify-between px-3 bg-zed-surface dark:bg-zed-dark-surface border-t border-zed-border dark:border-zed-dark-border text-[11px] text-zed-text dark:text-zed-dark-text select-none py-1">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 hover:text-zed-accent cursor-pointer transition-colors">
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            <span>{repository.currentBranch}</span>
-          </div>
-
-          <div className="w-px h-3 bg-zed-border dark:bg-zed-dark-border mx-1"></div>
-
           <div className="flex items-center gap-1">
             <button
               onClick={() => setCurrentView("graph")}
@@ -469,6 +447,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   strokeLinejoin="round"
                   strokeWidth={1.5}
                   d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCurrentView("stashes")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "stashes" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Stash Gallery"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
                 />
               </svg>
             </button>

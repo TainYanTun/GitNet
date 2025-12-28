@@ -1,0 +1,116 @@
+import React, { useState, useEffect } from "react";
+import moment from "moment";
+import { useToast } from "./ToastContext";
+
+interface StashGalleryProps {
+  repoPath: string;
+}
+
+export const StashGallery: React.FC<StashGalleryProps> = ({ repoPath }) => {
+  const { showToast } = useToast();
+  const [stashes, setStashes] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchStashes = async () => {
+    setLoading(true);
+    try {
+      const fetchedStashes = await window.gitnetAPI.getStashList(repoPath);
+      setStashes(fetchedStashes);
+    } catch (error) {
+      console.error("Failed to fetch stashes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStashes();
+  }, [repoPath]);
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center bg-zed-bg dark:bg-zed-dark-bg">
+        <div className="w-4 h-4 border-2 border-zed-accent border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full w-full bg-zed-bg dark:bg-zed-dark-bg flex flex-col animate-in fade-in duration-300">
+      {/* Header - Zed Style */}
+      <div className="px-8 py-6 border-b border-zed-border/30 dark:border-zed-dark-border/30">
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-lg font-medium text-zed-text dark:text-zed-dark-text tracking-tight">
+            Stashes
+          </h1>
+          <span className="text-[10px] font-bold text-zed-muted uppercase tracking-[0.2em] opacity-40">
+            {stashes.length} entries
+          </span>
+        </div>
+      </div>
+
+      {/* List Area */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {stashes.length === 0 ? (
+          <div className="h-64 flex flex-col items-center justify-center opacity-30">
+            <p className="text-xs font-medium tracking-wider uppercase">Empty Stack</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-zed-border/20 dark:divide-zed-dark-border/20">
+            {stashes.map((stash, index) => {
+              const parts = stash.split(':');
+              const id = parts[0].trim();
+              const message = parts.slice(2).join(':').trim() || parts[1]?.trim() || stash;
+              const branchInfo = parts[1]?.trim() || "unknown";
+
+              return (
+                <div 
+                  key={id} 
+                  className="group flex items-center gap-6 px-8 py-3 hover:bg-zed-element/30 dark:hover:bg-zed-dark-element/30 transition-colors"
+                >
+                  <div className="w-8 text-[10px] font-mono text-zed-muted opacity-30 group-hover:opacity-60">
+                    {index.toString().padStart(2, '0')}
+                  </div>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-3">
+                      <span className="text-sm text-zed-text dark:text-zed-dark-text truncate font-medium">
+                        {message}
+                      </span>
+                      <span className="text-[10px] font-mono text-zed-accent opacity-70">
+                        @{branchInfo.replace('On ', '')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <span className="text-[10px] font-mono text-zed-muted opacity-30 hidden md:block">
+                      {id}
+                    </span>
+                    
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => showToast("Apply logic coming soon!", "info")}
+                        className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zed-muted hover:text-zed-accent hover:bg-zed-accent/10 transition-all rounded"
+                      >
+                        Apply
+                      </button>
+                      <button 
+                        className="p-1.5 text-zed-muted hover:text-commit-fix transition-colors"
+                        title="Drop"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

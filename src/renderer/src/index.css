@@ -127,33 +127,33 @@
         @apply stroke-2 fill-none;
     }
 
-    /* Scrollbar styles for webkit browsers */
-    .custom-scrollbar::-webkit-scrollbar {
-        @apply w-3 h-3;
+    /* Global Scrollbar Styles */
+    *::-webkit-scrollbar {
+        @apply w-[6px] h-[6px];
     }
 
-    .custom-scrollbar::-webkit-scrollbar-track {
+    *::-webkit-scrollbar-track {
         @apply bg-transparent;
     }
 
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        @apply bg-transparent border-[3px] border-solid border-transparent bg-clip-content rounded-full;
-        background-color: theme("colors.zed.element");
+    *::-webkit-scrollbar-thumb {
+        @apply bg-transparent border-[1px] border-solid border-transparent bg-clip-content rounded-full;
+        background-color: theme("colors.zed.border");
     }
 
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    *::-webkit-scrollbar-thumb:hover {
         background-color: theme("colors.zed.muted");
     }
 
-    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: theme("colors.zed.dark.element");
+    .dark *::-webkit-scrollbar-thumb {
+        background-color: theme("colors.zed.dark.border");
     }
 
-    .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    .dark *::-webkit-scrollbar-thumb:hover {
         background-color: theme("colors.zed.dark.muted");
     }
 
-    .dark .custom-scrollbar::-webkit-scrollbar-corner {
+    *::-webkit-scrollbar-corner {
         @apply bg-transparent;
     }
 }

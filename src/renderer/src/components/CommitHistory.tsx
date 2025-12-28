@@ -1,15 +1,19 @@
 import React, { useState, useMemo } from "react";
-import { Commit } from "@shared/types";
+import { Commit, Branch } from "@shared/types";
 import moment from "moment";
 
 interface CommitHistoryProps {
   commits: Commit[];
+  branches: Branch[];
+  headCommitHash?: string;
   onCommitSelect: (commit: Commit) => void;
   selectedCommitHash?: string;
 }
 
 export const CommitHistory: React.FC<CommitHistoryProps> = ({
   commits,
+  branches,
+  headCommitHash,
   onCommitSelect,
   selectedCommitHash,
 }) => {
