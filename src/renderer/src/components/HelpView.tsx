@@ -7,8 +7,8 @@ export const HelpView: React.FC = () => {
         
         {/* Abstract */}
         <section className="space-y-4">
-          <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-zed-accent font-mono">GitNet / Reference</h1>
-          <p className="text-lg leading-relaxed opacity-90">
+          <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-zed-accent dark:text-zed-dark-accent font-mono">GitNet / Reference</h1>
+          <p className="text-lg leading-relaxed text-zed-text dark:text-zed-dark-text opacity-100 dark:opacity-100">
             GitNet is a non-linear version control visualizer. It maps the Directed Acyclic Graph (DAG) of a Git repository onto a stable, multi-lane grid system optimized for architectural clarity.
           </p>
         </section>
@@ -16,42 +16,42 @@ export const HelpView: React.FC = () => {
         {/* 01. The Visualization Engine */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">01</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">01</span>
             <h2 className="text-lg font-bold tracking-tight">The Visualization Engine</h2>
           </div>
           
-          <div className="space-y-12 pl-8 border-l border-zed-border">
+          <div className="space-y-12 pl-8 border-l border-zed-border dark:border-zed-dark-border">
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold">Railway Algorithm</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
+              <h3 className="text-sm font-semibold text-zed-text dark:text-zed-dark-text">Railway Algorithm</h3>
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
                 The engine uses a lane-persistent layout. The project spine (main/master) is anchored to the leftmost lane. Parallel work is assigned to secondary lanes that persist until a merge or deletion occurs, preventing visual jitter during scrolling.
               </p>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-widest text-zed-muted text-[10px]">Symbolic Encoding</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-widest text-zed-muted dark:text-zed-dark-muted text-[10px]">Symbolic Encoding</h3>
               <div className="grid grid-cols-1 gap-6 text-sm">
                 <div className="flex gap-6">
-                  <div className="w-1/3 shrink-0 opacity-60 font-medium">Node Color</div>
+                  <div className="w-1/3 shrink-0 text-zed-muted dark:text-zed-dark-text/60 font-medium">Node Color</div>
                   <div className="space-y-2">
-                    <p>Colors indicate the semantic intent of a commit based on the <span className="text-zed-accent">Conventional Commits</span> specification.</p>
+                    <p className="text-zed-text dark:text-zed-dark-text">Colors indicate the semantic intent of a commit based on the <span className="text-zed-accent dark:text-zed-dark-accent font-semibold">Conventional Commits</span> specification.</p>
                     <div className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
-                      <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-commit-feat"></span> <span className="text-xs font-mono">feat</span></div>
-                      <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-commit-fix"></span> <span className="text-xs font-mono">fix</span></div>
-                      <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-commit-refactor"></span> <span className="text-xs font-mono">refac</span></div>
-                      <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-commit-docs"></span> <span className="text-xs font-mono">docs</span></div>
+                      <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-commit-feat shadow-[0_0_10px_rgba(152,195,121,0.3)]"></span> <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-text/70">feat</span></div>
+                      <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-commit-fix shadow-[0_0_10px_rgba(224,108,117,0.3)]"></span> <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-text/70">fix</span></div>
+                      <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-commit-refactor shadow-[0_0_10px_rgba(229,192,123,0.3)]"></span> <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-text/70">refac</span></div>
+                      <div className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full bg-commit-docs shadow-[0_0_10px_rgba(97,175,239,0.3)]"></span> <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-text/70">docs</span></div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="flex gap-6 border-t border-zed-border/50 pt-6">
-                  <div className="w-1/3 shrink-0 opacity-60 font-medium">Node Geometry</div>
+                <div className="flex gap-6 border-t border-zed-border dark:border-zed-dark-border/50 pt-6">
+                  <div className="w-1/3 shrink-0 text-zed-muted dark:text-zed-dark-text/60 font-medium">Node Geometry</div>
                   <div className="space-y-2">
-                    <p>Shapes represent structural events in the history.</p>
+                    <p className="text-zed-text dark:text-zed-dark-text">Shapes represent structural events in the history.</p>
                     <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2 text-xs font-mono">
-                      <div className="flex items-center gap-2"><span className="opacity-40 text-lg">○</span> <span>Standard</span></div>
-                      <div className="flex items-center gap-2"><span className="text-zed-accent text-lg">◆</span> <span>Merge</span></div>
-                      <div className="flex items-center gap-2"><span className="opacity-40 text-lg">□</span> <span>Revert</span></div>
+                      <div className="flex items-center gap-2"><span className="text-zed-muted dark:text-zed-dark-text/40 text-lg">○</span> <span className="text-zed-text dark:text-zed-dark-text/80">Standard</span></div>
+                      <div className="flex items-center gap-2"><span className="text-zed-accent dark:text-zed-dark-accent text-lg font-bold">◆</span> <span className="text-zed-text dark:text-zed-dark-text/80">Merge</span></div>
+                      <div className="flex items-center gap-2"><span className="text-zed-muted dark:text-zed-dark-text/40 text-lg">□</span> <span className="text-zed-text dark:text-zed-dark-text/80">Revert</span></div>
                     </div>
                   </div>
                 </div>
@@ -63,39 +63,39 @@ export const HelpView: React.FC = () => {
         {/* 02. Conventional Metadata */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">02</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">02</span>
             <h2 className="text-lg font-bold tracking-tight">Conventional Metadata</h2>
           </div>
           
-          <div className="space-y-8 pl-8 border-l border-zed-border">
+          <div className="space-y-8 pl-8 border-l border-zed-border dark:border-zed-dark-border">
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Semantic Commit Messages</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                GitNet automatically parses your commit subjects. Using prefixes like <code className="text-zed-accent font-mono text-xs">feat:</code> or <code className="text-zed-accent font-mono text-xs">fix:</code> allows the engine to instantly categorize work and apply appropriate color coding to nodes.
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                GitNet automatically parses your commit subjects. Using prefixes like <code className="text-zed-accent dark:text-zed-dark-accent font-mono text-xs bg-zed-element dark:bg-zed-dark-element px-1 rounded">feat:</code> or <code className="text-zed-accent dark:text-zed-dark-accent font-mono text-xs bg-zed-element dark:bg-zed-dark-element px-1 rounded">fix:</code> allows the engine to instantly categorize work.
               </p>
             </div>
 
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Branch Naming Patterns</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                The visual identity of a branch is determined by its name. GitNet recognizes common industry patterns:
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                Visual identity is mapped to common industry naming patterns:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono mt-4">
-                <div className="p-3 bg-zed-element/30 rounded border border-zed-border">
-                  <span className="text-zed-accent">feature/*</span>
-                  <p className="text-zed-muted mt-1 opacity-60 font-sans italic text-[10px]">Assigns unique feature colors.</p>
+                <div className="p-3 bg-zed-element/30 dark:bg-zed-dark-element/30 rounded border border-zed-border dark:border-zed-dark-border">
+                  <span className="text-zed-accent dark:text-zed-dark-accent font-bold">feature/*</span>
+                  <p className="text-zed-muted dark:text-zed-dark-text/50 mt-1 font-sans italic text-[10px]">Unique feature-lane colors.</p>
                 </div>
-                <div className="p-3 bg-zed-element/30 rounded border border-zed-border">
-                  <span className="text-zed-accent">hotfix/*</span>
-                  <p className="text-zed-muted mt-1 opacity-60 font-sans italic text-[10px]">Locked to high-priority Orange.</p>
+                <div className="p-3 bg-zed-element/30 dark:bg-zed-dark-element/30 rounded border border-zed-border dark:border-zed-dark-border">
+                  <span className="text-zed-accent dark:text-zed-dark-accent font-bold">hotfix/*</span>
+                  <p className="text-zed-muted dark:text-zed-dark-text/50 mt-1 font-sans italic text-[10px]">Locked to high-priority Orange.</p>
                 </div>
-                <div className="p-3 bg-zed-element/30 rounded border border-zed-border">
-                  <span className="text-zed-accent">release/*</span>
-                  <p className="text-zed-muted mt-1 opacity-60 font-sans italic text-[10px]">Locked to stable Red.</p>
+                <div className="p-3 bg-zed-element/30 dark:bg-zed-dark-element/30 rounded border border-zed-border dark:border-zed-dark-border">
+                  <span className="text-zed-accent dark:text-zed-dark-accent font-bold">release/*</span>
+                  <p className="text-zed-muted dark:text-zed-dark-text/50 mt-1 font-sans italic text-[10px]">Locked to stable Red.</p>
                 </div>
-                <div className="p-3 bg-zed-element/30 rounded border border-zed-border">
-                  <span className="text-zed-accent">develop</span>
-                  <p className="text-zed-muted mt-1 opacity-60 font-sans italic text-[10px]">Locked to Emerald Green.</p>
+                <div className="p-3 bg-zed-element/30 dark:bg-zed-dark-element/30 rounded border border-zed-border dark:border-zed-dark-border">
+                  <span className="text-zed-accent dark:text-zed-dark-accent font-bold">develop</span>
+                  <p className="text-zed-muted dark:text-zed-dark-text/50 mt-1 font-sans italic text-[10px]">Locked to Emerald Green.</p>
                 </div>
               </div>
             </div>
@@ -105,22 +105,22 @@ export const HelpView: React.FC = () => {
         {/* 03. Interaction Logic */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">03</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">03</span>
             <h2 className="text-lg font-bold tracking-tight">Interaction Logic</h2>
           </div>
           
-          <div className="space-y-8 pl-8 border-l border-zed-border">
+          <div className="space-y-8 pl-8 border-l border-zed-border dark:border-zed-dark-border">
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Linear Focus Mode</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                Hovering over any node triggers a recursive lineage trace. Ancestors (input commits) and Descendants (resultant commits) are highlighted, while unrelated branches are dimmed. This isolates the "story" of a feature from the noise of the rest of the repository.
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                Hovering over any node triggers a recursive lineage trace. Ancestors and Descendants are highlighted, while unrelated branches are dimmed. This isolates the "story" of a feature from the noise of the rest of the repository.
               </p>
             </div>
 
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Selection & Diffs</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                Selecting a commit activates the Detail Panel. Files are presented in a hierarchical tree. Clicking a file triggers an asynchronous Git diff process, retrieving only the changes relevant to that specific delta for maximum performance.
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                Selecting a commit activates the Detail Panel. Files are presented in a hierarchical tree. Clicking a file triggers an asynchronous Git diff process, retrieving only the changes relevant to that specific delta.
               </p>
             </div>
           </div>
@@ -129,37 +129,37 @@ export const HelpView: React.FC = () => {
         {/* 04. Commit Metadata Context */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">04</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">04</span>
             <h2 className="text-lg font-bold tracking-tight">Commit Metadata Context</h2>
           </div>
           
-          <div className="space-y-8 pl-8 border-l border-zed-border">
-            <p className="text-sm text-zed-muted leading-relaxed">
-              When a commit is selected, the sidebar displays all branches that contain that specific work. GitNet uses a hierarchical highlighting system to distinguish the commit's relationship to the repository:
+          <div className="space-y-8 pl-8 border-l border-zed-border dark:border-zed-dark-border">
+            <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+              When a commit is selected, the sidebar displays all branches that contain that specific work using a hierarchical highlighting system:
             </p>
 
             <div className="grid grid-cols-1 gap-4 text-xs">
               <div className="flex gap-6 items-center">
-                <div className="w-24 shrink-0 px-2 py-1 rounded-full border border-zed-accent bg-zed-accent/10 text-zed-accent font-bold text-center">● branch</div>
+                <div className="w-24 shrink-0 px-2 py-1 rounded-full border border-zed-accent dark:border-zed-dark-accent bg-zed-accent/10 dark:bg-zed-dark-accent/10 text-zed-accent dark:text-zed-dark-accent font-bold text-center uppercase tracking-tighter">● branch</div>
                 <div className="space-y-1">
-                  <p className="font-semibold text-zed-text">Branch Tip</p>
-                  <p className="text-zed-muted text-[11px]">Indicates the commit is the current latest endpoint (HEAD) of this branch.</p>
+                  <p className="font-semibold text-zed-text dark:text-zed-dark-text">Branch Tip</p>
+                  <p className="text-zed-muted dark:text-zed-dark-text/60 text-[11px]">The commit is the current latest endpoint (HEAD) of this branch.</p>
                 </div>
               </div>
 
               <div className="flex gap-6 items-center">
-                <div className="w-24 shrink-0 px-2 py-1 rounded-full border border-zed-muted bg-zed-element text-zed-text font-medium text-center">branch</div>
+                <div className="w-24 shrink-0 px-2 py-1 rounded-full border border-zed-border dark:border-zed-dark-border bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text font-medium text-center uppercase tracking-tighter">branch</div>
                 <div className="space-y-1">
-                  <p className="font-semibold text-zed-text">Inferred Original</p>
-                  <p className="text-zed-muted text-[11px]">The primary branch context where this commit was likely authored.</p>
+                  <p className="font-semibold text-zed-text dark:text-zed-dark-text">Inferred Original</p>
+                  <p className="text-zed-muted dark:text-zed-dark-text/60 text-[11px]">The primary branch context where this commit was authored.</p>
                 </div>
               </div>
 
-              <div className="flex gap-6 items-center opacity-60">
-                <div className="w-24 shrink-0 px-2 py-1 rounded-full bg-zed-element text-zed-text text-center">branch</div>
+              <div className="flex gap-6 items-center">
+                <div className="w-24 shrink-0 px-2 py-1 rounded-full bg-zed-element/50 dark:bg-zed-dark-element/50 text-zed-muted dark:text-zed-dark-text/40 text-center uppercase tracking-tighter">branch</div>
                 <div className="space-y-1">
-                  <p className="font-semibold text-zed-text">Merged / Contains</p>
-                  <p className="text-zed-muted text-[11px]">Other branches that have since incorporated this commit via merges.</p>
+                  <p className="font-semibold text-zed-text dark:text-zed-dark-text/70">Merged / Contains</p>
+                  <p className="text-zed-muted dark:text-zed-dark-text/60 text-[11px]">Branches that have incorporated this commit via merges.</p>
                 </div>
               </div>
             </div>
@@ -169,18 +169,18 @@ export const HelpView: React.FC = () => {
         {/* 05. Global Shortcuts */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">05</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">05</span>
             <h2 className="text-lg font-bold tracking-tight">Global Shortcuts</h2>
           </div>
           
-          <div className="pl-8 border-l border-zed-border">
+          <div className="pl-8 border-l border-zed-border dark:border-zed-dark-border">
             <div className="grid grid-cols-2 gap-y-4 max-w-sm text-[11px] font-mono uppercase tracking-tighter">
-              <div className="opacity-40">Sync Data</div> <div className="text-right font-bold">Cmd R</div>
-              <div className="opacity-40">Open Repo</div> <div className="text-right font-bold">Cmd O</div>
-              <div className="opacity-40">Escape View</div> <div className="text-right font-bold">Esc</div>
-              <div className="opacity-40 border-t border-zed-border/50 pt-4">Search Tags</div> <div className="text-right border-t border-zed-border/50 pt-4 font-bold text-zed-accent">tag:</div>
-              <div className="opacity-40">Search Author</div> <div className="text-right font-bold text-zed-accent">author:</div>
-              <div className="opacity-40">Jump Hash</div> <div className="text-right font-bold text-zed-accent"># [hash]</div>
+              <div className="text-zed-muted dark:text-zed-dark-text/50">Sync Data</div> <div className="text-right font-bold text-zed-text dark:text-zed-dark-text">Cmd R</div>
+              <div className="text-zed-muted dark:text-zed-dark-text/50">Open Repo</div> <div className="text-right font-bold text-zed-text dark:text-zed-dark-text">Cmd O</div>
+              <div className="text-zed-muted dark:text-zed-dark-text/50">Escape View</div> <div className="text-right font-bold text-zed-text dark:text-zed-dark-text">Esc</div>
+              <div className="text-zed-muted dark:text-zed-dark-text/30 border-t border-zed-border dark:border-zed-dark-border/50 pt-4">Search Tags</div> <div className="text-right border-t border-zed-border dark:border-zed-dark-border/50 pt-4 font-bold text-zed-accent dark:text-zed-dark-accent">tag:</div>
+              <div className="text-zed-muted dark:text-zed-dark-text/30">Search Author</div> <div className="text-right font-bold text-zed-accent dark:text-zed-dark-accent">author:</div>
+              <div className="text-zed-muted dark:text-zed-dark-text/30">Jump Hash</div> <div className="text-right font-bold text-zed-accent dark:text-zed-dark-accent"># [hash]</div>
             </div>
           </div>
         </section>
@@ -188,22 +188,22 @@ export const HelpView: React.FC = () => {
         {/* 06. Analytical Insights */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">06</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">06</span>
             <h2 className="text-lg font-bold tracking-tight">Analytical Insights</h2>
           </div>
           
-          <div className="space-y-8 pl-8 border-l border-zed-border">
+          <div className="space-y-8 pl-8 border-l border-zed-border dark:border-zed-dark-border">
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Hotspot Detection</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                The <span className="text-zed-text font-medium">Hot Files</span> algorithm calculates modification frequency across all paths. High-churn files are visualized as hotspots, identifying areas of the codebase that may require refactoring or more rigorous testing due to frequent instability.
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                The <span className="text-zed-text dark:text-zed-dark-text font-bold underline decoration-zed-accent/30 decoration-2 underline-offset-2">Hot Files</span> algorithm identifies high-churn areas of the codebase that may require refactoring due to frequent instability.
               </p>
             </div>
 
             <div className="space-y-3">
               <h3 className="text-sm font-semibold">Contributor Engagement</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                Activity heatmaps represent commit density over time buckets. This provides a chronological perspective on project momentum and identifies key contributors based on their historical impact and repository influence.
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                Activity heatmaps provide a chronological perspective on project momentum and identify key contributors based on their historical impact.
               </p>
             </div>
           </div>
@@ -212,19 +212,19 @@ export const HelpView: React.FC = () => {
         {/* 07. Advanced Structural Patterns */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">07</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">07</span>
             <h2 className="text-lg font-bold tracking-tight">Advanced Structural Patterns</h2>
           </div>
           
-          <div className="space-y-8 pl-8 border-l border-zed-border text-sm text-zed-muted">
+          <div className="space-y-8 pl-8 border-l border-zed-border dark:border-zed-dark-border text-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <h4 className="text-[10px] font-bold text-zed-text uppercase tracking-widest">Fast-Forward Merges</h4>
-                <p className="leading-relaxed text-[13px]">Linear merges are represented as a continuous vertical line. Since no merge commit is created, the "Railway" remains straight, preserving project spine integrity.</p>
+                <h4 className="text-[10px] font-bold text-zed-text dark:text-zed-dark-text uppercase tracking-widest">Fast-Forward Merges</h4>
+                <p className="text-zed-muted dark:text-zed-dark-text/70 leading-relaxed text-[13px]">Linear merges are represented as a continuous vertical line to preserve project spine integrity.</p>
               </div>
               <div className="space-y-2">
-                <h4 className="text-[10px] font-bold text-zed-text uppercase tracking-widest">Squash & Rebase</h4>
-                <p className="leading-relaxed text-[13px]">Atomic updates are visualized as single nodes. When history is rewritten, the engine automatically recalculates lane assignments to maintain compact representation.</p>
+                <h4 className="text-[10px] font-bold text-zed-text dark:text-zed-dark-text uppercase tracking-widest">Squash & Rebase</h4>
+                <p className="text-zed-muted dark:text-zed-dark-text/70 leading-relaxed text-[13px]">Rewritten history is automatically recalculated to maintain the most compact visual representation.</p>
               </div>
             </div>
           </div>
@@ -233,18 +233,17 @@ export const HelpView: React.FC = () => {
         {/* 08. State Synchronization */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">08</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">08</span>
             <h2 className="text-lg font-bold tracking-tight">State Synchronization</h2>
           </div>
           
-          <div className="space-y-4 pl-8 border-l border-zed-border">
-            <p className="text-sm text-zed-muted leading-relaxed">
-              The application utilizes a background recursive file-watcher targeting the <code className="text-zed-accent font-mono">.git</code> directory. 
-              External operations performed via CLI or other editors trigger an immediate event-driven refresh of the graph and metadata.
+          <div className="space-y-4 pl-8 border-l border-zed-border dark:border-zed-dark-border">
+            <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+              GitNet utilizes a recursive file-watcher targeting the <code className="text-zed-accent dark:text-zed-dark-accent font-mono bg-zed-element dark:bg-zed-dark-element px-1 rounded">.git</code> directory for event-driven UI refreshes.
             </p>
-            <div className="flex items-center gap-2 text-[9px] font-mono font-bold text-zed-accent uppercase tracking-[0.2em]">
-              <span className="w-1.5 h-1.5 bg-zed-accent rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.5)]"></span>
-              Watcher Pipeline Active
+            <div className="flex items-center gap-2 text-[9px] font-mono font-bold text-zed-accent dark:text-zed-dark-accent uppercase tracking-[0.2em]">
+              <span className="w-1.5 h-1.5 bg-zed-accent dark:bg-zed-dark-accent rounded-full animate-pulse shadow-[0_0_10px_rgba(97,175,239,0.5)]"></span>
+              Pipeline Active
             </div>
           </div>
         </section>
@@ -252,19 +251,19 @@ export const HelpView: React.FC = () => {
         {/* 09. Data Integrity & Security */}
         <section className="space-y-8">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">09</span>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">09</span>
             <h2 className="text-lg font-bold tracking-tight">Data Integrity & Security</h2>
           </div>
           
-          <div className="space-y-4 pl-8 border-l border-zed-border">
-            <ul className="text-sm text-zed-muted space-y-6">
+          <div className="space-y-4 pl-8 border-l border-zed-border dark:border-zed-dark-border">
+            <ul className="text-sm space-y-6">
               <li className="flex gap-6">
-                <span className="text-zed-accent font-mono text-xs font-bold uppercase shrink-0">Shield</span>
-                <p className="text-[13px]"><strong>Read-Only Access:</strong> GitNet is built as a non-destructive browser. It cannot modify history, delete branches, or perform destructive operations.</p>
+                <span className="text-zed-accent dark:text-zed-dark-accent font-mono text-xs font-bold uppercase shrink-0 tracking-widest">Shield</span>
+                <p className="text-zed-muted dark:text-zed-dark-text/80 text-[13px]"><strong>Read-Only Access:</strong> GitNet cannot modify history or perform destructive operations.</p>
               </li>
-              <li className="flex gap-6 pt-4 border-t border-zed-border/50">
-                <span className="text-zed-accent font-mono text-xs font-bold uppercase shrink-0">Local</span>
-                <p className="text-[13px]"><strong>Offline First:</strong> All operations are performed against your local binary. Repository metadata never leaves your machine.</p>
+              <li className="flex gap-6 pt-4 border-t border-zed-border dark:border-zed-dark-border/50">
+                <span className="text-zed-accent dark:text-zed-dark-accent font-mono text-xs font-bold uppercase shrink-0 tracking-widest">Local</span>
+                <p className="text-zed-muted dark:text-zed-dark-text/80 text-[13px]"><strong>Offline First:</strong> Repository metadata never leaves your local machine.</p>
               </li>
             </ul>
           </div>
@@ -273,36 +272,36 @@ export const HelpView: React.FC = () => {
         {/* 10. Effective Visualization Techniques */}
         <section className="space-y-8 pb-12">
           <div className="flex items-baseline gap-4">
-            <span className="text-xs font-mono opacity-30">10</span>
-            <h2 className="text-lg font-bold tracking-tight">Effective Visualization Techniques</h2>
+            <span className="text-xs font-mono text-zed-muted dark:text-zed-dark-muted opacity-50">10</span>
+            <h2 className="text-lg font-bold tracking-tight text-zed-text dark:text-zed-dark-text">Visualization Strategy</h2>
           </div>
           
-          <div className="space-y-10 pl-8 border-l border-zed-border">
+          <div className="space-y-10 pl-8 border-l border-zed-border dark:border-zed-dark-border">
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-zed-text">Tracing Feature Lifecycle</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                To understand how a feature evolved, find its merge commit (the diamond node) and hover over it. Use <span className="text-zed-text font-medium">Linear Focus</span> to trace the dashed line back to the feature's first commit. This eliminates the noise of parallel work and shows you exactly what was changed for that specific task.
+              <h3 className="text-sm font-semibold text-zed-text dark:text-zed-dark-text">Tracing Feature Lifecycle</h3>
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                Hover over a merge commit (diamond node) and use <strong className="text-zed-text dark:text-zed-dark-text">Linear Focus</strong> to isolate the branch path back to its inception.
               </p>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-zed-text">Assessing Codebase Stability</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                Navigate to <span className="text-zed-text font-medium">Insights</span> to identify your Hotspots. Then, search for those specific file paths in the Graph. If a file is a hotspot and you see a high density of <span className="text-commit-fix">fix</span> commits, it indicates a high-risk area that may require a deeper refactor rather than more patches.
+              <h3 className="text-sm font-semibold text-zed-text dark:text-zed-dark-text">Assessing Stability</h3>
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                Combine <strong className="text-zed-accent dark:text-zed-dark-accent">Hotspots</strong> with the Graph view. A high density of <span className="text-commit-fix">fix</span> commits on a hotspot file indicates high refactor priority.
               </p>
             </div>
 
             <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-zed-text">Propagational Analysis</h3>
-              <p className="text-sm text-zed-muted leading-relaxed">
-                When inspecting a bug fix, use the <span className="text-zed-text font-medium">Commit Metadata Context</span> in the sidebar. Check the "Merged / Contains" section to see if that fix has been incorporated into your <code className="bg-zed-element px-1 rounded font-mono">production</code> or <code className="bg-zed-element px-1 rounded font-mono">release</code> branches yet. This is the fastest way to verify if a patch is live across all environments.
+              <h3 className="text-sm font-semibold text-zed-text dark:text-zed-dark-text">Propagational Analysis</h3>
+              <p className="text-sm text-zed-muted dark:text-zed-dark-text/80 leading-relaxed">
+                Check the "Merged / Contains" section in the sidebar to verify if a patch has reached your <code className="bg-zed-element dark:bg-zed-dark-element px-1 rounded font-mono">production</code> branch.
               </p>
             </div>
           </div>
         </section>
 
         {/* Colophon */}
-        <footer className="pt-20 text-[9px] font-mono uppercase tracking-[0.5em] opacity-20 text-center">
+        <footer className="pt-20 text-[9px] font-mono uppercase tracking-[0.5em] text-zed-muted dark:text-zed-dark-text/30 text-center">
           GitNet Visualizer / Revision 2025.12.28
         </footer>
       </div>
