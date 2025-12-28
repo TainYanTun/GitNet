@@ -36,11 +36,42 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
   >(null);
 
   const [commitSearch, setCommitSearch] = React.useState("");
+  const [isCalculating, setIsCalculating] = React.useState(false);
+  const [data, setData] = React.useState<VisualizationData>({
+    nodes: [],
+    edges: [],
+    laneSegments: [],
+    width: 0,
+    height: 0,
+    bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 },
+  });
 
-  const data: VisualizationData = useMemo(
-    () => calculateLayout(commits, branches, headCommitHash, stashes),
-    [commits, branches, headCommitHash, stashes],
-  );
+  // Calculate layout in a Web Worker to keep UI responsive
+  useEffect(() => {
+    if (commits.length === 0) return;
+
+    setIsCalculating(true);
+    const worker = new Worker(new URL("../utils/layout.worker.ts", import.meta.url), {
+      type: "module",
+    });
+
+    worker.onmessage = (event) => {
+      const { type, result, error } = event.data;
+      if (type === "SUCCESS") {
+        setData(result);
+      } else {
+        console.error("Layout worker error:", error);
+      }
+      setIsCalculating(false);
+      worker.terminate();
+    };
+
+    worker.postMessage({ commits, branches, headCommitHash, stashes });
+
+    return () => {
+      worker.terminate();
+    };
+  }, [commits, branches, headCommitHash, stashes]);
 
   // Filter nodes based on commit search
   const directMatches = useMemo(() => {
@@ -640,6 +671,16 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Calculating Layout Indicator */}
+          {isCalculating && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-zed-accent/10 rounded-full border border-zed-accent/20 animate-pulse ml-4 shrink-0">
+              <div className="w-1.5 h-1.5 bg-zed-accent rounded-full"></div>
+              <span className="text-[10px] font-bold text-zed-accent uppercase tracking-wider">
+                Calculating Layout...
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Active Contributors */}
