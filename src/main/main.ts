@@ -61,6 +61,17 @@ class GitNetApp {
 
     // Security: Prevent new window creation
     app.on("web-contents-created", (_, contents) => {
+      // Disable Node.js integration in every webview
+      contents.on("will-attach-webview", (event, webPreferences) => {
+        // Strip away preload scripts if unused or verify their location is legitimate
+        delete webPreferences.preload;
+
+        // Disable Node.js integration
+        webPreferences.nodeIntegration = false;
+        webPreferences.contextIsolation = true;
+        event.preventDefault();
+      });
+
       // 1. Block navigation to external sites (only allow 'self')
       contents.on("will-navigate", (event, navigationUrl) => {
         const parsedUrl = new URL(navigationUrl);
