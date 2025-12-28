@@ -1,8 +1,5 @@
-import { exec } from "child_process";
-import { promisify } from "util";
+import { spawn } from "child_process";
 import * as crypto from "crypto";
-
-const execAsync = promisify(exec);
 import {
   Repository,
   Commit,
@@ -22,41 +19,48 @@ export class GitService {
     return `https://www.gravatar.com/avatar/${hash}?s=64&d=identicon`;
   }
 
-  private async run(command: string, cwd: string): Promise<string> {
-    try {
-      const { stdout } = await execAsync(command, { 
-        cwd, 
-        encoding: "utf8", 
-        maxBuffer: 10 * 1024 * 1024 
+  private async run(args: string[], cwd: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const gitProcess = spawn("git", args, { cwd });
+      let stdout = "";
+      let stderr = "";
+
+      gitProcess.stdout.on("data", (data) => (stdout += data));
+      gitProcess.stderr.on("data", (data) => (stderr += data));
+
+      gitProcess.on("close", (code) => {
+        if (code === 0) {
+          resolve(stdout);
+        } else {
+          reject(new Error(stderr || `Git command failed with code ${code}`));
+        }
       });
-      return stdout;
-    } catch (error) {
-      console.error(`Git command failed: ${command}`, error);
-      throw error;
-    }
+
+      gitProcess.on("error", (err) => {
+        reject(err);
+      });
+    });
   }
 
   async getHotFiles(repoPath: string, limit = 10): Promise<HotFile[]> {
     try {
-      // Use --all to get hotspots across all branches
-      const output = await this.run(
-        `git log --all --format= --name-only | grep . | sort | uniq -c | sort -nr | head -n ${limit}`,
-        repoPath
-      );
+      // Use log with --name-only to get all changed files across all branches
+      const output = await this.run(["log", "--all", "--format=", "--name-only"], repoPath);
       
-      const lines = output.trim().split('\n').filter(line => line.trim().length > 0);
+      const counts: Record<string, number> = {};
+      const lines = output.split('\n');
       
-      return lines.map(line => {
-        // Match: [spaces] [count] [spaces] [path]
-        const match = line.trim().match(/^(\d+)\s+(.+)$/);
-        if (match) {
-          return {
-            count: parseInt(match[1], 10),
-            path: match[2].trim()
-          };
+      for (const line of lines) {
+        const path = line.trim();
+        if (path) {
+          counts[path] = (counts[path] || 0) + 1;
         }
-        return null;
-      }).filter((f): f is HotFile => f !== null && f.count > 0);
+      }
+
+      return Object.entries(counts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([path, count]) => ({ path, count }));
     } catch (error) {
       return [];
     }
@@ -65,8 +69,10 @@ export class GitService {
   async getContributors(repoPath: string): Promise<ContributorStats[]> {
     try {
       // Use git log to get stats per author
-      const command = `git log --all --pretty=format:'%an|%ae|%ct' --shortstat`;
-      const output = await this.run(command, repoPath);
+      const output = await this.run(
+        ["log", "--all", "--pretty=format:%an|%ae|%ct", "--shortstat"], 
+        repoPath
+      );
       
       const lines = output.split('\n');
       const statsMap = new Map<string, ContributorStats>();
@@ -135,7 +141,7 @@ export class GitService {
   async getRepository(path: string): Promise<Repository> {
     // Verify it's a Git repository
     try {
-      await this.run("git rev-parse --is-inside-work-tree", path);
+      await this.run(["rev-parse", "--is-inside-work-tree"], path);
     } catch {
       throw new Error("Not a Git repository");
     }
@@ -160,7 +166,14 @@ export class GitService {
     limit = 100,
     offset = 0,
   ): Promise<Commit[]> {
-    const command = `git log --all --pretty=format:'%H|%P|%an|%ae|%ct|%s|%D' --skip=${offset} -n ${limit}`;
+    const args = [
+      "log",
+      "--all",
+      "--pretty=format:%H|%P|%an|%ae|%ct|%s|%D",
+      `--skip=${offset}`,
+      `-n`,
+      `${limit}`
+    ];
 
     try {
       const [branches, tagMap] = await Promise.all([
@@ -173,7 +186,7 @@ export class GitService {
         branchMap.set(branch.objectName, branch.name);
       });
 
-      const output = await this.run(command, repoPath);
+      const output = await this.run(args, repoPath);
       return this.parseCommits(output, branchMap, tagMap);
     } catch {
       return [];
@@ -183,7 +196,7 @@ export class GitService {
   async getTags(repoPath: string): Promise<Map<string, string[]>> {
     try {
       const output = await this.run(
-        "git show-ref --tags --dereference",
+        ["show-ref", "--tags", "--dereference"],
         repoPath
       );
       const tagMap = new Map<string, string[]>();
@@ -206,7 +219,7 @@ export class GitService {
   async getBranches(repoPath: string): Promise<Branch[]> {
     try {
       const output = await this.run(
-        "git branch -a --format='%(refname:short)|%(objectname)'",
+        ["branch", "-a", "--format=%(refname:short)|%(objectname)"],
         repoPath
       );
       return this.parseBranches(output);
@@ -217,7 +230,7 @@ export class GitService {
 
   async getCurrentHead(repoPath: string): Promise<string> {
     try {
-      const output = await this.run("git rev-parse HEAD", repoPath);
+      const output = await this.run(["rev-parse", "HEAD"], repoPath);
       return output.trim();
     } catch {
       return "";
@@ -226,7 +239,7 @@ export class GitService {
 
   async getStashList(repoPath: string): Promise<string[]> {
     try {
-      const output = await this.run("git stash list --pretty=format:'%gd: %gs'", repoPath);
+      const output = await this.run(["stash", "list", "--pretty=format:%gd: %gs"], repoPath);
       return output.trim().split("\n").filter((line) => line.length > 0);
     } catch (error) {
       return [];
@@ -235,15 +248,15 @@ export class GitService {
 
 
   async getCommitDetails(repoPath: string, commitHash: string): Promise<Commit> {
-    const command = `git show --pretty=format:'%H|%P|%an|%ae|%ad|%s' --numstat --date=raw ${commitHash}`;
-    const tagCommand = `git tag --contains ${commitHash}`;
-    const branchCommand = `git branch --contains ${commitHash} --format='%(refname:short)'`;
+    const args = ["show", "--pretty=format:%H|%P|%an|%ae|%ad|%s", "--numstat", "--date=raw", commitHash];
+    const tagArgs = ["tag", "--contains", commitHash];
+    const branchArgs = ["branch", "--contains", commitHash, "--format=%(refname:short)"];
 
     try {
       const [output, tagsOutput, branchesOutput] = await Promise.all([
-        this.run(command, repoPath),
-        this.run(tagCommand, repoPath).catch(() => ""),
-        this.run(branchCommand, repoPath).catch(() => "")
+        this.run(args, repoPath),
+        this.run(tagArgs, repoPath).catch(() => ""),
+        this.run(branchArgs, repoPath).catch(() => "")
       ]);
 
       return this.parseDetailedCommit(output, tagsOutput, branchesOutput);
@@ -328,8 +341,8 @@ export class GitService {
   async getDiff(repoPath: string, commitHash: string, filePath: string): Promise<string> {
     try {
       // For a single commit, diff against its parent(s)
-      const command = `git diff ${commitHash}^ ${commitHash} -- ${filePath}`;
-      return await this.run(command, repoPath);
+      const args = ["diff", `${commitHash}^`, commitHash, "--", filePath];
+      return await this.run(args, repoPath);
     } catch (error) {
       console.error(`Failed to get diff for ${filePath} at commit ${commitHash}:`, error);
       throw error;
@@ -338,12 +351,12 @@ export class GitService {
 
   private async getCurrentBranch(repoPath: string): Promise<string> {
     try {
-      const output = await this.run("git symbolic-ref --short HEAD", repoPath);
+      const output = await this.run(["symbolic-ref", "--short", "HEAD"], repoPath);
       return output.trim();
     } catch {
       try {
         // Fallback for detached HEAD: show short hash
-        const output = await this.run("git rev-parse --short HEAD", repoPath);
+        const output = await this.run(["rev-parse", "--short", "HEAD"], repoPath);
         return output.trim() || "Detached";
       } catch {
         return "Unknown";

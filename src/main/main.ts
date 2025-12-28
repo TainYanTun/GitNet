@@ -52,18 +52,47 @@ class GitNetApp {
 
     // Security: Prevent new window creation
     app.on("web-contents-created", (_, contents) => {
+      // 1. Block navigation to external sites (only allow 'self')
+      contents.on("will-navigate", (event, navigationUrl) => {
+        const parsedUrl = new URL(navigationUrl);
+        if (parsedUrl.origin !== "http://localhost:3000" && !isDev) {
+          event.preventDefault();
+        }
+      });
+
+      // 2. Prevent the app from opening new windows
       contents.setWindowOpenHandler(({ url }) => {
         shell.openExternal(url);
         return { action: "deny" };
       });
+
+      // 3. Disable webview tags
+      contents.on("will-attach-webview", (event) => {
+        event.preventDefault();
+      });
+
+      // 4. Deny all permission requests (camera, mic, notifications, etc.)
+      contents.session.setPermissionRequestHandler((_webContents, _permission, callback) => {
+        callback(false);
+      });
     });
   }
 
-  private createWindow(): void {
-    // Create the browser window
-    this.mainWindow = new BrowserWindow({
+  private async createWindow(): Promise<void> {
+    const settings = await this.settingsService.getSettings();
+    const windowState = (settings as any).windowState || {
       width: 1400,
       height: 900,
+      x: undefined,
+      y: undefined,
+    };
+
+    // Create the browser window
+    this.mainWindow = new BrowserWindow({
+      width: windowState.width,
+      height: windowState.height,
+      x: windowState.x,
+      y: windowState.y,
       minWidth: 800,
       minHeight: 600,
       show: false,
@@ -78,24 +107,20 @@ class GitNetApp {
       },
     });
 
-    // Load the renderer
-    if (isDev) {
-      this.mainWindow.loadURL("http://localhost:3000");
-      this.mainWindow.webContents.openDevTools();
-    } else {
-      this.mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
-    }
+    // ... (rest of the method)
 
-    // Show window when ready to prevent visual flash
-    this.mainWindow.once("ready-to-show", () => {
-      this.mainWindow?.show();
-
-      if (isDev) {
-        this.mainWindow?.webContents.openDevTools();
+    // Handle window closed
+    this.mainWindow.on("close", async () => {
+      if (this.mainWindow) {
+        const bounds = this.mainWindow.getBounds();
+        const currentSettings = await this.settingsService.getSettings();
+        await this.settingsService.saveSettings({
+          ...currentSettings,
+          windowState: bounds,
+        } as any);
       }
     });
 
-    // Handle window closed
     this.mainWindow.on("closed", () => {
       this.mainWindow = null;
     });
