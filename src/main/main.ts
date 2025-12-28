@@ -288,8 +288,8 @@ class GitNetApp {
     // Git data operations
     ipcMain.handle(
       "get-commits",
-      (_, repoPath: string, limit?: number, offset?: number) =>
-        this.gitService.getCommits(repoPath, limit, offset),
+      (_, repoPath: string, limit?: number, offset?: number, filter?: any) =>
+        this.gitService.getCommits(repoPath, limit, offset, filter),
     );
     ipcMain.handle("get-recent-commits", async (_, repoPath: string) => {
       const LIMIT = 5; // Display the last 5 commits
@@ -340,6 +340,9 @@ class GitNetApp {
     );
     ipcMain.handle("git:get-contributors", (_, repoPath) =>
       this.gitService.getContributors(repoPath),
+    );
+    ipcMain.handle("get-git-command-history", () =>
+      this.gitService.getCommandHistory(),
     );
 
     // File system operations

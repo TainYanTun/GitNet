@@ -96,6 +96,14 @@ export interface Repository {
   isDetached: boolean;
 }
 
+export interface CommitFilter {
+  path?: string;
+  author?: string;
+  since?: string;
+  until?: string;
+  search?: string;
+}
+
 export interface CommitGraph {
   commits: Commit[];
   branches: Branch[];
@@ -154,6 +162,16 @@ export interface VisualizationData {
     minY: number;
     maxY: number;
   };
+}
+
+export interface GitCommandLog {
+  id: string;
+  command: string;
+  args: string[];
+  timestamp: number;
+  duration: number;
+  exitCode: number;
+  success: boolean;
 }
 
 export interface GitCommand {
@@ -250,6 +268,7 @@ export interface GitNetAPI {
     repoPath: string,
     limit?: number,
     offset?: number,
+    filter?: CommitFilter,
   ) => Promise<Commit[]>;
   getRecentCommits: (repoPath: string) => Promise<Commit[]>;
   getBranches: (repoPath: string) => Promise<Branch[]>;
@@ -264,6 +283,7 @@ export interface GitNetAPI {
   ) => Promise<string>;
   getHotFiles: (repoPath: string, limit?: number) => Promise<HotFile[]>;
   getContributors: (repoPath: string) => Promise<ContributorStats[]>;
+  getGitCommandHistory: () => Promise<GitCommandLog[]>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;

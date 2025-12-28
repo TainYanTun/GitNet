@@ -10,9 +10,14 @@ import {
   CommitParent,
   HotFile,
   ContributorStats,
+  GitCommandLog,
+  CommitFilter,
 } from "../../shared/types";
 
 export class GitService {
+  private commandHistory: GitCommandLog[] = [];
+  private maxHistorySize = 100;
+
   private getAvatarUrl(email: string): string {
     const hash = crypto
       .createHash("md5")
@@ -22,6 +27,7 @@ export class GitService {
   }
 
   private async run(args: string[], cwd: string): Promise<string> {
+    const startTime = Date.now();
     return new Promise((resolve, reject) => {
       const gitProcess = spawn("git", args, { cwd });
       let stdout = "";
@@ -31,6 +37,9 @@ export class GitService {
       gitProcess.stderr.on("data", (data) => (stderr += data));
 
       gitProcess.on("close", (code) => {
+        const duration = Date.now() - startTime;
+        this.logCommand(args, code === 0, code || 0, duration);
+
         if (code === 0) {
           resolve(stdout);
         } else {
@@ -39,9 +48,32 @@ export class GitService {
       });
 
       gitProcess.on("error", (err) => {
+        const duration = Date.now() - startTime;
+        this.logCommand(args, false, -1, duration);
         reject(err);
       });
     });
+  }
+
+  private logCommand(args: string[], success: boolean, exitCode: number, duration: number) {
+    const log: GitCommandLog = {
+      id: Math.random().toString(36).substring(2, 9),
+      command: "git",
+      args,
+      timestamp: Date.now(),
+      duration,
+      exitCode,
+      success,
+    };
+
+    this.commandHistory.unshift(log);
+    if (this.commandHistory.length > this.maxHistorySize) {
+      this.commandHistory.pop();
+    }
+  }
+
+  getCommandHistory(): GitCommandLog[] {
+    return this.commandHistory;
   }
 
   async getHotFiles(repoPath: string, limit = 10): Promise<HotFile[]> {
@@ -198,6 +230,7 @@ export class GitService {
     repoPath: string,
     limit = 100,
     offset = 0,
+    filter?: CommitFilter
   ): Promise<Commit[]> {
     const args = [
       "log",
@@ -207,6 +240,16 @@ export class GitService {
       `-n`,
       `${limit}`
     ];
+
+    if (filter) {
+      if (filter.author) args.push(`--author=${filter.author}`);
+      if (filter.search) args.push(`--grep=${filter.search}`, "-i");
+      if (filter.since) args.push(`--since=${filter.since}`);
+      if (filter.until) args.push(`--until=${filter.until}`);
+      if (filter.path) {
+        args.push("--", filter.path);
+      }
+    }
 
     try {
       const [branches, tagMap] = await Promise.all([
