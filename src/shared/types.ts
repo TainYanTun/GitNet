@@ -63,6 +63,7 @@ export interface Commit {
   parentsDetails?: CommitParent[]; // Detailed parent info
   fileChanges?: FileChange[];
   branches?: string[]; // Branches that contain this commit
+  branchTips?: string[]; // Branches that point exactly to this commit
   tags?: string[]; // Tags that point to this commit
   children?: CommitParent[]; // Direct children of this commit (optional, for graph navigation)
   stats?: CommitStats; // Commit statistics (lines added/deleted)

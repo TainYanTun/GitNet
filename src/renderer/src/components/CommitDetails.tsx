@@ -233,18 +233,34 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
 
       {displayCommit.branches && displayCommit.branches.length > 0 && (
         <div className="space-y-1">
-          <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase">
-            Branches
+          <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase flex items-center justify-between">
+            <span>Branches</span>
+            <span className="text-[10px] opacity-50 lowercase italic">
+              {displayCommit.branches.length} containing
+            </span>
           </div>
           <div className="flex flex-wrap gap-1">
-            {displayCommit.branches.map((branch) => (
-              <span
-                key={branch}
-                className="px-2 py-0.5 text-xs bg-zed-element dark:bg-zed-dark-element rounded-full text-zed-text dark:text-zed-dark-text"
-              >
-                {branch}
-              </span>
-            ))}
+            {displayCommit.branches.map((branch) => {
+              const isTip = displayCommit.branchTips?.includes(branch);
+              const isInferred = commit.branchName === branch;
+              
+              return (
+                <span
+                  key={branch}
+                  className={`px-2 py-0.5 text-[11px] rounded-full border transition-all ${
+                    isTip 
+                      ? "bg-zed-accent/10 border-zed-accent text-zed-accent font-bold" 
+                      : isInferred
+                        ? "bg-zed-element border-zed-muted text-zed-text font-medium"
+                        : "bg-zed-element/30 border-transparent text-zed-muted dark:text-zed-dark-muted opacity-70"
+                  }`}
+                  title={isTip ? "Branch Tip" : isInferred ? "Inferred Original Branch" : "Contains Commit"}
+                >
+                  {isTip && <span className="mr-1">●</span>}
+                  {branch}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

@@ -251,15 +251,25 @@ export class GitService {
     const args = ["show", "--pretty=format:%H|%P|%an|%ae|%ad|%s", "--numstat", "--date=raw", commitHash];
     const tagArgs = ["tag", "--contains", commitHash];
     const branchArgs = ["branch", "--contains", commitHash, "--format=%(refname:short)"];
+    const tipArgs = ["branch", "--points-at", commitHash, "--format=%(refname:short)"];
 
     try {
-      const [output, tagsOutput, branchesOutput] = await Promise.all([
+      const [output, tagsOutput, branchesOutput, tipsOutput] = await Promise.all([
         this.run(args, repoPath),
         this.run(tagArgs, repoPath).catch(() => ""),
-        this.run(branchArgs, repoPath).catch(() => "")
+        this.run(branchArgs, repoPath).catch(() => ""),
+        this.run(tipArgs, repoPath).catch(() => "")
       ]);
 
-      return this.parseDetailedCommit(output, tagsOutput, branchesOutput);
+      const commit = this.parseDetailedCommit(output, tagsOutput, branchesOutput);
+      
+      // Mark which branches are tips
+      const tips = tipsOutput.trim().split("\n").filter(Boolean);
+      if (tips.length > 0) {
+        (commit as any).branchTips = tips;
+      }
+
+      return commit;
     } catch (error) {
       console.error(`Failed to get commit details for ${commitHash}:`, error);
       throw error;
