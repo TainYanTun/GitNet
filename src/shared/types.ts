@@ -91,6 +91,9 @@ export interface Repository {
   headCommit: string;
   branches: Branch[];
   totalCommits: number;
+  isRebasing: boolean;
+  isMerging: boolean;
+  isDetached: boolean;
 }
 
 export interface CommitGraph {

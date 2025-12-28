@@ -1,5 +1,7 @@
 import { spawn } from "child_process";
 import * as crypto from "crypto";
+import * as fs from "fs";
+import * as path from "path";
 import {
   Repository,
   Commit,
@@ -138,27 +140,58 @@ export class GitService {
       return [];
     }
   }
-  async getRepository(path: string): Promise<Repository> {
+  async getRepository(repoPath: string): Promise<Repository> {
     // Verify it's a Git repository
     try {
-      await this.run(["rev-parse", "--is-inside-work-tree"], path);
+      await this.run(["rev-parse", "--is-inside-work-tree"], repoPath);
     } catch {
       throw new Error("Not a Git repository");
     }
 
-    const name = path.split("/").pop() || "Unknown";
-    const currentBranch = await this.getCurrentBranch(path);
-    const headCommit = await this.getCurrentHead(path);
+    const name = repoPath.split("/").pop() || "Unknown";
+    
+    // Parallel detection of states and data
+    const [currentBranch, headCommit, branches, isRebasing, isMerging, isDetached] = await Promise.all([
+      this.getCurrentBranch(repoPath),
+      this.getCurrentHead(repoPath),
+      this.getBranches(repoPath),
+      this.checkIsRebasing(repoPath),
+      this.checkIsMerging(repoPath),
+      this.checkIsDetached(repoPath)
+    ]);
 
     return {
-      path,
+      path: repoPath,
       name,
       isValidGit: true,
       currentBranch,
       headCommit,
-      branches: await this.getBranches(path),
+      branches,
       totalCommits: 0, // Will be calculated later
+      isRebasing,
+      isMerging,
+      isDetached
     };
+  }
+
+  private async checkIsRebasing(repoPath: string): Promise<boolean> {
+    const gitPath = path.join(repoPath, '.git');
+    return fs.existsSync(path.join(gitPath, 'rebase-merge')) || 
+           fs.existsSync(path.join(gitPath, 'rebase-apply'));
+  }
+
+  private async checkIsMerging(repoPath: string): Promise<boolean> {
+    const gitPath = path.join(repoPath, '.git');
+    return fs.existsSync(path.join(gitPath, 'MERGE_HEAD'));
+  }
+
+  private async checkIsDetached(repoPath: string): Promise<boolean> {
+    try {
+      await this.run(["symbolic-ref", "-q", "HEAD"], repoPath);
+      return false; // Symbolic ref exists, so not detached
+    } catch {
+      return true; // Command failed, likely detached
+    }
   }
 
   async getCommits(
@@ -359,12 +392,28 @@ export class GitService {
 
   async getDiff(repoPath: string, commitHash: string, filePath: string): Promise<string> {
     try {
-      // For a single commit, diff against its parent(s)
+      // 1. First check the size/type using numstat
+      const statsArgs = ["diff", `${commitHash}^`, commitHash, "--numstat", "--", filePath];
+      const statsOutput = await this.run(statsArgs, repoPath).catch(() => "");
+      
+      if (statsOutput) {
+        const [added, deleted] = statsOutput.split("\t");
+        if (added === "-" || deleted === "-") {
+          return "Binary file - preview unavailable.";
+        }
+        
+        const totalChanges = parseInt(added) + parseInt(deleted);
+        if (totalChanges > 5000) {
+          return `File too large (${totalChanges} changes). Direct preview disabled for performance.`;
+        }
+      }
+
+      // 2. Fetch the actual diff
       const args = ["diff", `${commitHash}^`, commitHash, "--", filePath];
       return await this.run(args, repoPath);
     } catch (error) {
       console.error(`Failed to get diff for ${filePath} at commit ${commitHash}:`, error);
-      throw error;
+      return "Error loading diff content.";
     }
   }
 
