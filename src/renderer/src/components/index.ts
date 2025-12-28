@@ -9,5 +9,6 @@ export { HotFiles } from "./HotFiles";
 export { CommitHistory } from "./CommitHistory";
 export { Contributors } from "./Contributors";
 export { StashGallery } from "./StashGallery";
+export { HelpView } from "./HelpView";
 export { BranchCheckout } from "./BranchCheckout";
 export { BranchExplorer } from "./BranchExplorer";

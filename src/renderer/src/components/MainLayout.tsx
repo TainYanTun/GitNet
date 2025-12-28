@@ -11,6 +11,7 @@ import { StashGallery } from "./StashGallery";
 import { CommitGraph } from "./CommitGraph"; // Import CommitGraph
 import { CommitDetails } from "./CommitDetails"; // Import CommitDetails
 import { BranchCheckout } from "./BranchCheckout";
+import { HelpView } from "./HelpView";
 
 interface MainLayoutProps {
   repository: Repository;
@@ -31,7 +32,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
   const [currentView, setCurrentView] = useState<
-    "graph" | "insights" | "history" | "contributors" | "stashes" | "checkout"
+    "graph" | "insights" | "history" | "contributors" | "stashes" | "checkout" | "help"
   >("graph");
 
   const refreshData = React.useCallback(async () => {
@@ -197,6 +198,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </div>
           </div>
         );
+      case "help":
+        return <HelpView />;
       default:
         return null;
     }
@@ -508,6 +511,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   strokeLinejoin="round"
                   strokeWidth={1.5}
                   d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCurrentView("help")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "help" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="User Guide"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
             </button>

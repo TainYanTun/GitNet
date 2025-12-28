@@ -1,195 +1,79 @@
-# GitNet - Git Commit Graph Visualizer
+# GitNet — The Railway Git Visualizer
 
-A Railway-style desktop Git visualizer that displays commit history as an interactive graph with semantic coloring and clear merge representation.
+GitNet is a high-performance desktop Git visualizer that transforms your commit history into an interactive, "Railway-style" graph. Designed for clarity and speed, it helps developers navigate complex branch hierarchies and merge histories with ease.
 
-## 🌟 Features
+## ✨ Key Features
 
-- **Interactive Commit Graph**: Railway-style visualization with semantic coloring using D3.js.
-- **Commit Details**: View file changes, stats, and diffs for any commit.
-- **Branch Management**: Clear visual separation of branches with "Main Spine" layout.
-- **Conventional Commits Support**: Automatic classification of commit types (feat, fix, docs, etc.) with visual indicators.
-- **Stash Visualization**: View stashed changes directly on the graph.
-- **Repository Insights**:
-    - **Hot Files**: Identify frequently changed files ("hotspots").
-    - **Contributor Stats**: View activity and impact per contributor.
-- **Search**: Filter commits by message, author, hash, or tags.
-- **Live Sync**: Auto-refresh when repository changes are detected.
-- **Cross-Platform**: Works on macOS, Windows, and Linux.
+### 🛤️ Railway Commit Graph
+- **Intelligent Layout**: Automatically organizes branches into stable "lanes" for a clean, non-overlapping view.
+- **Semantic Coloring**: Instantly identify commit types (feat, fix, refactor) through a standardized color palette.
+- **Lineage Highlighting**: Hover over any commit to see its full ancestry and descendant path.
+- **Dynamic Zoom**: Smoothly navigate through repositories with 10,000+ commits using D3-powered rendering.
 
-## 🛠️ Tech Stack
+### 🔄 Real-Time Sync & Manual Refresh
+- **Auto-Update**: Built-in file watcher monitors your `.git` directory and updates the UI the moment you commit or switch branches externally.
+- **Sync Button**: A dedicated status bar button and shortcut (`Cmd/Ctrl + R`) to force a full data refresh whenever needed.
 
-- **Electron** - Desktop application framework
-- **React** - UI library with TypeScript
-- **D3.js** - Interactive graph visualization
-- **Tailwind CSS** - Utility-first styling
-- **Bun** - Fast JavaScript runtime & package manager
-- **TypeScript** - Type safety and better DX
+### 🔀 Interactive Checkout Tab
+- **Dedicated View**: Access the branch switcher via the Git icon in the bottom status bar.
+- **Search & Filter**: Quickly find local or remote branches with real-time fuzzy search.
+- **Active Indicators**: See exactly where you are with clear "Active" badges and short-hash references.
 
-## 🚀 Quick Start
+### 🔍 Deep Repository Insights
+- **Commit Details**: View full messages, parent links, and precise file-level diffs.
+- **Hotspots**: Identify "Hot Files" that are modified most frequently in your project.
+- **Contributors**: Visual analysis of team activity and chronological engagement.
+- **Stash Gallery**: Browse your Git stashes in a dedicated visual gallery.
 
-### Prerequisites
+---
 
-- **Node.js** 18.0.0 or higher
-- **Bun** (recommended) or **npm**
-- **Git** installed and accessible from command line
+## 🎨 Understanding the Visualization
 
-### Installation
+### Commit Types
+GitNet automatically classifies commits based on [Conventional Commits](https://www.conventionalcommits.org/):
+- 🟢 **Green**: Features (`feat`)
+- 🔴 **Red**: Bug Fixes (`fix`)
+- 🔵 **Blue**: Documentation (`docs`)
+- 🟣 **Purple**: UI/Style updates (`style`)
+- 🟡 **Yellow**: Refactoring (`refactor`)
+- ⚪ **Gray**: Maintenance (`chore`/`other`)
 
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd gitnet
-   ```
+### Node Shapes
+- ● **Circle**: Standard commit.
+- ◆ **Diamond**: Merge commit (contains 2+ parents).
+- ◼ **Square**: Revert or Stash commit.
 
-2. **Install dependencies:**
-   ```bash
-   bun install
-   # or
-   npm install
-   ```
+---
 
-3. **Start development:**
-   ```bash
-   bun run dev
-   # or
-   npm run dev
-   ```
+## 🚀 How to Use
 
-4. **Build for production:**
-   ```bash
-   bun run build
-   bun run dist
-   # or
-   npm run build
-   npm run dist
-   ```
+1. **Open a Repository**: Select any local folder containing a `.git` directory.
+2. **Explore**: Scroll or drag the graph to navigate history. Use the search bar to find specific hashes or messages.
+3. **Inspect**: Click a node to open the side panel for diffs and file statistics.
+4. **Switch**: Use the **Checkout Tab** (bottom Git icon) to jump between branches.
+5. **Sync**: If you perform Git actions in your terminal, GitNet will usually update instantly. If not, press the **Sync** icon.
 
-## 📁 Project Structure
+---
 
-```
-gitnet/
-├── src/
-│   ├── main/              # Electron main process
-│   │   ├── main.ts        # Main entry point
-│   │   ├── services/      # Backend services
-│   │   │   ├── git-service.ts
-│   │   │   ├── repository-watcher.ts
-│   │   │   └── settings-service.ts
-│   │   └── utils.ts
-│   ├── preload/           # Preload scripts
-│   │   └── preload.ts     # IPC bridge
-│   ├── renderer/          # React application
-│   │   ├── src/
-│   │   │   ├── components/
-│   │   │   │   ├── CommitGraph.tsx   # D3 Visualization
-│   │   │   │   ├── CommitDetails.tsx # Detail view & Diffs
-│   │   │   │   └── ...
-│   │   │   ├── utils/
-│   │   │   │   └── graph-layout.ts   # Graph layout engine
-│   │   │   └── App.tsx
-│   │   └── index.html
-│   └── shared/            # Shared types and utilities
-│       └── types.ts
-├── assets/                # Static assets
-├── dist/                  # Built files
-├── release/               # Packaged applications
-└── ...
-```
+## ⌨️ Shortcuts
 
-## 🔧 Development
+| Action | Shortcut |
+| :--- | :--- |
+| **Refresh Data** | `Cmd/Ctrl + R` |
+| **Open Repository** | `Cmd/Ctrl + O` |
+| **Close Sidebar/Panel** | `Esc` |
+| **Toggle Theme** | Click Sun/Moon Icon |
 
-### Available Scripts
+---
 
-- `bun run dev` - Start development with hot reload
-- `bun run build` - Build for production
-- `bun run dist` - Create distributable packages
-- `bun run lint` - Run ESLint and Stylelint
-- `bun run type-check` - Run TypeScript checks
+## 🛠️ Technical Overview
 
-### Architecture
+GitNet is built for performance using a modern desktop stack:
+- **Core**: Electron (Desktop Shell)
+- **Frontend**: React + TypeScript
+- **Visualization**: D3.js (SVG Graph Engine)
+- **Styling**: Tailwind CSS (One Dark/Light palette)
+- **Runtime**: Bun (Fast JS execution)
 
-```
-┌─────────────────┐
-│ Electron Main   │
-│ Process         │
-├─────────────────┤
-│ • Git CLI (Exec)│
-│ • File Watcher  │
-│ • IPC Handlers  │
-└─────────┬───────┘
-          │
-    ┌─────▼─────┐
-    │ Preload   │
-    │ Script    │
-    └─────┬─────┘
-          │
-┌─────────▼─────────┐
-│ React Renderer    │
-├───────────────────┤
-│ • UI Components   │
-│ • D3 SVG Graph    │
-│ • React State     │
-└───────────────────┘
-```
-
-### Key Components
-
-#### Main Process Services
-
-- **GitService**: Executes raw Git commands (log, show, diff) and parses output into structured data.
-- **RepositoryWatcher**: Monitors file system events in the repository to trigger auto-refreshes.
-- **SettingsService**: Manages persistent application settings.
-
-#### Renderer Components
-
-- **CommitGraph**: Core component handling the D3.js visualization, semantic rendering, and interactions.
-- **MainLayout**: Orchestrates the split-pane view (Graph, Details, Sidebar).
-- **HotFiles**: Visualizes frequently changed files.
-- **Contributors**: Displays contributor statistics.
-
-## 🎨 Commit Type Colors
-
-The application uses a semantic color palette for commit classification:
-
-- **feat** (🟢 Green) - New features
-- **fix** (🔴 Red) - Bug fixes
-- **docs** (🔵 Blue) - Documentation
-- **style** (🟣 Purple) - Styling
-- **refactor** (🟡 Yellow) - Refactoring
-- **merge** (💎 Diamond Shape) - Merge commits
-- **stash** (📦 Box Shape) - Stashed changes
-
-## ⚙️ Configuration
-
-Settings are stored in `settings.json` in the user data directory:
-
-```typescript
-interface AppSettings {
-  theme: 'light' | 'dark' | 'system';
-  maxCommits: number;      // Limit initial load (default: 1000)
-  autoRefresh: boolean;    // Enable/disable file watching
-  refreshInterval: number; // Debounce interval for refresh
-  showAuthor: boolean;     // Toggle author avatars in graph
-  showTimestamp: boolean;
-  compactMode: boolean;    // Tighter spacing in graph
-  colorBlindMode: boolean; // High contrast colors
-}
-```
-
-## 🛡️ Security
-
-- **Context Isolation**: Renderer process is sandboxed and isolated.
-- **Preload Scripts**: Only specific, safe API methods are exposed via `window.gitnetAPI`.
-- **No Node.js in Renderer**: Direct Node.js access is disabled for security.
-
-## 📝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit changes (following Conventional Commits!)
-4. Push to branch
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+---
+*GitNet — visualize your progress.*
