@@ -7,7 +7,6 @@ import type {
   Branch,
   StashEntry,
   AppSettings,
-  CommitFilter,
   GitCommandLog,
 } from "../shared/types";
 
@@ -26,9 +25,8 @@ const gitnetAPI: GitNetAPI = {
     repoPath: string,
     limit?: number,
     offset?: number,
-    filter?: CommitFilter,
   ): Promise<Commit[]> =>
-    ipcRenderer.invoke("get-commits", repoPath, limit, offset, filter),
+    ipcRenderer.invoke("get-commits", repoPath, limit, offset),
 
   getRecentCommits: (repoPath: string): Promise<Commit[]> =>
     ipcRenderer.invoke("get-recent-commits", repoPath),
@@ -54,8 +52,10 @@ const gitnetAPI: GitNetAPI = {
     ipcRenderer.invoke("git:get-hot-files", repoPath, limit),
   getContributors: (repoPath: string) =>
     ipcRenderer.invoke("git:get-contributors", repoPath),
-  getGitCommandHistory: (): Promise<GitCommandLog[]> =>
-    ipcRenderer.invoke("get-git-command-history"),
+  getGitCommandHistory: (limit?: number, offset?: number): Promise<GitCommandLog[]> =>
+    ipcRenderer.invoke("get-git-command-history", limit, offset),
+  clearGitCommandHistory: (): Promise<void> =>
+    ipcRenderer.invoke("clear-git-command-history"),
 
   // File system operations
   watchRepository: (repoPath: string): Promise<void> =>
@@ -118,7 +118,9 @@ const gitnetAPI: GitNetAPI = {
 };
 
 // Expose the API to the renderer process
-console.log("Exposing gitnetAPI with keys:", Object.keys(gitnetAPI));
+if (process.env.NODE_ENV === "development") {
+  console.log("🔧 [Preload] Exposing gitnetAPI with keys:", Object.keys(gitnetAPI));
+}
 contextBridge.exposeInMainWorld("gitnetAPI", gitnetAPI);
 
 // Log that preload script has loaded (development only)

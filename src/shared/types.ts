@@ -96,14 +96,6 @@ export interface Repository {
   isDetached: boolean;
 }
 
-export interface CommitFilter {
-  path?: string;
-  author?: string;
-  since?: string;
-  until?: string;
-  search?: string;
-}
-
 export interface CommitGraph {
   commits: Commit[];
   branches: Branch[];
@@ -268,7 +260,6 @@ export interface GitNetAPI {
     repoPath: string,
     limit?: number,
     offset?: number,
-    filter?: CommitFilter,
   ) => Promise<Commit[]>;
   getRecentCommits: (repoPath: string) => Promise<Commit[]>;
   getBranches: (repoPath: string) => Promise<Branch[]>;
@@ -283,7 +274,8 @@ export interface GitNetAPI {
   ) => Promise<string>;
   getHotFiles: (repoPath: string, limit?: number) => Promise<HotFile[]>;
   getContributors: (repoPath: string) => Promise<ContributorStats[]>;
-  getGitCommandHistory: () => Promise<GitCommandLog[]>;
+  getGitCommandHistory: (limit?: number, offset?: number) => Promise<GitCommandLog[]>;
+  clearGitCommandHistory: () => Promise<void>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;

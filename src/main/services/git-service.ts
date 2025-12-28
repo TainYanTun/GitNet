@@ -11,7 +11,6 @@ import {
   HotFile,
   ContributorStats,
   GitCommandLog,
-  CommitFilter,
 } from "../../shared/types";
 
 export class GitService {
@@ -72,8 +71,19 @@ export class GitService {
     }
   }
 
-  getCommandHistory(): GitCommandLog[] {
-    return this.commandHistory;
+  getCommandHistory(limit?: number, offset?: number): GitCommandLog[] {
+    if (limit === undefined && offset === undefined) {
+      return this.commandHistory;
+    }
+    
+    const start = offset || 0;
+    const end = limit !== undefined ? start + limit : this.commandHistory.length;
+    
+    return this.commandHistory.slice(start, end);
+  }
+
+  clearCommandHistory(): void {
+    this.commandHistory = [];
   }
 
   async getHotFiles(repoPath: string, limit = 10): Promise<HotFile[]> {
@@ -229,8 +239,7 @@ export class GitService {
   async getCommits(
     repoPath: string,
     limit = 100,
-    offset = 0,
-    filter?: CommitFilter
+    offset = 0
   ): Promise<Commit[]> {
     const args = [
       "log",
@@ -240,16 +249,6 @@ export class GitService {
       `-n`,
       `${limit}`
     ];
-
-    if (filter) {
-      if (filter.author) args.push(`--author=${filter.author}`);
-      if (filter.search) args.push(`--grep=${filter.search}`, "-i");
-      if (filter.since) args.push(`--since=${filter.since}`);
-      if (filter.until) args.push(`--until=${filter.until}`);
-      if (filter.path) {
-        args.push("--", filter.path);
-      }
-    }
 
     try {
       const [branches, tagMap] = await Promise.all([

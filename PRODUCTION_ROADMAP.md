@@ -41,11 +41,7 @@ Protecting the user's system and data.
 ## 5. Advanced Developer Tooling
 Features required for day-to-day enterprise use.
 
-- [ ] **Advanced Filtering:**
-    - Filter by Date Range.
-    - Filter by specific folder/path (`git log -- path/to/dir`).
-    - Multi-author filtering.
-- [ ] **Git Command Console:** A small "output" log showing the exact Git CLI commands the app is running for transparency.
+- [x] **Git Command Console:** A small "output" log showing the exact Git CLI commands the app is running for transparency.
 - [ ] **Configurable Themes:** Allow users to import custom VS Code-style theme files (`.json`).
 
 ## 6. Observability

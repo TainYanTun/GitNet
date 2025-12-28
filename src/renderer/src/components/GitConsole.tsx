@@ -1,76 +1,129 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { GitCommandLog } from '@shared/types';
+import { useToast } from './ToastContext';
 
 export const GitConsole: React.FC = () => {
+  const { showToast } = useToast();
   const [logs, setLogs] = useState<GitCommandLog[]>([]);
+  const [page, setPage] = useState(0);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const pageSize = 15;
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     try {
-      const history = await window.gitnetAPI.getGitCommandHistory();
+      const history = await window.gitnetAPI.getGitCommandHistory(pageSize, page * pageSize);
       setLogs(history);
     } catch (error) {
       console.error('Failed to fetch git logs:', error);
     }
-  };
+  }, [page, pageSize]);
 
   useEffect(() => {
     fetchLogs();
-    const interval = setInterval(fetchLogs, 2000); // Poll for new commands
+    const interval = setInterval(fetchLogs, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchLogs]);
+
+  const handleClear = async () => {
+    await window.gitnetAPI.clearGitCommandHistory();
+    setLogs([]);
+    setPage(0);
+  };
+
+  const handleCopy = (log: GitCommandLog) => {
+    const fullCommand = `git ${log.args.join(' ')}`;
+    navigator.clipboard.writeText(fullCommand);
+    setCopiedId(log.id);
+    showToast("Command copied to clipboard", "success", 2000);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   return (
-    <div className="h-full overflow-y-auto bg-zed-bg dark:bg-zed-dark-bg p-6 animate-in fade-in duration-300">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <header className="flex items-center justify-between border-b border-zed-border dark:border-zed-dark-border pb-4">
-          <div>
-            <h1 className="text-xl font-bold text-zed-text dark:text-zed-dark-text">Git Output Console</h1>
-            <p className="text-xs text-zed-muted dark:text-zed-dark-muted">Transparent log of all Git CLI commands executed by GitNet.</p>
-          </div>
-          <button 
-            onClick={fetchLogs}
-            className="p-2 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element text-zed-muted transition-colors"
-            title="Refresh logs"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          </button>
-        </header>
-
-        <div className="space-y-2">
-          {logs.length === 0 ? (
-            <div className="text-center py-20 text-zed-muted opacity-50 italic text-sm font-mono">
-              No Git commands recorded in this session.
-            </div>
-          ) : (
-            logs.map((log) => (
-              <div 
-                key={log.id} 
-                className="group border border-zed-border dark:border-zed-dark-border rounded-lg bg-zed-surface/30 dark:bg-zed-dark-surface/30 overflow-hidden font-mono text-[11px]"
-              >
-                <div className="flex items-center justify-between px-3 py-2 bg-zed-element/50 dark:bg-zed-dark-element/50 border-b border-zed-border dark:border-zed-dark-border">
-                  <div className="flex items-center gap-3">
-                    <span className={`w-1.5 h-1.5 rounded-full ${log.success ? 'bg-commit-feat' : 'bg-commit-fix'}`}></span>
-                    <span className="text-zed-text dark:text-zed-dark-text font-bold">git {log.args[0]}</span>
-                    <span className="text-zed-muted opacity-50">{new Date(log.timestamp).toLocaleTimeString()}</span>
-                  </div>
-                  <div className="flex items-center gap-4 text-[10px]">
-                    <span className="text-zed-muted">{log.duration}ms</span>
-                    <span className={log.success ? 'text-commit-feat' : 'text-commit-fix'}>
-                      EXIT {log.exitCode}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3 whitespace-pre-wrap break-all text-zed-text dark:text-zed-dark-text opacity-80 leading-relaxed">
-                  <span className="text-zed-accent opacity-60 mr-2">$</span>
-                  git {log.args.join(' ')}
-                </div>
-              </div>
-            ))
-          )}
+    <div className="h-full bg-zed-bg dark:bg-zed-dark-bg selection:bg-zed-accent/30 flex flex-col font-mono text-[11px] animate-in fade-in duration-500">
+      {/* Hyper-minimalist Header */}
+      <header className="flex-shrink-0 flex items-center justify-between px-6 py-3 border-b border-zed-border dark:border-zed-dark-border">
+        <div className="flex items-center gap-4">
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zed-accent">System / Git_Logs</span>
+          <span className="text-zed-muted dark:text-zed-dark-text/30">|</span>
+          <span className="text-zed-muted dark:text-zed-dark-text/50">Session History</span>
         </div>
+        <button 
+          onClick={handleClear}
+          className="text-[10px] uppercase font-bold tracking-widest text-zed-muted dark:text-zed-dark-text/40 hover:text-commit-fix transition-colors"
+        >
+          [ Clear_All ]
+        </button>
+      </header>
+
+      {/* Log Stream */}
+      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-1 custom-scrollbar">
+        {logs.length === 0 ? (
+          <div className="h-full flex items-center justify-center text-zed-muted dark:text-zed-dark-text/20 italic">
+            Waiting for Git operations...
+          </div>
+        ) : (
+          logs.map((log) => (
+            <div key={log.id} className="group flex items-start gap-4 py-1 hover:bg-zed-element/30 dark:hover:bg-zed-dark-element/30 rounded px-2 -mx-2 transition-colors">
+              <span className="shrink-0 w-16 text-zed-muted dark:text-zed-dark-text/30 text-[10px] pt-0.5">
+                {new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+              </span>
+              
+              <span className={`shrink-0 w-1.5 h-1.5 rounded-full mt-1.5 ${log.success ? 'bg-commit-feat/50' : 'bg-commit-fix shadow-[0_0_8px_rgba(224,108,117,0.5)]'}`}></span>
+              
+              <div className="flex-1 flex flex-wrap items-baseline gap-x-2 min-w-0 select-text">
+                <span className="text-zed-accent dark:text-zed-dark-accent font-bold">git</span>
+                <span className="text-zed-text dark:text-zed-dark-text font-medium">{log.args.join(' ')}</span>
+              </div>
+
+              <div className="shrink-0 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-zed-muted dark:text-zed-dark-text/30 text-[9px] uppercase tracking-tighter">{log.duration}ms</span>
+                <span className={`text-[9px] font-bold px-1 rounded border ${log.success ? 'border-commit-feat/30 text-commit-feat' : 'border-commit-fix/30 text-commit-fix'}`}>
+                  {log.exitCode}
+                </span>
+                <button
+                  onClick={() => handleCopy(log)}
+                  className={`p-1 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element transition-colors ${copiedId === log.id ? 'text-commit-feat' : 'text-zed-muted'}`}
+                  title="Copy command"
+                >
+                  {copiedId === log.id ? (
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
+
+      {/* Simple Pagination Footer */}
+      <footer className="flex-shrink-0 flex items-center justify-between px-6 py-2 border-t border-zed-border dark:border-zed-dark-border bg-zed-surface/30 dark:bg-zed-dark-surface/30">
+        <div className="text-[10px] text-zed-muted dark:text-zed-dark-text/40 uppercase tracking-tight">
+          Showing {logs.length > 0 ? (page * pageSize) + 1 : 0} - {(page * pageSize) + logs.length}
+        </div>
+        
+        <div className="flex items-center gap-6">
+          <button 
+            disabled={page === 0}
+            onClick={() => setPage(p => Math.max(0, p - 1))}
+            className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${page === 0 ? 'text-zed-muted/20 cursor-not-allowed' : 'text-zed-muted dark:text-zed-dark-text/60 hover:text-zed-accent'}`}
+          >
+            &lt; Newer
+          </button>
+          <button 
+            disabled={logs.length < pageSize}
+            onClick={() => setPage(p => p + 1)}
+            className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${logs.length < pageSize ? 'text-zed-muted/20 cursor-not-allowed' : 'text-zed-muted dark:text-zed-dark-text/60 hover:text-zed-accent'}`}
+          >
+            Older &gt;
+          </button>
+        </div>
+      </footer>
     </div>
   );
 };

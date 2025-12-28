@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "bun run build:preload && concurrently \"bun run dev:renderer\" \"bun run dev:main\"",
     "dev:renderer": "vite",
-    "dev:main": "tsc -p src/main/tsconfig.json && electron dist/main/main/main.js --inspect=5858",
+    "dev:main": "bun run build:preload && tsc -p src/main/tsconfig.json && electron dist/main/main/main.js --inspect=5858",
     "build": "bun run build:renderer && bun run build:main",
     "build:renderer": "vite build",
     "build:main": "tsc -p src/main/tsconfig.json",

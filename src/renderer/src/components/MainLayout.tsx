@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Repository, Branch, Commit, CommitFilter } from "@src/shared/types";
+import { Repository, Branch, Commit } from "@src/shared/types";
 import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
@@ -13,7 +13,6 @@ import { CommitDetails } from "./CommitDetails"; // Import CommitDetails
 import { BranchCheckout } from "./BranchCheckout";
 import { HelpView } from "./HelpView";
 import { GitConsole } from "./GitConsole";
-import { FilterPanel } from "./FilterPanel";
 
 interface MainLayoutProps {
   repository: Repository;
@@ -33,8 +32,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [commits, setCommits] = useState<Commit[]>([]);
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
-  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<CommitFilter | undefined>();
   const [currentView, setCurrentView] = useState<
     "graph" | "insights" | "history" | "contributors" | "stashes" | "checkout" | "help" | "console"
   >("graph");
@@ -43,7 +40,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     try {
       const [fetchedBranches, fetchedCommits, fetchedStashes] = await Promise.all([
         window.gitnetAPI.getBranches(repository.path),
-        window.gitnetAPI.getCommits(repository.path, 1000, 0, activeFilter),
+        window.gitnetAPI.getCommits(repository.path, 1000, 0),
         window.gitnetAPI.getStashList(repository.path)
       ]);
       setBranches(fetchedBranches);
@@ -74,7 +71,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       unsubscribeCommits?.();
       unsubscribeHead?.();
     };
-  }, [repository.path, repository.currentBranch, refreshData, activeFilter]);
+  }, [repository.path, repository.currentBranch, refreshData]);
 
   const handleBranchSelect = async (branchName: string) => {
     if (branchName === repository.currentBranch) return;
@@ -247,16 +244,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
         <div className="flex items-center gap-2 no-drag">
           <button
-            onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
-            className={`p-1.5 rounded hover:bg-zed-element text-zed-muted hover:text-zed-text transition-colors ${isFilterPanelOpen ? 'text-zed-accent' : ''}`}
-            title="Toggle Filter Panel"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-            </svg>
-          </button>
-
-          <button
             onClick={toggleTheme}
             className="p-1.5 rounded hover:bg-zed-element text-zed-muted hover:text-zed-text transition-colors"
             title="Toggle Theme"
@@ -297,19 +284,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           </button>
         </div>
       </div>
-
-      {isFilterPanelOpen && (
-        <FilterPanel 
-          onApplyFilter={(filter) => {
-            setActiveFilter(filter);
-            showToast("Filters applied", "success");
-          }}
-          onClearFilter={() => {
-            setActiveFilter(undefined);
-            showToast("Filters cleared", "info");
-          }}
-        />
-      )}
 
       {/* Main Workspace */}
       <div className="flex flex-1 overflow-hidden">
@@ -532,25 +506,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </svg>
             </button>
             <button
-              onClick={() => setCurrentView("stashes")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "stashes" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
-              title="Stash Gallery"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
-            </button>
-            <button
               onClick={() => setCurrentView("checkout")}
               className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "checkout" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
               title="Checkout Branch"
@@ -566,44 +521,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   strokeLinejoin="round"
                   strokeWidth={1.5}
                   d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                />
-              </svg>
-            </button>
-            <button
-              onClick={() => setCurrentView("help")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "help" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
-              title="User Guide"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </button>
-            <button
-              onClick={() => setCurrentView("console")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "console" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
-              title="Git Console"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
             </button>
@@ -635,6 +552,65 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           </button>
         </div>
         <div className="flex items-center gap-4 text-zed-muted dark:text-zed-dark-muted">
+          <div className="flex items-center gap-1 border-r border-zed-border dark:border-zed-dark-border pr-4 mr-2">
+            <button
+              onClick={() => setCurrentView("stashes")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "stashes" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Stash Gallery"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCurrentView("console")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "console" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Git Console"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCurrentView("help")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "help" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="User Guide"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
+          </div>
           <span>UTF-8</span>
           <span>GitNet v0.1.0</span>
         </div>
