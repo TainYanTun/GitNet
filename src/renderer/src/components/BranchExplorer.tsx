@@ -5,13 +5,11 @@ import { groupBranches, BranchGroup } from '../utils/branch-utils';
 interface BranchExplorerProps {
   branches: Branch[];
   currentBranchName: string;
-  onBranchSelect: (branchName: string) => void;
 }
 
 export const BranchExplorer: React.FC<BranchExplorerProps> = ({
   branches,
   currentBranchName,
-  onBranchSelect,
 }) => {
   const [localGroups, setLocalGroups] = useState<BranchGroup[]>([]);
   const [remoteGroups, setRemoteGroups] = useState<BranchGroup[]>([]);
@@ -44,19 +42,18 @@ export const BranchExplorer: React.FC<BranchExplorerProps> = ({
   const renderBranch = (branch: Branch) => (
     <div
       key={`branch-${branch.name}`}
-      className={`flex items-center gap-2 px-2 py-1 text-sm rounded cursor-pointer transition-colors group/branch
+      className={`flex items-center gap-2 px-2 py-1 text-sm rounded select-none transition-colors group/branch
                   ${
                     branch.name === currentBranchName
-                      ? 'bg-zed-accent text-white'
-                      : 'hover:bg-zed-element dark:hover:bg-zed-dark-element text-zed-text dark:text-zed-dark-text'
+                      ? 'bg-zed-accent/20 text-zed-accent'
+                      : 'text-zed-text dark:text-zed-dark-text opacity-70'
                   }`}
-      onClick={() => onBranchSelect(branch.name)}
       title={branch.name}
     >
       <svg
         className={`w-3.5 h-3.5 flex-shrink-0 ${
           branch.name === currentBranchName
-            ? 'text-white'
+            ? 'text-zed-accent'
             : 'text-zed-muted dark:text-zed-dark-muted group-hover/branch:text-zed-text'
         }`}
         fill="none"

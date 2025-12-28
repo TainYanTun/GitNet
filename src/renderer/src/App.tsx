@@ -80,9 +80,8 @@ const App: React.FC = () => {
     showToast("Repository closed", "info");
   };
 
-  // Set up event listeners for repository changes
+  // Check for initial repository from CLI
   useEffect(() => {
-    // Check for initial repository from CLI
     const checkInitialRepo = async () => {
       try {
         if (window.gitnetAPI && typeof window.gitnetAPI.getInitialRepo === 'function') {
@@ -98,7 +97,10 @@ const App: React.FC = () => {
     };
 
     checkInitialRepo();
+  }, []);
 
+  // Set up event listeners for repository changes
+  useEffect(() => {
     const handleRepositoryChanged = (event: any) => {
       console.log("Repository changed:", event);
       // Handle repository changes from file system watcher

@@ -11,6 +11,7 @@ import { Contributors } from "./Contributors";
 import { StashGallery } from "./StashGallery";
 import { CommitGraph } from "./CommitGraph"; // Import CommitGraph
 import { CommitDetails } from "./CommitDetails"; // Import CommitDetails
+import { BranchCheckout } from "./BranchCheckout";
 
 interface MainLayoutProps {
   repository: Repository;
@@ -29,7 +30,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
   const [currentView, setCurrentView] = useState<
-    "graph" | "insights" | "history" | "contributors" | "stashes"
+    "graph" | "insights" | "history" | "contributors" | "stashes" | "checkout"
   >("graph");
 
   useEffect(() => {
@@ -115,7 +116,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         showToast(`Checkout failed: ${error instanceof Error ? error.message : "Unknown error"}`, "error");
       }
     } else {
-      showToast("Checkout feature is currently unavailable.", "warn");
+      showToast("Checkout feature is currently unavailable.", "info");
     }
   };
 
@@ -135,6 +136,88 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  const renderMainContent = () => {
+    switch (currentView) {
+      case "graph":
+        return (
+          <CommitGraph
+            commits={commits}
+            branches={branches}
+            stashes={stashes}
+            headCommitHash={repository.headCommit}
+            selectedCommitHash={selectedCommit?.hash}
+            onCommitSelect={handleCommitSelect}
+          />
+        );
+      case "history":
+        return (
+          <CommitHistory
+            commits={commits}
+            branches={branches}
+            headCommitHash={repository.headCommit}
+            onCommitSelect={handleCommitSelect}
+            selectedCommitHash={selectedCommit?.hash}
+          />
+        );
+      case "contributors":
+        return (
+          <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
+            <div className="p-12 max-w-6xl mx-auto">
+              <div className="mb-10">
+                <h1 className="text-2xl font-bold text-zed-text dark:text-zed-dark-text tracking-tight">
+                  Team Insights
+                </h1>
+                <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
+                  Analysis of contributor activity, development impact, and
+                  chronological engagement.
+                </p>
+              </div>
+              <Contributors repoPath={repository.path} />
+            </div>
+          </div>
+        );
+      case "insights":
+        return (
+          <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
+            <div className="p-12 max-w-5xl mx-auto">
+              <div className="mb-10">
+                <h1 className="text-2xl font-bold text-zed-text dark:text-zed-dark-text tracking-tight">
+                  Repository Insights
+                </h1>
+                <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
+                  Analysis of file modification frequency and repository hotspots.
+                </p>
+              </div>
+              <div className="bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border relative overflow-hidden shadow-sm">
+                <div className="p-1 border-b border-zed-border dark:border-zed-dark-border bg-zed-element/30 dark:bg-zed-dark-element/30 flex items-center justify-between px-4 py-2">
+                  <h2 className="text-[10px] font-bold uppercase tracking-wider text-zed-muted dark:text-zed-dark-muted">
+                    Hotspots / Top Modified
+                  </h2>
+                </div>
+                <HotFiles repoPath={repository.path} />
+              </div>
+            </div>
+          </div>
+        );
+      case "stashes":
+        return <StashGallery repoPath={repository.path} />;
+      case "checkout":
+        return (
+          <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
+            <div className="p-12 max-w-4xl mx-auto">
+              <BranchCheckout
+                branches={branches}
+                currentBranchName={repository.currentBranch}
+                onBranchSelect={handleBranchSelect}
+              />
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="h-full w-full flex flex-col bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text overflow-hidden">
@@ -258,7 +341,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 <BranchExplorer
                   branches={branches}
                   currentBranchName={repository.currentBranch}
-                  onBranchSelect={handleBranchSelect}
                 />
               </div>
 
@@ -279,64 +361,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <div className="flex-1 flex flex-col bg-zed-bg dark:bg-zed-dark-bg relative">
           {/* Canvas Area */}
           <div className="flex-1 overflow-hidden relative group">
-            {currentView === "graph" ? (
-              <CommitGraph
-                commits={commits}
-                branches={branches}
-                stashes={stashes}
-                headCommitHash={repository.headCommit}
-                selectedCommitHash={selectedCommit?.hash}
-                onCommitSelect={handleCommitSelect}
-              />
-            ) : currentView === "history" ? (
-              <CommitHistory
-                commits={commits}
-                branches={branches}
-                headCommitHash={repository.headCommit}
-                onCommitSelect={handleCommitSelect}
-                selectedCommitHash={selectedCommit?.hash}
-              />
-            ) : currentView === "contributors" ? (
-              <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
-                <div className="p-12 max-w-6xl mx-auto">
-                  <div className="mb-10">
-                    <h1 className="text-2xl font-bold text-zed-text dark:text-zed-dark-text tracking-tight">
-                      Team Insights
-                    </h1>
-                    <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
-                      Analysis of contributor activity, development impact, and
-                      chronological engagement.
-                    </p>
-                  </div>
-                  <Contributors repoPath={repository.path} />
-                </div>
-              </div>
-            ) : currentView === "insights" ? (
-              <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
-                <div className="p-12 max-w-5xl mx-auto">
-                  <div className="mb-10">
-                    <h1 className="text-2xl font-bold text-zed-text dark:text-zed-dark-text tracking-tight">
-                      Repository Insights
-                    </h1>
-                    <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
-                      Analysis of file modification frequency and repository
-                      hotspots.
-                    </p>
-                  </div>
-
-                  <div className="bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border relative overflow-hidden shadow-sm">
-                    <div className="p-1 border-b border-zed-border dark:border-zed-dark-border bg-zed-element/30 dark:bg-zed-dark-element/30 flex items-center justify-between px-4 py-2">
-                      <h2 className="text-[10px] font-bold uppercase tracking-wider text-zed-muted dark:text-zed-dark-muted">
-                        Hotspots / Top Modified
-                      </h2>
-                    </div>
-                    <HotFiles repoPath={repository.path} />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <StashGallery repoPath={repository.path} />
-            )}
+            {renderMainContent()}
           </div>
         </div>
 
@@ -481,6 +506,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   strokeLinejoin="round"
                   strokeWidth={1.5}
                   d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCurrentView("checkout")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "checkout" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Checkout Branch"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
                 />
               </svg>
             </button>
