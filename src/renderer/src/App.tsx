@@ -82,6 +82,23 @@ const App: React.FC = () => {
 
   // Set up event listeners for repository changes
   useEffect(() => {
+    // Check for initial repository from CLI
+    const checkInitialRepo = async () => {
+      try {
+        if (window.gitnetAPI && typeof window.gitnetAPI.getInitialRepo === 'function') {
+          const initialPath = await window.gitnetAPI.getInitialRepo();
+          if (initialPath) {
+            console.log("Loading initial repository from CLI:", initialPath);
+            handleSelectRepository(initialPath);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check for initial repo:", error);
+      }
+    };
+
+    checkInitialRepo();
+
     const handleRepositoryChanged = (event: any) => {
       console.log("Repository changed:", event);
       // Handle repository changes from file system watcher

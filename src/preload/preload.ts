@@ -37,6 +37,9 @@ const gitnetAPI: GitNetAPI = {
   getCurrentHead: (repoPath: string): Promise<string> =>
     ipcRenderer.invoke("get-current-head", repoPath),
 
+  checkoutBranch: (repoPath: string, branchName: string): Promise<void> =>
+    ipcRenderer.invoke("checkout-branch", repoPath, branchName),
+
   getStashList: (repoPath: string): Promise<StashEntry[]> =>
     ipcRenderer.invoke("get-stash-list", repoPath),
   getCommitDetails: (repoPath: string, commitHash: string): Promise<Commit> =>
@@ -64,6 +67,9 @@ const gitnetAPI: GitNetAPI = {
 
   clearRecentRepositories: (): Promise<void> =>
     ipcRenderer.invoke("clear-recent-repositories"),
+
+  getInitialRepo: (): Promise<string | null> =>
+    ipcRenderer.invoke("get-initial-repo"),
 
   // Event listeners
   onRepositoryChanged: (callback: (event: any) => void): (() => void) => {
@@ -107,6 +113,7 @@ const gitnetAPI: GitNetAPI = {
 };
 
 // Expose the API to the renderer process
+console.log("Exposing gitnetAPI with keys:", Object.keys(gitnetAPI));
 contextBridge.exposeInMainWorld("gitnetAPI", gitnetAPI);
 
 // Listen for repository events from main process

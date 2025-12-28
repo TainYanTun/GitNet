@@ -21,19 +21,27 @@ class GitNetApp {
   private initializeApp(): void {
     // Handle app ready
     app.whenReady().then(async () => {
-      const isGitInstalled = await checkGitInstallation();
-      if (!isGitInstalled) {
-        dialog.showErrorBox(
-          "Git Not Found",
-          "Git is required to run GitNet. Please install Git and add it to your PATH, then restart the application."
-        );
-        app.quit();
-        return;
-      }
+      try {
+        const isGitInstalled = await require("./utils").checkGitInstallation();
+        if (!isGitInstalled) {
+          dialog.showErrorBox(
+            "Git Not Found",
+            "Git is required to run GitNet. Please install Git and add it to your PATH, then restart the application.",
+          );
+          app.quit();
+          return;
+        }
 
-      this.createWindow();
-      this.setupIpcHandlers();
-      this.setupMenu();
+        await this.createWindow();
+        this.setupIpcHandlers();
+        this.setupMenu();
+      } catch (error) {
+        console.error("Failed to initialize application:", error);
+        dialog.showErrorBox(
+          "Initialization Error",
+          `Failed to start the application: ${error instanceof Error ? error.message : "Unknown error"}`,
+        );
+      }
     });
 
     // Quit when all windows are closed (except on macOS)
@@ -72,9 +80,11 @@ class GitNetApp {
       });
 
       // 4. Deny all permission requests (camera, mic, notifications, etc.)
-      contents.session.setPermissionRequestHandler((_webContents, _permission, callback) => {
-        callback(false);
-      });
+      contents.session.setPermissionRequestHandler(
+        (_webContents, _permission, callback) => {
+          callback(false);
+        },
+      );
     });
   }
 
@@ -105,16 +115,22 @@ class GitNetApp {
         allowRunningInsecureContent: false,
       },
     });
+    // Load the renderer
 
     if (isDev) {
       this.mainWindow.loadURL("http://localhost:3000");
       this.mainWindow.webContents.openDevTools();
     } else {
-      this.mainWindow.loadFile(join(__dirname, "../../renderer/index.html"));
+      this.mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
     }
 
+    // Show window when ready to prevent visual flash
     this.mainWindow.once("ready-to-show", () => {
       this.mainWindow?.show();
+
+      if (isDev) {
+        this.mainWindow?.webContents.openDevTools();
+      }
     });
 
     // Handle window closed
@@ -273,9 +289,34 @@ class GitNetApp {
     ipcMain.handle("get-current-head", (_, repoPath: string) =>
       this.gitService.getCurrentHead(repoPath),
     );
+    ipcMain.handle(
+      "checkout-branch",
+      (_, repoPath: string, branchName: string) =>
+        this.gitService.checkoutBranch(repoPath, branchName),
+    );
     ipcMain.handle("get-stash-list", (_, repoPath: string) =>
       this.gitService.getStashList(repoPath),
     );
+
+    // Initial Path Handling
+    ipcMain.handle("get-initial-repo", () => {
+      const args = isDev ? process.argv.slice(2) : process.argv.slice(1);
+      const lastArg = args[args.length - 1];
+
+      if (lastArg && !lastArg.startsWith("-")) {
+        const path = require("path");
+        const fs = require("fs");
+        const absolutePath = path.resolve(lastArg);
+
+        if (
+          fs.existsSync(absolutePath) &&
+          fs.statSync(absolutePath).isDirectory()
+        ) {
+          return absolutePath;
+        }
+      }
+      return null;
+    });
     ipcMain.handle(
       "get-commit-details",
       (_, repoPath: string, commitHash: string) =>

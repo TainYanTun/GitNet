@@ -251,6 +251,7 @@ export interface GitNetAPI {
   getRecentCommits: (repoPath: string) => Promise<Commit[]>;
   getBranches: (repoPath: string) => Promise<Branch[]>;
   getCurrentHead: (repoPath: string) => Promise<string>;
+  checkoutBranch: (repoPath: string, branchName: string) => Promise<void>;
   getStashList: (repoPath: string) => Promise<StashEntry[]>;
   getCommitDetails: (repoPath: string, commitHash: string) => Promise<Commit>;
   getDiff: (
@@ -269,6 +270,8 @@ export interface GitNetAPI {
   getSettings: () => Promise<AppSettings>;
   saveSettings: (settings: AppSettings) => Promise<void>;
   clearRecentRepositories: () => Promise<void>;
+
+  getInitialRepo: () => Promise<string | null>;
 
   // Events
   onRepositoryChanged: (

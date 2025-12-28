@@ -98,10 +98,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     };
   }, [repository.path, showToast]);
 
-  const handleBranchSelect = (branchName: string) => {
-    console.log("Selected branch:", branchName);
-    // TODO: Implement actual branch selection logic (e.g., checkout)
-    // For now, we'll just log and potentially highlight
+  const handleBranchSelect = async (branchName: string) => {
+    if (branchName === repository.currentBranch) return;
+
+    if (window.gitnetAPI && typeof window.gitnetAPI.checkoutBranch === 'function') {
+      try {
+        showToast(`Checking out ${branchName}...`, "info");
+        await window.gitnetAPI.checkoutBranch(repository.path, branchName);
+        showToast(`Checked out ${branchName}`, "success");
+        
+        // Refresh local state (this will also be triggered by the watcher)
+        const fetchedBranches = await window.gitnetAPI.getBranches(repository.path);
+        setBranches(fetchedBranches);
+      } catch (error) {
+        console.error("Checkout failed:", error);
+        showToast(`Checkout failed: ${error instanceof Error ? error.message : "Unknown error"}`, "error");
+      }
+    } else {
+      showToast("Checkout feature is currently unavailable.", "warn");
+    }
   };
 
   const handleCommitSelect = (commit: Commit) => {

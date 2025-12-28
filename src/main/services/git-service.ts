@@ -237,6 +237,15 @@ export class GitService {
     }
   }
 
+  async checkoutBranch(repoPath: string, branchName: string): Promise<void> {
+    try {
+      await this.run(["checkout", branchName], repoPath);
+    } catch (error) {
+      console.error(`Failed to checkout branch ${branchName}:`, error);
+      throw error;
+    }
+  }
+
   async getStashList(repoPath: string): Promise<string[]> {
     try {
       const output = await this.run(["stash", "list", "--pretty=format:%gd: %gs"], repoPath);
