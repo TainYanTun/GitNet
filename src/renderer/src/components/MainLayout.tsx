@@ -33,16 +33,24 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
   const [currentView, setCurrentView] = useState<
-    "graph" | "insights" | "history" | "contributors" | "stashes" | "checkout" | "help" | "console"
+    | "graph"
+    | "insights"
+    | "history"
+    | "contributors"
+    | "stashes"
+    | "checkout"
+    | "help"
+    | "console"
   >("graph");
 
   const refreshData = React.useCallback(async () => {
     try {
-      const [fetchedBranches, fetchedCommits, fetchedStashes] = await Promise.all([
-        window.gitnetAPI.getBranches(repository.path),
-        window.gitnetAPI.getCommits(repository.path, 1000, 0),
-        window.gitnetAPI.getStashList(repository.path)
-      ]);
+      const [fetchedBranches, fetchedCommits, fetchedStashes] =
+        await Promise.all([
+          window.gitnetAPI.getBranches(repository.path),
+          window.gitnetAPI.getCommits(repository.path, 1000, 0),
+          window.gitnetAPI.getStashList(repository.path),
+        ]);
       setBranches(fetchedBranches);
       setCommits(fetchedCommits);
       setStashes(fetchedStashes);
@@ -84,7 +92,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         showToast(`Checking out ${branchName}...`, "info");
         await window.gitnetAPI.checkoutBranch(repository.path, branchName);
         showToast(`Checked out ${branchName}`, "success");
-        
+
         // Refresh local state
         refreshData();
       } catch (error) {
@@ -316,7 +324,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2 text-sm text-zed-text dark:text-zed-dark-text">
-                    <span className={`w-2 h-2 rounded-full ${repository.isDetached ? 'bg-commit-refactor' : 'bg-zed-accent'}`}></span>
+                    <span
+                      className={`w-2 h-2 rounded-full ${repository.isDetached ? "bg-commit-refactor" : "bg-zed-accent"}`}
+                    ></span>
                     <span className="truncate">{repository.currentBranch}</span>
                     {repository.isDetached && (
                       <span className="text-[9px] bg-zed-element dark:bg-zed-dark-element px-1 rounded border border-zed-border dark:border-zed-dark-border opacity-70">
@@ -324,11 +334,21 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                       </span>
                     )}
                   </div>
-                  
+
                   {repository.isRebasing && (
                     <div className="flex items-center gap-2 text-[10px] text-commit-refactor font-bold uppercase tracking-tight bg-commit-refactor/10 px-2 py-1 rounded border border-commit-refactor/20">
-                      <svg className="w-3 h-3 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      <svg
+                        className="w-3 h-3 animate-spin-slow"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
                       </svg>
                       Rebase in progress
                     </div>
@@ -336,8 +356,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
                   {repository.isMerging && (
                     <div className="flex items-center gap-2 text-[10px] text-commit-fix font-bold uppercase tracking-tight bg-commit-fix/10 px-2 py-1 rounded border border-commit-fix/20">
-                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                        />
                       </svg>
                       Merge Conflicts
                     </div>
@@ -427,8 +457,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       {/* Status Bar */}
       <div className="h-8 flex items-center justify-between px-3 bg-zed-surface dark:bg-zed-dark-surface border-t border-zed-border dark:border-zed-dark-border text-[11px] text-zed-text dark:text-zed-dark-text select-none py-1">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1">
+        <div className="flex items-center">
+          <div className="w-[228px] flex items-center gap-1 border-r border-zed-border dark:border-zed-dark-border mr-3">
             <button
               onClick={() => setCurrentView("graph")}
               className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "graph" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
@@ -525,8 +555,6 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
               </svg>
             </button>
           </div>
-
-          <div className="w-px h-3 bg-zed-border dark:border-zed-dark-border mx-1"></div>
 
           <button
             onClick={() => {
