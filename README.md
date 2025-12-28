@@ -1,70 +1,75 @@
-# GitNet — Main Spine Git Visualizer
+# GitNet
 
-GitNet is a high-performance desktop Git visualizer that maps the Directed Acyclic Graph (DAG) of a repository onto a stable, multi-lane grid system. Designed for architectural clarity, it helps developers navigate complex branch hierarchies and merge histories without visual noise.
+**A high-performance Git visualizer that reveals the architectural spine of your repository.**
 
-## ✨ Key Features
-
-### 🌲 Main Spine Architecture
-- **Lane-Stable Layout**: Automatically organizes branches into persistent vertical lanes, keeping the project spine (main/master) anchored to the leftmost track for easy reference.
-- **Semantic Classification**: Instantly identify commit intent (feat, fix, refactor) through standardized color encoding based on Conventional Commits.
-- **Structural Node Shapes**: Distinguish between standard commits (circles), merge operations (diamonds), and reverts/stashes (squares) at a glance.
-
-### ⚡ The Focus Engine
-- **Linear Lineage Highlighting**: Hover over any commit to trigger a recursive trace. GitNet dims irrelevant paths and highlights the exact ancestors and descendants of that node.
-- **Asynchronous Diffing**: Inspect changes with a high-performance diff viewer that retrieves data on-demand, ensuring the UI remains responsive even in massive repositories.
-
-### 🔄 Real-Time Pipeline
-- **Recursive Watcher**: A background service monitors your `.git` directory for state changes (commits, checkouts, rebases) and updates the UI instantly.
-- **Interactive Checkout**: A dedicated tab for searching and switching branches safely within the app.
+GitNet transforms complex Git histories into a stable, lane-based graph that keeps your main branch anchored and your merge patterns clear. Built for developers who need to understand the structural evolution of their codebase without visual clutter.
 
 ---
 
-## 🎨 Visual Language
+## Core Capabilities
 
-### Commit Semantics
-GitNet uses a high-contrast palette to categorize your work:
-- 🟢 **Green**: Features (`feat`) — New logic and capabilities.
-- 🔴 **Red**: Bug Fixes (`fix`) — Patches and stability updates.
-- 🟡 **Yellow**: Refactor — Code cleanup without functional changes.
-- 🔵 **Blue**: Docs — Documentation-only updates.
-- ⚪ **Gray**: Others — Chores, build scripts, and maintenance.
+**Main Spine Architecture**  
+Automatically organizes commits into persistent vertical lanes, with your primary branch (main/master) locked to the leftmost position. This creates a stable reference point as you navigate through branch hierarchies and merge histories.
 
-### Highlighting Context
-When a commit is selected, the sidebar provides deep context:
-- **● Branch Tip**: The commit is the current head of that branch.
-- **Inferred Original**: The primary branch where the work was authored.
-- **Merged / Contains**: Every other branch that has since incorporated this commit.
+**Semantic Classification**  
+Commits are color-coded by intent using Conventional Commits patterns:
+- Green → Features (`feat`)
+- Red → Bug fixes (`fix`)
+- Yellow → Refactoring
+- Blue → Documentation
+- Gray → Maintenance
 
----
+Node shapes convey structure: circles for standard commits, diamonds for merges, squares for reverts and stashes.
 
-## 🚀 Workflow
+**Focus Engine**  
+Hover over any commit to trace its lineage. GitNet recursively highlights ancestors and descendants while dimming unrelated paths, revealing the exact journey of a feature or fix through your codebase.
 
-1. **Open**: Select a local repository folder from the Welcome screen.
-2. **Trace**: Hover over nodes to isolate the "story" of a specific feature.
-3. **Analyze**: Use the **Insights** view to identify "Hot Files" (high-churn areas) and contributor impact.
-4. **Switch**: Click the Git icon in the status bar to switch branches via the Checkout tab.
-5. **Sync**: Use the Sync button or `Cmd/Ctrl + R` if external changes aren't reflected immediately.
+**Real-Time Sync**  
+A background watcher monitors your `.git` directory and updates the visualization automatically when you commit, checkout, or rebase.
 
 ---
 
-## ⌨️ Global Shortcuts
+## Visual Language
 
-| Action | Key |
-| :--- | :--- |
-| **Refresh All Data** | `Cmd/Ctrl + R` |
-| **Open Repository** | `Cmd/Ctrl + O` |
-| **Close Sidebar/Panels** | `Esc` |
-| **Snap to HEAD** | Floating Action Button |
+The graph uses high-contrast colors against a dark background to minimize eye strain during extended sessions. When you select a commit, the sidebar provides:
+
+- Branch associations (where it originated, where it merged)
+- File changes with on-demand diff viewing
+- Author metadata and timestamp
+
+The "Hot Files" panel identifies high-churn areas in your repository, helping you spot architectural pain points.
+
+---
+
+## Workflow
+
+1. **Open** a local repository from the welcome screen
+2. **Trace** commit paths by hovering over nodes
+3. **Analyze** structural patterns in the Insights view
+4. **Switch** branches via the Checkout tab (Git icon in status bar)
+5. **Sync** manually with `Cmd/Ctrl + R` if needed
 
 ---
 
-## 🛠️ Technical Stack
+## Keyboard Shortcuts
 
-- **Shell**: Electron (Cross-platform Desktop)
-- **Frontend**: React + TypeScript
-- **Visualization**: D3.js (SVG Graph Engine)
-- **Styling**: Tailwind CSS (Zed-inspired palette)
-- **Runtime**: Bun
+| Action | Binding |
+|--------|---------|
+| Refresh repository | `Cmd/Ctrl + R` |
+| Open repository | `Cmd/Ctrl + O` |
+| Close panels | `Esc` |
+| Jump to HEAD | Floating action button |
 
 ---
-*GitNet — visualize the spine of your project.*
+
+## Technical Foundation
+
+- **Runtime**: Electron (cross-platform desktop)
+- **Interface**: React + TypeScript
+- **Graph engine**: D3.js with SVG rendering
+- **Styling**: Tailwind CSS
+- **Package manager**: Bun
+
+---
+
+**GitNet** — navigate the structure of your project's history.
