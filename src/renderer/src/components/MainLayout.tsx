@@ -4,7 +4,6 @@ import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
 import { CommitMiniLog } from "./CommitMiniLog";
-import { StashList } from "./StashList";
 import { HotFiles } from "./HotFiles";
 import { CommitHistory } from "./CommitHistory";
 import { Contributors } from "./Contributors";
@@ -97,23 +96,34 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       unsubscribeBranches?.();
       unsubscribeCommits?.();
     };
-  }, [repository.path, showToast]);
+  }, [repository.path, repository.currentBranch, showToast]);
 
   const handleBranchSelect = async (branchName: string) => {
     if (branchName === repository.currentBranch) return;
 
-    if (window.gitnetAPI && typeof window.gitnetAPI.checkoutBranch === 'function') {
+    if (
+      window.gitnetAPI &&
+      typeof window.gitnetAPI.checkoutBranch === "function"
+    ) {
       try {
         showToast(`Checking out ${branchName}...`, "info");
         await window.gitnetAPI.checkoutBranch(repository.path, branchName);
-        showToast(`Checked out ${branchName}`, "success");
-        
-        // Refresh local state (this will also be triggered by the watcher)
-        const fetchedBranches = await window.gitnetAPI.getBranches(repository.path);
-        setBranches(fetchedBranches);
-      } catch (error) {
-        console.error("Checkout failed:", error);
-        showToast(`Checkout failed: ${error instanceof Error ? error.message : "Unknown error"}`, "error");
+                showToast(`Checked out ${branchName}`, "success");
+                
+                // Refresh local state (this will also be triggered by the watcher)
+                const [fetchedBranches, updatedRepo] = await Promise.all([
+                  window.gitnetAPI.getBranches(repository.path),
+                  window.gitnetAPI.getRepository(repository.path)
+                ]);
+                setBranches(fetchedBranches);
+                // This will update the parent state in App.tsx if we had a callback, 
+                // but since it's passed as a prop, the watcher 'head-changed' is the primary sync.
+                // However, we can at least make sure local fetching is triggered.
+              } catch (error) {        console.error("Checkout failed:", error);
+        showToast(
+          `Checkout failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+          "error",
+        );
       }
     } else {
       showToast("Checkout feature is currently unavailable.", "info");
@@ -186,7 +196,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   Repository Insights
                 </h1>
                 <p className="text-sm text-zed-muted dark:text-zed-dark-muted opacity-70">
-                  Analysis of file modification frequency and repository hotspots.
+                  Analysis of file modification frequency and repository
+                  hotspots.
                 </p>
               </div>
               <div className="bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border relative overflow-hidden shadow-sm">

@@ -115,11 +115,18 @@ const App: React.FC = () => {
       }
     };
 
-    const handleHeadChanged = (event: any) => {
+    const handleHeadChanged = async (event: any) => {
       console.log("HEAD changed:", event);
-      // Trigger refresh of commit data when HEAD changes
       if (state.repository) {
-        // This will be handled by the MainLayout component
+        try {
+          const updatedRepo = await window.gitnetAPI.getRepository(state.repository.path);
+          setState((prev) => ({
+            ...prev,
+            repository: updatedRepo,
+          }));
+        } catch (error) {
+          console.error("Failed to refresh repository on HEAD change:", error);
+        }
       }
     };
 
