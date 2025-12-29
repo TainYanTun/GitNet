@@ -1,8 +1,8 @@
-# GitNet
+# GitCanopy
 
 **A high-performance Git visualizer that reveals the architectural spine of your repository.**
 
-GitNet transforms complex Git histories into a stable, lane-based graph that keeps your main branch anchored and your merge patterns clear. Built for developers who need to understand the structural evolution of their codebase without visual clutter.
+GitCanopy transforms complex Git histories into a stable, lane-based graph that keeps your main branch anchored and your merge patterns clear. Built for developers who need to understand the structural evolution of their codebase without visual clutter.
 
 ---
 
@@ -22,7 +22,7 @@ Commits are color-coded by intent using Conventional Commits patterns:
 Node shapes convey structure: circles for standard commits, diamonds for merges, squares for reverts and stashes.
 
 **Focus Engine**  
-Hover over any commit to trace its lineage. GitNet recursively highlights ancestors and descendants while dimming unrelated paths, revealing the exact journey of a feature or fix through your codebase.
+Hover over any commit to trace its lineage. GitCanopy recursively highlights ancestors and descendants while dimming unrelated paths, revealing the exact journey of a feature or fix through your codebase.
 
 **Real-Time Sync**  
 A background watcher monitors your `.git` directory and updates the visualization automatically when you commit, checkout, or rebase.
