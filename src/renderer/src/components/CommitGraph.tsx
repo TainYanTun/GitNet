@@ -16,6 +16,9 @@ interface CommitGraphProps {
   onCommitSelect?: (commit: Commit) => void;
   selectedCommitHash?: string;
   stashes?: string[];
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  onLoadAll?: () => void;
 }
 
 export const CommitGraph: React.FC<CommitGraphProps> = ({
@@ -25,6 +28,9 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
   onCommitSelect,
   selectedCommitHash,
   stashes = [],
+  onLoadMore,
+  hasMore,
+  onLoadAll,
 }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -827,6 +833,40 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
             </svg>
             Go to HEAD
           </button>
+
+          {hasMore && onLoadMore && (
+            <>
+              <div className="w-px h-4 bg-zed-border dark:bg-zed-dark-border mx-1"></div>
+              <button
+                onClick={onLoadMore}
+                className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-zed-muted dark:text-zed-dark-muted hover:text-zed-accent transition-colors"
+                title="Load next batch of commits"
+              >
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 13l-7 7-7-7m14-8l-7 7-7-7"
+                  />
+                </svg>
+                Load More
+              </button>
+              <div className="w-px h-4 bg-zed-border dark:bg-zed-dark-border mx-1"></div>
+              <button
+                onClick={onLoadAll}
+                className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-zed-muted/60 dark:text-zed-dark-muted/60 hover:text-zed-accent transition-colors shrink-0"
+                title="Load full repository history"
+              >
+                All
+              </button>
+            </>
+          )}
 
           {selectedCommitHash && (
             <>

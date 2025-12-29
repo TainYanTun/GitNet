@@ -97,6 +97,24 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     }
   };
 
+  const loadAllCommits = async () => {
+    try {
+      showToast("Loading full repository history... This may take a moment.", "info");
+      const allCommits = await window.gitnetAPI.getCommits(
+        repository.path,
+        10000, // Large enough limit for "all"
+        0,
+        commitFilters
+      );
+      setCommits(allCommits);
+      setHasMore(false);
+      showToast(`Loaded ${allCommits.length} commits.`, "success");
+    } catch (error) {
+      console.error("Failed to load all commits:", error);
+      showToast("Failed to load all commits", "error");
+    }
+  };
+
   useEffect(() => {
     refreshData();
 
@@ -191,6 +209,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             headCommitHash={repository.headCommit}
             selectedCommitHash={selectedCommit?.hash}
             onCommitSelect={handleCommitSelect}
+            onLoadMore={loadMoreCommits}
+            hasMore={hasMore}
+            onLoadAll={loadAllCommits}
           />
         );
       case "history":
