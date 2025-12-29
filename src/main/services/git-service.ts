@@ -11,6 +11,7 @@ import {
   HotFile,
   ContributorStats,
   GitCommandLog,
+  CommitFilterOptions,
 } from "../../shared/types";
 
 export class GitService {
@@ -240,7 +241,7 @@ export class GitService {
     repoPath: string,
     limit = 100,
     offset = 0,
-    filePath?: string
+    options?: CommitFilterOptions
   ): Promise<Commit[]> {
     const args = [
       "log",
@@ -251,8 +252,22 @@ export class GitService {
       `${limit}`
     ];
 
-    if (filePath) {
-      args.push("--", filePath);
+    if (options) {
+      if (options.author) {
+        args.push(`--author=${options.author}`);
+      }
+      if (options.since) {
+        args.push(`--since=${options.since}`);
+      }
+      if (options.until) {
+        args.push(`--until=${options.until}`);
+      }
+      if (options.query) {
+        args.push(`--grep=${options.query}`, "--regexp-ignore-case");
+      }
+      if (options.path) {
+        args.push("--", options.path);
+      }
     }
 
     try {

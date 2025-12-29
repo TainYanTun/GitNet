@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Repository, Branch, Commit } from "@src/shared/types";
+import { Repository, Branch, Commit, CommitFilterOptions } from "@src/shared/types";
 import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
@@ -32,7 +32,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [commits, setCommits] = useState<Commit[]>([]);
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
-  const [fileHistoryFilter, setFileHistoryFilter] = useState<string | null>(null);
+  const [commitFilters, setCommitFilters] = useState<CommitFilterOptions>({});
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 50;
   const [currentView, setCurrentView] = useState<
     | "graph"
     | "insights"
@@ -46,21 +49,53 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   const refreshData = React.useCallback(async () => {
     try {
+      // Reset pagination on full refresh
+      setOffset(0);
+      setHasMore(true);
+
       const [fetchedBranches, fetchedCommits, fetchedStashes] =
         await Promise.all([
           window.gitnetAPI.getBranches(repository.path),
-          window.gitnetAPI.getCommits(repository.path, 1000, 0, fileHistoryFilter || undefined),
+          window.gitnetAPI.getCommits(repository.path, PAGE_SIZE, 0, commitFilters),
           window.gitnetAPI.getStashList(repository.path),
         ]);
       setBranches(fetchedBranches);
       setCommits(fetchedCommits);
       setStashes(fetchedStashes);
+      
+      if (fetchedCommits.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+
       onRefreshRepository?.();
     } catch (error) {
       console.error("Failed to refresh data:", error);
       showToast("Failed to refresh repository data.", "error");
     }
-  }, [repository.path, showToast, fileHistoryFilter]);
+  }, [repository.path, showToast, commitFilters]);
+
+  const loadMoreCommits = async () => {
+    if (!hasMore) return;
+    try {
+      const nextOffset = offset + PAGE_SIZE;
+      const newCommits = await window.gitnetAPI.getCommits(
+        repository.path,
+        PAGE_SIZE,
+        nextOffset,
+        commitFilters
+      );
+
+      if (newCommits.length < PAGE_SIZE) {
+        setHasMore(false);
+      }
+
+      setCommits((prev) => [...prev, ...newCommits]);
+      setOffset(nextOffset);
+    } catch (error) {
+      console.error("Failed to load more commits:", error);
+      showToast("Failed to load more commits", "error");
+    }
+  };
 
   useEffect(() => {
     refreshData();
@@ -113,14 +148,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   };
 
   const handleFileHistorySelect = (filePath: string) => {
-    setFileHistoryFilter(filePath);
+    setCommitFilters({ path: filePath });
     setCurrentView("history");
     showToast(`Filtering history for ${filePath.split('/').pop()}`, "info");
   };
 
-  const clearFileFilter = () => {
-    setFileHistoryFilter(null);
-    showToast("Cleared file filter", "info");
+  const clearFilters = () => {
+    setCommitFilters({});
+    showToast("Cleared all filters", "info");
+  };
+
+  const handleFilterChange = (newFilters: CommitFilterOptions) => {
+    setCommitFilters(newFilters);
   };
 
   // Keyboard shortcut for closing the right sidebar and manual refresh
@@ -162,8 +201,11 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             headCommitHash={repository.headCommit}
             onCommitSelect={handleCommitSelect}
             selectedCommitHash={selectedCommit?.hash}
-            fileFilter={fileHistoryFilter}
-            onClearFilter={clearFileFilter}
+            filters={commitFilters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={clearFilters}
+            onLoadMore={loadMoreCommits}
+            hasMore={hasMore}
           />
         );
       case "contributors":

@@ -8,6 +8,7 @@ import type {
   StashEntry,
   AppSettings,
   GitCommandLog,
+  CommitFilterOptions,
 } from "../shared/types";
 
 // Expose protected methods that allow the renderer process to use
@@ -25,9 +26,9 @@ const gitnetAPI: GitNetAPI = {
     repoPath: string,
     limit?: number,
     offset?: number,
-    filePath?: string,
+    options?: CommitFilterOptions,
   ): Promise<Commit[]> =>
-    ipcRenderer.invoke("get-commits", repoPath, limit, offset, filePath),
+    ipcRenderer.invoke("get-commits", repoPath, limit, offset, options),
 
   getRecentCommits: (repoPath: string): Promise<Commit[]> =>
     ipcRenderer.invoke("get-recent-commits", repoPath),

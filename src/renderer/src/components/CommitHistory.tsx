@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Commit, Branch } from "@shared/types";
+import { Commit, Branch, CommitFilterOptions } from "@shared/types";
 import moment from "moment";
 
 interface CommitHistoryProps {
@@ -8,8 +8,11 @@ interface CommitHistoryProps {
   headCommitHash?: string;
   onCommitSelect: (commit: Commit) => void;
   selectedCommitHash?: string;
-  fileFilter?: string | null;
-  onClearFilter?: () => void;
+  filters: CommitFilterOptions;
+  onFilterChange: (filters: CommitFilterOptions) => void;
+  onClearFilters: () => void;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
 }
 
 export const CommitHistory: React.FC<CommitHistoryProps> = ({
@@ -18,21 +21,29 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
   headCommitHash,
   onCommitSelect,
   selectedCommitHash,
-  fileFilter,
-  onClearFilter,
+  filters,
+  onFilterChange,
+  onClearFilters,
+  onLoadMore,
+  hasMore,
 }) => {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(filters.query || "");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const filteredCommits = useMemo(() => {
-    if (!search.trim()) return commits;
-    const query = search.toLowerCase();
-    return commits.filter(
-      (c) =>
-        c.message.toLowerCase().includes(query) ||
-        c.author.name.toLowerCase().includes(query) ||
-        c.hash.toLowerCase().includes(query),
-    );
-  }, [commits, search]);
+  // Debounce search input to update filters
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      if (search !== (filters.query || "")) {
+        onFilterChange({ ...filters, query: search || undefined });
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search, onFilterChange, filters]);
+
+  // Sync internal search state if filters.query changes externally
+  React.useEffect(() => {
+    setSearch(filters.query || "");
+  }, [filters.query]);
 
   const typeInitialMap: Record<string, string> = {
     feat: "F",
@@ -71,48 +82,103 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
           </p>
         </div>
 
-        {fileFilter && (
-          <div className="mb-6 flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
-            <span className="text-[10px] uppercase font-bold text-zed-muted opacity-50 tracking-wider">File Filter:</span>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-zed-accent/10 border border-zed-accent/30 rounded-none text-xs text-zed-accent font-mono shadow-sm group">
-              <span className="truncate max-w-md">{fileFilter}</span>
-              <button 
-                onClick={onClearFilter}
-                className="ml-1 p-0.5 hover:bg-commit-fix hover:text-white rounded-full transition-all"
-                title="Clear Filter"
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+        {/* Active Filters Display */}
+        {Object.values(filters).some(v => !!v) && (
+          <div className="mb-6 flex flex-wrap items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
+            <span className="text-[10px] uppercase font-bold text-zed-muted opacity-50 tracking-wider">Active Filters:</span>
+            {filters.query && (
+              <FilterBadge label="Search" value={filters.query} onClear={() => setSearch("")} />
+            )}
+            {filters.path && (
+              <FilterBadge label="File" value={filters.path} onClear={() => onFilterChange({ ...filters, path: undefined })} />
+            )}
+            {filters.author && (
+              <FilterBadge label="Author" value={filters.author} onClear={() => onFilterChange({ ...filters, author: undefined })} />
+            )}
+            {filters.since && (
+              <FilterBadge label="Since" value={filters.since} onClear={() => onFilterChange({ ...filters, since: undefined })} />
+            )}
+            {filters.until && (
+              <FilterBadge label="Until" value={filters.until} onClear={() => onFilterChange({ ...filters, until: undefined })} />
+            )}
+            <button 
+              onClick={onClearFilters}
+              className="text-[10px] uppercase font-bold text-commit-fix hover:underline ml-2"
+            >
+              Clear All
+            </button>
           </div>
         )}
 
-        <div className="relative group max-w-sm">
-          <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zed-muted/40 group-focus-within:text-zed-accent transition-colors">
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="relative group flex-1 max-w-sm">
+            <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zed-muted/40 group-focus-within:text-zed-accent transition-colors">
+              <svg
+                className="w-3.5 h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search history (greps message)..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border rounded-none pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-zed-accent transition-all font-mono placeholder:text-zed-muted/30 text-zed-text dark:text-zed-dark-text shadow-sm"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Filter commits..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border rounded-none pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-zed-accent transition-all font-mono placeholder:text-zed-muted/30 text-zed-text dark:text-zed-dark-text shadow-sm"
-          />
+
+          <button
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-medium border transition-all ${showAdvanced ? 'bg-zed-accent border-zed-accent text-white' : 'bg-zed-bg dark:bg-zed-dark-bg border-zed-border dark:border-zed-dark-border text-zed-muted hover:text-zed-text'}`}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            {showAdvanced ? "Hide Filters" : "Advanced Filters"}
+          </button>
         </div>
+
+        {showAdvanced && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 mb-8 bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border animate-in slide-in-from-top-2 duration-200 shadow-xl">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-zed-muted">Author</label>
+              <input 
+                type="text"
+                placeholder="e.g. John Doe"
+                value={filters.author || ""}
+                onChange={(e) => onFilterChange({ ...filters, author: e.target.value || undefined })}
+                className="w-full bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border p-2 text-xs font-mono focus:outline-none focus:border-zed-accent"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-zed-muted">Since Date</label>
+              <input 
+                type="date"
+                value={filters.since || ""}
+                onChange={(e) => onFilterChange({ ...filters, since: e.target.value || undefined })}
+                className="w-full bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border p-2 text-xs font-mono focus:outline-none focus:border-zed-accent"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-zed-muted">Until Date</label>
+              <input 
+                type="date"
+                value={filters.until || ""}
+                onChange={(e) => onFilterChange({ ...filters, until: e.target.value || undefined })}
+                className="w-full bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border p-2 text-xs font-mono focus:outline-none focus:border-zed-accent"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Commit List Area */}
@@ -139,7 +205,7 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-zed-border/30 dark:divide-zed-dark-border/30">
-              {filteredCommits.map((commit) => (
+              {commits.map((commit) => (
                 <tr
                   key={commit.hash}
                   onClick={() => onCommitSelect(commit)}
@@ -184,13 +250,49 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
               ))}
             </tbody>
           </table>
-          {filteredCommits.length === 0 && (
+          {commits.length === 0 && (
             <div className="p-12 text-center text-zed-muted italic font-mono text-sm opacity-50 bg-zed-bg dark:bg-zed-dark-bg">
               No commits match your criteria.
             </div>
           )}
         </div>
+        
+        {/* Load More Button - Hyper Minimalist */}
+        {hasMore && onLoadMore && !search && (
+          <div className="py-8 flex justify-center bg-transparent">
+            <button
+              onClick={onLoadMore}
+              className="group flex items-center gap-2 px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] text-zed-muted/60 dark:text-zed-dark-muted/60 hover:text-zed-accent dark:hover:text-zed-accent hover:bg-zed-accent/5 dark:hover:bg-zed-accent/10 transition-all duration-300"
+            >
+              <span>Load More Commits</span>
+              <svg className="w-3 h-3 opacity-50 group-hover:translate-y-0.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
+interface FilterBadgeProps {
+  label: string;
+  value: string;
+  onClear: () => void;
+}
+
+const FilterBadge: React.FC<FilterBadgeProps> = ({ label, value, onClear }) => (
+  <div className="flex items-center gap-2 px-3 py-1.5 bg-zed-accent/10 border border-zed-accent/30 rounded-none text-xs text-zed-accent font-mono shadow-sm group">
+    <span className="opacity-50 font-bold uppercase text-[9px]">{label}:</span>
+    <span className="truncate max-w-[200px]">{value}</span>
+    <button 
+      onClick={onClear}
+      className="ml-1 p-0.5 hover:bg-commit-fix hover:text-white rounded-full transition-all"
+    >
+      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+);

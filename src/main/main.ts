@@ -5,6 +5,7 @@ import { isDev, checkGitInstallation } from "./utils";
 import { GitService } from "./services/git-service";
 import { RepositoryWatcher } from "./services/repository-watcher";
 import { SettingsService } from "./services/settings-service";
+import { CommitFilterOptions } from "../shared/types";
 
 class GitNetApp {
   private mainWindow: BrowserWindow | null = null;
@@ -288,8 +289,8 @@ class GitNetApp {
     // Git data operations
     ipcMain.handle(
       "get-commits",
-      (_, repoPath: string, limit?: number, offset?: number, filePath?: string) =>
-        this.gitService.getCommits(repoPath, limit, offset, filePath),
+      (_, repoPath: string, limit?: number, offset?: number, options?: CommitFilterOptions) =>
+        this.gitService.getCommits(repoPath, limit, offset, options),
     );
     ipcMain.handle("get-recent-commits", async (_, repoPath: string) => {
       const LIMIT = 5; // Display the last 5 commits

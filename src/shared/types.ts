@@ -250,6 +250,14 @@ export interface ContributorStats {
 }
 
 // API interfaces for IPC communication
+export interface CommitFilterOptions {
+  path?: string;
+  author?: string;
+  since?: string;
+  until?: string;
+  query?: string;
+}
+
 export interface GitNetAPI {
   // Repository operations
   selectRepository: () => Promise<Repository | null>;
@@ -260,7 +268,7 @@ export interface GitNetAPI {
     repoPath: string,
     limit?: number,
     offset?: number,
-    filePath?: string,
+    options?: CommitFilterOptions,
   ) => Promise<Commit[]>;
   getRecentCommits: (repoPath: string) => Promise<Commit[]>;
   getBranches: (repoPath: string) => Promise<Branch[]>;
