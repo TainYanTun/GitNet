@@ -266,6 +266,8 @@ export interface GitNetAPI {
   getCurrentHead: (repoPath: string) => Promise<string>;
   checkoutBranch: (repoPath: string, branchName: string) => Promise<void>;
   getStashList: (repoPath: string) => Promise<StashEntry[]>;
+  applyStash: (repoPath: string, index: string) => Promise<void>;
+  dropStash: (repoPath: string, index: string) => Promise<void>;
   getCommitDetails: (repoPath: string, commitHash: string) => Promise<Commit>;
   getDiff: (
     repoPath: string,

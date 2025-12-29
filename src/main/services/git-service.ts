@@ -330,6 +330,14 @@ export class GitService {
     }
   }
 
+  async applyStash(repoPath: string, index: string): Promise<void> {
+    await this.run(["stash", "apply", index], repoPath);
+  }
+
+  async dropStash(repoPath: string, index: string): Promise<void> {
+    await this.run(["stash", "drop", index], repoPath);
+  }
+
 
   async getCommitDetails(repoPath: string, commitHash: string): Promise<Commit> {
     const args = ["show", "--pretty=format:%H|%P|%an|%ae|%ad|%s", "--numstat", "--date=raw", commitHash];

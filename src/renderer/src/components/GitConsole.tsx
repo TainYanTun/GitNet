@@ -5,18 +5,16 @@ import { useToast } from './ToastContext';
 export const GitConsole: React.FC = () => {
   const { showToast } = useToast();
   const [logs, setLogs] = useState<GitCommandLog[]>([]);
-  const [page, setPage] = useState(0);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const pageSize = 15;
 
   const fetchLogs = useCallback(async () => {
     try {
-      const history = await window.gitnetAPI.getGitCommandHistory(pageSize, page * pageSize);
+      const history = await window.gitnetAPI.getGitCommandHistory();
       setLogs(history);
     } catch (error) {
       console.error('Failed to fetch git logs:', error);
     }
-  }, [page, pageSize]);
+  }, []);
 
   useEffect(() => {
     fetchLogs();
@@ -27,7 +25,6 @@ export const GitConsole: React.FC = () => {
   const handleClear = async () => {
     await window.gitnetAPI.clearGitCommandHistory();
     setLogs([]);
-    setPage(0);
   };
 
   const handleCopy = (log: GitCommandLog) => {
@@ -100,30 +97,6 @@ export const GitConsole: React.FC = () => {
           ))
         )}
       </div>
-
-      {/* Simple Pagination Footer */}
-      <footer className="flex-shrink-0 flex items-center justify-between px-6 py-2 border-t border-zed-border dark:border-zed-dark-border bg-zed-surface/30 dark:bg-zed-dark-surface/30">
-        <div className="text-[10px] text-zed-muted dark:text-zed-dark-text/40 uppercase tracking-tight">
-          Showing {logs.length > 0 ? (page * pageSize) + 1 : 0} - {(page * pageSize) + logs.length}
-        </div>
-        
-        <div className="flex items-center gap-6">
-          <button 
-            disabled={page === 0}
-            onClick={() => setPage(p => Math.max(0, p - 1))}
-            className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${page === 0 ? 'text-zed-muted/20 cursor-not-allowed' : 'text-zed-muted dark:text-zed-dark-text/60 hover:text-zed-accent'}`}
-          >
-            &lt; Newer
-          </button>
-          <button 
-            disabled={logs.length < pageSize}
-            onClick={() => setPage(p => p + 1)}
-            className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${logs.length < pageSize ? 'text-zed-muted/20 cursor-not-allowed' : 'text-zed-muted dark:text-zed-dark-text/60 hover:text-zed-accent'}`}
-          >
-            Older &gt;
-          </button>
-        </div>
-      </footer>
     </div>
   );
 };

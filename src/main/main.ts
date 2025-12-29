@@ -309,6 +309,12 @@ class GitNetApp {
     ipcMain.handle("get-stash-list", (_, repoPath: string) =>
       this.gitService.getStashList(repoPath),
     );
+    ipcMain.handle("git:apply-stash", (_, repoPath: string, index: string) =>
+      this.gitService.applyStash(repoPath, index),
+    );
+    ipcMain.handle("git:drop-stash", (_, repoPath: string, index: string) =>
+      this.gitService.dropStash(repoPath, index),
+    );
 
     // Initial Path Handling
     ipcMain.handle("get-initial-repo", () => {

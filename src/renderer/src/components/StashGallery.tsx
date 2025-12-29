@@ -27,6 +27,32 @@ export const StashGallery: React.FC<StashGalleryProps> = ({ repoPath }) => {
     fetchStashes();
   }, [repoPath]);
 
+  const handleApply = async (index: string) => {
+    if (window.confirm("Are you sure you want to apply this stash?")) {
+      try {
+        await window.gitnetAPI.applyStash(repoPath, index);
+        showToast("Stash applied successfully", "success");
+        fetchStashes();
+      } catch (error) {
+        showToast("Failed to apply stash", "error");
+        console.error(error);
+      }
+    }
+  };
+
+  const handleDrop = async (index: string) => {
+    if (window.confirm("Are you sure you want to drop this stash? This cannot be undone.")) {
+      try {
+        await window.gitnetAPI.dropStash(repoPath, index);
+        showToast("Stash dropped successfully", "success");
+        fetchStashes();
+      } catch (error) {
+        showToast("Failed to drop stash", "error");
+        console.error(error);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center bg-zed-bg dark:bg-zed-dark-bg">
@@ -90,12 +116,13 @@ export const StashGallery: React.FC<StashGalleryProps> = ({ repoPath }) => {
                     
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
-                        onClick={() => showToast("Apply logic coming soon!", "info")}
+                        onClick={() => handleApply(id)}
                         className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-zed-muted hover:text-zed-accent hover:bg-zed-accent/10 transition-all rounded"
                       >
                         Apply
                       </button>
                       <button 
+                        onClick={() => handleDrop(id)}
                         className="p-1.5 text-zed-muted hover:text-commit-fix transition-colors"
                         title="Drop"
                       >
