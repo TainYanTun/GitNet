@@ -288,8 +288,8 @@ class GitNetApp {
     // Git data operations
     ipcMain.handle(
       "get-commits",
-      (_, repoPath: string, limit?: number, offset?: number) =>
-        this.gitService.getCommits(repoPath, limit, offset),
+      (_, repoPath: string, limit?: number, offset?: number, filePath?: string) =>
+        this.gitService.getCommits(repoPath, limit, offset, filePath),
     );
     ipcMain.handle("get-recent-commits", async (_, repoPath: string) => {
       const LIMIT = 5; // Display the last 5 commits

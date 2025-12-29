@@ -239,7 +239,8 @@ export class GitService {
   async getCommits(
     repoPath: string,
     limit = 100,
-    offset = 0
+    offset = 0,
+    filePath?: string
   ): Promise<Commit[]> {
     const args = [
       "log",
@@ -249,6 +250,10 @@ export class GitService {
       `-n`,
       `${limit}`
     ];
+
+    if (filePath) {
+      args.push("--", filePath);
+    }
 
     try {
       const [branches, tagMap] = await Promise.all([

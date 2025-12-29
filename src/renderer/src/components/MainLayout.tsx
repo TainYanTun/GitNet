@@ -32,6 +32,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [commits, setCommits] = useState<Commit[]>([]);
   const [stashes, setStashes] = useState<string[]>([]);
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
+  const [fileHistoryFilter, setFileHistoryFilter] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<
     | "graph"
     | "insights"
@@ -48,7 +49,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       const [fetchedBranches, fetchedCommits, fetchedStashes] =
         await Promise.all([
           window.gitnetAPI.getBranches(repository.path),
-          window.gitnetAPI.getCommits(repository.path, 1000, 0),
+          window.gitnetAPI.getCommits(repository.path, 1000, 0, fileHistoryFilter || undefined),
           window.gitnetAPI.getStashList(repository.path),
         ]);
       setBranches(fetchedBranches);
@@ -59,7 +60,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       console.error("Failed to refresh data:", error);
       showToast("Failed to refresh repository data.", "error");
     }
-  }, [repository.path, showToast]);
+  }, [repository.path, showToast, fileHistoryFilter]);
 
   useEffect(() => {
     refreshData();
@@ -111,6 +112,17 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     setSelectedCommit(commit);
   };
 
+  const handleFileHistorySelect = (filePath: string) => {
+    setFileHistoryFilter(filePath);
+    setCurrentView("history");
+    showToast(`Filtering history for ${filePath.split('/').pop()}`, "info");
+  };
+
+  const clearFileFilter = () => {
+    setFileHistoryFilter(null);
+    showToast("Cleared file filter", "info");
+  };
+
   // Keyboard shortcut for closing the right sidebar and manual refresh
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -150,6 +162,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             headCommitHash={repository.headCommit}
             onCommitSelect={handleCommitSelect}
             selectedCommitHash={selectedCommit?.hash}
+            fileFilter={fileHistoryFilter}
+            onClearFilter={clearFileFilter}
           />
         );
       case "contributors":
@@ -188,7 +202,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                     Hotspots / Top Modified
                   </h2>
                 </div>
-                <HotFiles repoPath={repository.path} />
+                <HotFiles 
+                  repoPath={repository.path} 
+                  onFileClick={handleFileHistorySelect}
+                />
               </div>
             </div>
           </div>

@@ -8,6 +8,8 @@ interface CommitHistoryProps {
   headCommitHash?: string;
   onCommitSelect: (commit: Commit) => void;
   selectedCommitHash?: string;
+  fileFilter?: string | null;
+  onClearFilter?: () => void;
 }
 
 export const CommitHistory: React.FC<CommitHistoryProps> = ({
@@ -16,6 +18,8 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
   headCommitHash,
   onCommitSelect,
   selectedCommitHash,
+  fileFilter,
+  onClearFilter,
 }) => {
   const [search, setSearch] = useState("");
 
@@ -66,6 +70,24 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
             Chronological log of repository changes and contributions.
           </p>
         </div>
+
+        {fileFilter && (
+          <div className="mb-6 flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
+            <span className="text-[10px] uppercase font-bold text-zed-muted opacity-50 tracking-wider">File Filter:</span>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-zed-accent/10 border border-zed-accent/30 rounded-none text-xs text-zed-accent font-mono shadow-sm group">
+              <span className="truncate max-w-md">{fileFilter}</span>
+              <button 
+                onClick={onClearFilter}
+                className="ml-1 p-0.5 hover:bg-commit-fix hover:text-white rounded-full transition-all"
+                title="Clear Filter"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="relative group max-w-sm">
           <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-zed-muted/40 group-focus-within:text-zed-accent transition-colors">

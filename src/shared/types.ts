@@ -260,6 +260,7 @@ export interface GitNetAPI {
     repoPath: string,
     limit?: number,
     offset?: number,
+    filePath?: string,
   ) => Promise<Commit[]>;
   getRecentCommits: (repoPath: string) => Promise<Commit[]>;
   getBranches: (repoPath: string) => Promise<Branch[]>;

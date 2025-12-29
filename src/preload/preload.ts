@@ -25,8 +25,9 @@ const gitnetAPI: GitNetAPI = {
     repoPath: string,
     limit?: number,
     offset?: number,
+    filePath?: string,
   ): Promise<Commit[]> =>
-    ipcRenderer.invoke("get-commits", repoPath, limit, offset),
+    ipcRenderer.invoke("get-commits", repoPath, limit, offset, filePath),
 
   getRecentCommits: (repoPath: string): Promise<Commit[]> =>
     ipcRenderer.invoke("get-recent-commits", repoPath),

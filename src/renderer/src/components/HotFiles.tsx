@@ -3,9 +3,10 @@ import { HotFile } from "@shared/types";
 
 interface HotFilesProps {
   repoPath: string;
+  onFileClick?: (path: string) => void;
 }
 
-export const HotFiles: React.FC<HotFilesProps> = ({ repoPath }) => {
+export const HotFiles: React.FC<HotFilesProps> = ({ repoPath, onFileClick }) => {
   const [hotFiles, setHotFiles] = useState<HotFile[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,7 +47,19 @@ export const HotFiles: React.FC<HotFilesProps> = ({ repoPath }) => {
         return (
           <div
             key={file.path}
-            className="group relative bg-zed-surface dark:bg-zed-dark-surface p-4 flex flex-col justify-between hover:bg-zed-element dark:hover:bg-zed-dark-element transition-all duration-200 cursor-default border-r border-b border-zed-border/30 dark:border-zed-dark-border/30 last:border-r-0"
+            onClick={() => {
+              if (onFileClick) {
+                onFileClick(file.path);
+              } else {
+                // Construct path manually since we can't use path.join in renderer
+                const separator = repoPath.includes("\\") ? "\\" : "/";
+                const cleanRepoPath = repoPath.endsWith(separator) ? repoPath.slice(0, -1) : repoPath;
+                const fullPath = `${cleanRepoPath}${separator}${file.path.replace(/\//g, separator)}`;
+                window.gitnetAPI.showItemInFolder(fullPath);
+              }
+            }}
+            title={onFileClick ? "Click to view file history" : "Click to reveal in file manager"}
+            className="group relative bg-zed-surface dark:bg-zed-dark-surface p-4 flex flex-col justify-between hover:bg-zed-element dark:hover:bg-zed-dark-element transition-all duration-200 cursor-pointer border-r border-b border-zed-border/30 dark:border-zed-dark-border/30 last:border-r-0"
           >
             <div className="space-y-1 relative z-10">
               <div className="flex items-start justify-between">
