@@ -379,9 +379,19 @@ class GitNetApp {
     ipcMain.handle("show-item-in-folder", (_, path: string) =>
       shell.showItemInFolder(path),
     );
-    ipcMain.handle("open-external", (_, url: string) =>
-      shell.openExternal(url),
-    );
+    ipcMain.handle("open-external", (_, url: string) => {
+      try {
+        const parsed = new URL(url);
+        if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+          return shell.openExternal(url);
+        }
+        console.warn(`Blocked attempt to open invalid protocol: ${parsed.protocol}`);
+        return Promise.reject(new Error("Invalid protocol"));
+      } catch (e) {
+        console.warn(`Blocked attempt to open invalid URL: ${url}`);
+        return Promise.reject(new Error("Invalid URL"));
+      }
+    });
   }
 
   private async handleSelectRepository(): Promise<any> {

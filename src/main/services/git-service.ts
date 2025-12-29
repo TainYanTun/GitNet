@@ -90,7 +90,8 @@ export class GitService {
   async getHotFiles(repoPath: string, limit = 10): Promise<HotFile[]> {
     try {
       // Use log with --name-only to get all changed files across all branches
-      const output = await this.run(["log", "--all", "--format=", "--name-only"], repoPath);
+      // LIMIT history to last 5000 commits to prevent performance issues on large repos
+      const output = await this.run(["log", "--all", "-n", "5000", "--format=", "--name-only"], repoPath);
       
       const counts: Record<string, number> = {};
       const lines = output.split('\n');
@@ -114,8 +115,9 @@ export class GitService {
   async getContributors(repoPath: string): Promise<ContributorStats[]> {
     try {
       // Use git log to get stats per author
+      // LIMIT history to last 5000 commits to prevent performance issues
       const output = await this.run(
-        ["log", "--all", "--pretty=format:%an|%ae|%ct", "--shortstat"], 
+        ["log", "--all", "-n", "5000", "--pretty=format:%an|%ae|%ct", "--shortstat"], 
         repoPath
       );
       
@@ -334,7 +336,7 @@ export class GitService {
 
   async checkoutBranch(repoPath: string, branchName: string): Promise<void> {
     try {
-      await this.run(["checkout", branchName], repoPath);
+      await this.run(["checkout", "--", branchName], repoPath);
     } catch (error) {
       console.error(`Failed to checkout branch ${branchName}:`, error);
       throw error;
