@@ -12,6 +12,8 @@ import {
   ContributorStats,
   GitCommandLog,
   CommitFilterOptions,
+  WorkingTreeStatus,
+  StatusFile,
 } from "../../shared/types";
 
 export class GitService {
@@ -198,6 +200,44 @@ export class GitService {
       return [];
     }
   }
+  async getStatus(repoPath: string): Promise<WorkingTreeStatus> {
+    try {
+      // Get branch status (ahead/behind)
+      const branchOutput = await this.run(["status", "-sb"], repoPath);
+      const aheadMatch = branchOutput.match(/ahead (\d+)/);
+      const behindMatch = branchOutput.match(/behind (\d+)/);
+      
+      const ahead = aheadMatch ? parseInt(aheadMatch[1], 10) : 0;
+      const behind = behindMatch ? parseInt(behindMatch[1], 10) : 0;
+
+      // Get file status
+      const output = await this.run(["status", "--porcelain=v1"], repoPath);
+      const lines = output.split("\n").filter(Boolean);
+      
+      const files: StatusFile[] = lines.map(line => {
+        const xy = line.substring(0, 2);
+        const path = line.substring(3).replace(/"/g, "");
+        
+        // X = index, Y = work tree
+        const staged = xy[0] !== " " && xy[0] !== "?";
+        
+        let status: StatusFile["status"] = "modified";
+        if (xy.includes("U") || xy === "DD" || xy === "AA") status = "conflicted";
+        else if (xy[0] === "?" || xy[1] === "?") status = "untracked";
+        else if (xy[0] === "A" || xy[1] === "A") status = "added";
+        else if (xy[0] === "D" || xy[1] === "D") status = "deleted";
+        else if (xy[0] === "R" || xy[1] === "R") status = "renamed";
+
+        return { path, status, staged };
+      });
+
+      return { files, ahead, behind };
+    } catch (error) {
+      console.error("Failed to get status:", error);
+      return { files: [], ahead: 0, behind: 0 };
+    }
+  }
+
   async getRepository(repoPath: string): Promise<Repository> {
     // Verify it's a Git repository
     try {

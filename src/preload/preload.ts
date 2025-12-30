@@ -18,8 +18,8 @@ const gitnetAPI: GitNetAPI = {
   selectRepository: (): Promise<Repository | null> =>
     ipcRenderer.invoke("select-repository"),
 
-  getRepository: (path: string): Promise<Repository> =>
-    ipcRenderer.invoke("get-repository", path),
+  getRepository: (path: string) => ipcRenderer.invoke("get-repository", path),
+  getStatus: (repoPath: string) => ipcRenderer.invoke("get-status", repoPath),
 
   // Git data operations
   getCommits: (

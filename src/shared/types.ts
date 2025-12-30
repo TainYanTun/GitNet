@@ -258,10 +258,23 @@ export interface CommitFilterOptions {
   query?: string;
 }
 
+export interface StatusFile {
+  path: string;
+  status: "added" | "modified" | "deleted" | "renamed" | "untracked" | "conflicted";
+  staged: boolean;
+}
+
+export interface WorkingTreeStatus {
+  files: StatusFile[];
+  ahead: number;
+  behind: number;
+}
+
 export interface GitNetAPI {
   // Repository operations
   selectRepository: () => Promise<Repository | null>;
   getRepository: (path: string) => Promise<Repository>;
+  getStatus: (repoPath: string) => Promise<WorkingTreeStatus>;
 
   // Git data operations
   getCommits: (

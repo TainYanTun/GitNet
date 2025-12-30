@@ -285,6 +285,9 @@ class GitNetApp {
       await this.settingsService.addRecentRepository(path);
       return repository;
     });
+    ipcMain.handle("get-status", (_, repoPath: string) => 
+      this.gitService.getStatus(repoPath)
+    );
 
     // Git data operations
     ipcMain.handle(

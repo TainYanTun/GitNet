@@ -8,8 +8,9 @@ import { HotFiles } from "./HotFiles";
 import { CommitHistory } from "./CommitHistory";
 import { Contributors } from "./Contributors";
 import { StashGallery } from "./StashGallery";
-import { CommitGraph } from "./CommitGraph"; // Import CommitGraph
-import { CommitDetails } from "./CommitDetails"; // Import CommitDetails
+import { CommitGraph } from "./CommitGraph";
+import { CommitDetails } from "./CommitDetails";
+import { ChangesView } from "./ChangesView";
 import { BranchCheckout } from "./BranchCheckout";
 import { HelpView } from "./HelpView";
 import { GitConsole } from "./GitConsole";
@@ -40,6 +41,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     | "graph"
     | "insights"
     | "history"
+    | "changes"
     | "contributors"
     | "stashes"
     | "checkout"
@@ -229,6 +231,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             hasMore={hasMore}
           />
         );
+      case "changes":
+        return <ChangesView repoPath={repository.path} />;
       case "contributors":
         return (
           <div className="max-w-none w-full h-full overflow-y-auto animate-in fade-in slide-in-from-bottom-4 scrollbar-hide bg-zed-surface dark:bg-zed-dark-surface">
@@ -574,6 +578,25 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                   strokeLinejoin="round"
                   strokeWidth={1.5}
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </button>
+            <button
+              onClick={() => setCurrentView("changes")}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "changes" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              title="Uncommitted Changes"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                 />
               </svg>
             </button>
