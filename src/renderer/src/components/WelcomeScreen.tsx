@@ -1,5 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { useTheme } from "./ThemeContext"; // Import useTheme
+import React, { useEffect, useState, useRef } from "react";
+import {
+  FolderOpenOutlined,
+  GithubOutlined,
+  HistoryOutlined,
+  PlusCircleOutlined,
+  LoadingOutlined,
+  ArrowRightOutlined,
+  CloseOutlined
+} from "@ant-design/icons";
+import { useToast } from "./ToastContext";
 
 interface WelcomeScreenProps {
   onSelectRepository: (path?: string) => void;
@@ -8,86 +17,193 @@ interface WelcomeScreenProps {
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onSelectRepository,
 }) => {
-  const [recentRepos, setRecentRepos] = useState<string[]>([]);
-  const { theme } = useTheme(); // Use the theme hook
+  const { showToast } = useToast();
+  const [recentRepos, setRecentRepositories] = useState<string[]>([]);
+  const [isCloning, setIsCloning] = useState(false);
+  const [showCloneInput, setShowCloneInput] = useState(false);
+  const [cloneUrl, setCloneUrl] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const fetchRecentRepos = async () => {
-      const settings = await window.gitnetAPI.getSettings();
-      setRecentRepos(settings.recentRepositories || []);
+    const fetchRecent = async () => {
+      try {
+        const settings = await window.gitcanopyAPI.getSettings();
+        setRecentRepositories(settings.recentRepositories || []);
+      } catch (err) {
+        console.error("Failed to load recent repos:", err);
+      }
     };
-    fetchRecentRepos();
+    fetchRecent();
   }, []);
 
-  const handleClearRecent = async () => {
-    await window.gitnetAPI.clearRecentRepositories();
-    setRecentRepos([]);
+  useEffect(() => {
+    if (showCloneInput && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [showCloneInput]);
+
+  const executeClone = async () => {
+    if (!cloneUrl.trim()) return;
+
+    try {
+      showToast("Select destination folder", "info");
+      const result = await window.gitcanopyAPI.selectRepository();
+      
+      if (!result) return;
+
+      setIsCloning(true);
+      setShowCloneInput(false);
+      showToast("Cloning repository...", "info");
+      
+      await window.gitcanopyAPI.clone(cloneUrl, result.path);
+      
+      showToast("Clone successful", "success");
+      onSelectRepository(result.path);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Clone failed", "error");
+      setIsCloning(false);
+    }
   };
 
   return (
-    <div
-      className="h-full flex flex-col items-center justify-center text-zed-text dark:text-zed-dark-text select-none"
-      style={{
-        backgroundColor: "var(--zed-bg)", // Fallback color
-        backgroundImage:
-          "url(\"data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236B7280' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M90 6V0H0v6'/%3E%3Cpath d='M6 0L0 6h6V0zm-3 3L0 6h6V0zm-3 0L0 3h3V0z'/%3E%3C/g%3E%3C/svg%3E\")",
-        backgroundRepeat: "repeat",
-      }}
-    >
-      <div className="max-w-sm w-full mx-auto text-center p-8">
-        <div className="mb-10 flex flex-col items-center">
-          <div className="w-32 h-32 mb-6 flex items-center justify-center">
-            {theme === "dark" ? ( // Conditionally render based on theme
-              <img src="/whiteicon.svg" alt="App Logo" className="w-32 h-32" />
-            ) : (
-              <img src="/whiteicon.svg" alt="App Logo" className="w-32 h-32" />
-            )}
-          </div>
-          <h1 className="text-xl font-medium mb-3 tracking-tight text-zed-text dark:text-zed-dark-text">
-            GitNet
-          </h1>
-          <p className="text-zed-muted dark:text-zed-dark-muted text-sm leading-relaxed">
-            Visualize your repository history <br /> with railway-style lanes.
-          </p>
-        </div>
+    <div className="h-full w-full bg-zed-bg dark:bg-zed-dark-bg flex flex-col font-sans overflow-hidden relative">
+      {/* Fake Title Bar */}
+      <div className="h-9 border-b border-zed-border dark:border-zed-dark-border shrink-0 flex items-center px-4 bg-zed-bg dark:bg-zed-dark-bg relative z-10">
+        <div className="w-16 shrink-0" />
+        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zed-muted dark:text-zed-dark-muted">
+          GitCanopy / Home
+        </span>
+      </div>
 
-        <div className="space-y-4">
-          <button
-            onClick={() => onSelectRepository()}
-            className="w-full py-3 px-4 rounded-md border border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface hover:bg-zed-element dark:hover:bg-zed-dark-element hover:border-zed-accent/50 text-zed-text dark:text-zed-dark-text text-sm font-medium transition-all duration-200 flex items-center justify-center gap-3 group"
-          >
-            <span className="text-base">Open Repository...</span>
-            <kbd className="hidden sm:inline-flex items-center px-1.5 h-5 text-[10px] font-mono font-medium text-zed-muted dark:text-zed-dark-muted border border-zed-border dark:border-zed-dark-border rounded bg-zed-bg dark:bg-zed-dark-bg group-hover:text-zed-text dark:group-hover:text-zed-dark-text transition-colors">
-              ⌘O
-            </kbd>
-          </button>
-
-          {recentRepos.length > 0 && (
-            <div className="space-y-2 text-left">
-              <div className="text-xs text-zed-muted/60 dark:text-zed-dark-muted/60 uppercase mt-4">
-                Recent Repositories
-              </div>
-              {recentRepos.map((repoPath) => (
-                <button
-                  key={repoPath}
-                  onClick={() => onSelectRepository(repoPath)}
-                  className="w-full py-2 px-4 rounded-md border border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface hover:bg-zed-element dark:hover:bg-zed-dark-element hover:border-zed-accent/50 text-zed-text dark:text-zed-dark-text text-sm font-medium transition-all duration-200 flex items-center group"
-                >
-                  <span className="truncate">{repoPath}</span>
-                </button>
-              ))}
-              <button
-                onClick={handleClearRecent}
-                className="w-full py-2 px-4 text-xs text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text transition-colors"
-              >
-                Clear Recent
-              </button>
+      <div className="flex-1 flex items-center justify-center p-12 relative z-10">
+        <div className="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-24 animate-in fade-in duration-500">
+          {/* Action Column */}
+          <div className="flex flex-col space-y-12 text-zed-text dark:text-zed-dark-text">
+            <div className="space-y-2">
+              <h1 className="text-5xl font-black tracking-tighter pb-2">
+                GitCanopy<span className="text-zed-accent">_</span>
+              </h1>
+              <p className="text-xs font-mono opacity-60 uppercase tracking-widest">
+                Professional Git Interface
+              </p>
             </div>
-          )}
 
-          <p className="text-xs text-zed-muted/60 dark:text-zed-dark-muted/60">
-            Select a folder to analyze
-          </p>
+            <div className="space-y-4">
+              <h2 className="text-[9px] font-black uppercase tracking-[0.3em] opacity-30">
+                Start
+              </h2>
+              <div className="grid grid-cols-1 gap-2">
+                {!showCloneInput ? (
+                  <>
+                    <button
+                      onClick={() => onSelectRepository()}
+                      className="group flex items-center gap-4 p-4 bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border hover:border-zed-accent dark:hover:border-zed-dark-accent transition-all text-left shadow-sm hover:shadow-md active:scale-[0.99]"
+                    >
+                      <FolderOpenOutlined className="text-sm text-zed-accent" />
+                      <span className="text-xs font-bold">Open Repository</span>
+                      <span className="ml-auto text-[10px] font-mono opacity-30">⌘O</span>
+                    </button>
+
+                    <button 
+                      onClick={() => setShowCloneInput(true)}
+                      disabled={isCloning}
+                      className="group flex items-center gap-4 p-4 bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border hover:border-zed-accent dark:hover:border-zed-dark-accent transition-all text-left shadow-sm hover:shadow-md active:scale-[0.99] disabled:opacity-50"
+                    >
+                      {isCloning ? <LoadingOutlined className="text-sm text-zed-accent" /> : <PlusCircleOutlined className="text-sm text-zed-accent" />}
+                      <span className="text-xs font-bold">
+                        {isCloning ? "Cloning..." : "Clone Repository"}
+                      </span>
+                    </button>
+                  </>
+                ) : (
+                  <div className="p-4 bg-zed-surface dark:bg-zed-dark-surface border border-zed-accent dark:border-zed-dark-accent shadow-lg animate-in slide-in-from-top-2">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zed-accent">Clone Remote</span>
+                      <button onClick={() => setShowCloneInput(false)} className="ml-auto text-zed-muted hover:text-zed-text"><CloseOutlined className="text-xs" /></button>
+                    </div>
+                    <div className="flex gap-2">
+                      <input 
+                        ref={inputRef}
+                        type="text"
+                        placeholder="https://github.com/user/repo.git"
+                        value={cloneUrl}
+                        onChange={(e) => setCloneUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && executeClone()}
+                        className="flex-1 bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-zed-accent text-zed-text dark:text-zed-dark-text"
+                      />
+                      <button 
+                        onClick={executeClone}
+                        className="bg-zed-accent text-white px-3 py-1.5 hover:opacity-90 transition-opacity"
+                      >
+                        <ArrowRightOutlined />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-8 border-t border-zed-border dark:border-zed-dark-border flex items-center gap-6">
+              <a
+                href="#"
+                className="text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-zed-accent transition-all"
+              >
+                Docs
+              </a>
+              <a
+                href="#"
+                className="text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-zed-accent transition-all"
+              >
+                Source
+              </a>
+            </div>
+          </div>
+
+          {/* Recent Column */}
+          <div className="flex flex-col space-y-4 text-zed-text dark:text-zed-dark-text">
+            <h2 className="text-[9px] font-black uppercase tracking-[0.3em] opacity-30">
+              Recent Workspaces
+            </h2>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1 pr-4">
+              {recentRepos.length > 0 ? (
+                recentRepos.map((path) => {
+                  const name = path.split(/[\\/]/).pop();
+                  return (
+                    <button
+                      key={path}
+                      onClick={() => onSelectRepository(path)}
+                      className="group w-full flex flex-col items-start py-3 px-4 hover:bg-zed-element dark:hover:bg-zed-dark-element border border-transparent hover:border-zed-border/20 dark:hover:border-zed-dark-border/20 transition-all text-left"
+                    >
+                      <span className="text-sm font-bold group-hover:text-zed-accent transition-colors">
+                        {name}
+                      </span>
+                      <span className="text-[10px] font-mono opacity-40 truncate w-full">
+                        {path}
+                      </span>
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="h-32 flex items-center justify-center border border-dashed border-zed-border/20 dark:border-zed-dark-border/20 bg-zed-surface/30 dark:bg-zed-dark-surface/30">
+                  <span className="text-[10px] font-mono opacity-30 uppercase tracking-widest">
+                    No recent projects
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer bar */}
+      <div className="h-7 border-t border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface shrink-0 flex items-center px-4 justify-between relative z-10">
+        <div className="text-[9px] font-mono text-zed-muted dark:text-zed-dark-muted uppercase tracking-widest opacity-60">
+          Build 1.0.0-Stable
+        </div>
+        <div className="flex gap-4 text-[9px] font-mono text-zed-muted dark:text-zed-dark-muted uppercase tracking-widest opacity-60">
+          <span>{navigator.platform}</span>
+          <span>UTF-8</span>
         </div>
       </div>
     </div>

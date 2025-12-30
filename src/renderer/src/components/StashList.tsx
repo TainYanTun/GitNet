@@ -17,7 +17,7 @@ export const StashList: React.FC<StashListProps> = ({ repoPath }) => {
       setLoading(true);
       setError(null);
       try {
-        const fetchedStashEntries = await window.gitnetAPI.getStashList(repoPath);
+        const fetchedStashEntries = await window.gitcanopyAPI.getStashList(repoPath);
         setStashEntries(fetchedStashEntries);
       } catch (err) {
         console.error("Failed to fetch stash list:", err);
@@ -34,7 +34,7 @@ export const StashList: React.FC<StashListProps> = ({ repoPath }) => {
     // For now, we'll rely on explicit refresh or parent component's re-render
     // when repoPath changes.
     // Consider adding a watcher for .git/refs/stash
-    // window.gitnetAPI.onStashUpdated(fetchStashList);
+    // window.gitcanopyAPI.onStashUpdated(fetchStashList);
 
     return () => {
       // Cleanup listener if API provides an unsubscribe

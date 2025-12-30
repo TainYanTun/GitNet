@@ -1,4 +1,4 @@
-# GitNet Setup Guide
+# GitCanopy Setup Guide
 
 ## 🚀 Quick Setup
 
@@ -13,7 +13,7 @@
 
 2. **Install dependencies**:
    ```bash
-   cd gitnet
+   cd gitcanopy
    bun install
    ```
 
@@ -26,7 +26,7 @@
 
 1. **Install dependencies**:
    ```bash
-   cd gitnet
+   cd gitcanopy
    npm install --timeout=60000
    ```
 
@@ -39,7 +39,7 @@
 
 1. **Install dependencies**:
    ```bash
-   cd gitnet
+   cd gitcanopy
    yarn install
    ```
 

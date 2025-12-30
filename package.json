@@ -1,10 +1,10 @@
 {
-  "name": "gitnet",
+  "name": "gitcanopy",
   "version": "1.0.0",
   "description": "A Railway-style desktop Git visualizer that displays commit history as an interactive graph with semantic coloring and clear merge representation.",
   "main": "dist/main/main/main.js",
   "homepage": "./",
-  "author": "GitNet Team",
+  "author": "GitCanopy Team",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -71,8 +71,8 @@
     "react-window": "^2.2.3"
   },
   "build": {
-    "appId": "com.gitnet.app",
-    "productName": "GitNet",
+    "appId": "com.gitcanopy.app",
+    "productName": "GitCanopy",
     "directories": {
       "output": "release"
     },

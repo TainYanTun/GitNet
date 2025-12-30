@@ -28,7 +28,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const data = await window.gitnetAPI.getStatus(repoPath);
+      const data = await window.gitcanopyAPI.getStatus(repoPath);
       setStatus(data);
     } catch (error) {
       console.error("Failed to fetch status:", error);
@@ -39,9 +39,9 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
 
   useEffect(() => {
     fetchStatus();
-    const unsubscribeRepo = window.gitnetAPI.onRepositoryChanged(fetchStatus);
-    const unsubscribeHead = window.gitnetAPI.onHeadChanged(fetchStatus);
-    const unsubscribeCommits = window.gitnetAPI.onCommitsUpdated(fetchStatus);
+    const unsubscribeRepo = window.gitcanopyAPI.onRepositoryChanged(fetchStatus);
+    const unsubscribeHead = window.gitcanopyAPI.onHeadChanged(fetchStatus);
+    const unsubscribeCommits = window.gitcanopyAPI.onCommitsUpdated(fetchStatus);
     return () => {
       unsubscribeRepo();
       unsubscribeHead();
@@ -54,7 +54,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
     setIsDiffVisible(true);
     setDiffContent("Loading diff...");
     try {
-      const diff = await window.gitnetAPI.getDiff(repoPath, file.staged ? "HEAD" : "", file.path);
+      const diff = await window.gitcanopyAPI.getDiff(repoPath, file.staged ? "HEAD" : "", file.path);
       setDiffContent(diff);
     } catch (err) {
       setDiffContent("Failed to load diff.");
@@ -64,7 +64,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   const handleStage = async (file: StatusFile, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await window.gitnetAPI.stageFile(repoPath, file.path);
+      await window.gitcanopyAPI.stageFile(repoPath, file.path);
       fetchStatus();
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Failed to stage file", "error");
@@ -74,7 +74,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   const handleUnstage = async (file: StatusFile, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await window.gitnetAPI.unstageFile(repoPath, file.path);
+      await window.gitcanopyAPI.unstageFile(repoPath, file.path);
       fetchStatus();
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Failed to unstage file", "error");
@@ -88,7 +88,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
     }
     setIsCommitting(true);
     try {
-      await window.gitnetAPI.commit(repoPath, commitMessage);
+      await window.gitcanopyAPI.commit(repoPath, commitMessage);
       setCommitMessage("");
       showToast("Committed", "success");
       fetchStatus();
@@ -102,7 +102,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   const handlePush = async () => {
     setIsPushing(true);
     try {
-      await window.gitnetAPI.push(repoPath);
+      await window.gitcanopyAPI.push(repoPath);
       showToast("Pushed successfully", "success");
       fetchStatus();
     } catch (err) {

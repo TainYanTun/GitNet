@@ -57,9 +57,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
       const [fetchedBranches, fetchedCommits, fetchedStashes] =
         await Promise.all([
-          window.gitnetAPI.getBranches(repository.path),
-          window.gitnetAPI.getCommits(repository.path, PAGE_SIZE, 0, commitFilters),
-          window.gitnetAPI.getStashList(repository.path),
+          window.gitcanopyAPI.getBranches(repository.path),
+          window.gitcanopyAPI.getCommits(repository.path, PAGE_SIZE, 0, commitFilters),
+          window.gitcanopyAPI.getStashList(repository.path),
         ]);
       setBranches(fetchedBranches);
       setCommits(fetchedCommits);
@@ -80,7 +80,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     if (!hasMore) return;
     try {
       const nextOffset = offset + PAGE_SIZE;
-      const newCommits = await window.gitnetAPI.getCommits(
+      const newCommits = await window.gitcanopyAPI.getCommits(
         repository.path,
         PAGE_SIZE,
         nextOffset,
@@ -102,7 +102,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const loadAllCommits = async () => {
     try {
       showToast("Loading full repository history... This may take a moment.", "info");
-      const allCommits = await window.gitnetAPI.getCommits(
+      const allCommits = await window.gitcanopyAPI.getCommits(
         repository.path,
         10000, // Large enough limit for "all"
         0,
@@ -124,10 +124,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     let unsubscribeCommits: (() => void) | undefined;
     let unsubscribeHead: (() => void) | undefined;
 
-    if (window.gitnetAPI) {
-      unsubscribeBranches = window.gitnetAPI.onBranchesUpdated(refreshData);
-      unsubscribeCommits = window.gitnetAPI.onCommitsUpdated(refreshData);
-      unsubscribeHead = window.gitnetAPI.onHeadChanged(refreshData);
+    if (window.gitcanopyAPI) {
+      unsubscribeBranches = window.gitcanopyAPI.onBranchesUpdated(refreshData);
+      unsubscribeCommits = window.gitcanopyAPI.onCommitsUpdated(refreshData);
+      unsubscribeHead = window.gitcanopyAPI.onHeadChanged(refreshData);
     }
 
     return () => {
@@ -141,12 +141,12 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     if (branchName === repository.currentBranch) return;
 
     if (
-      window.gitnetAPI &&
-      typeof window.gitnetAPI.checkoutBranch === "function"
+      window.gitcanopyAPI &&
+      typeof window.gitcanopyAPI.checkoutBranch === "function"
     ) {
       try {
         showToast(`Checking out ${branchName}...`, "info");
-        await window.gitnetAPI.checkoutBranch(repository.path, branchName);
+        await window.gitcanopyAPI.checkoutBranch(repository.path, branchName);
         showToast(`Checked out ${branchName}`, "success");
 
         // Refresh local state
@@ -743,7 +743,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
           </div>
           <span>UTF-8</span>
-          <span>GitNet v0.1.0</span>
+          <span>GitCanopy v0.1.0</span>
         </div>
       </div>
     </div>

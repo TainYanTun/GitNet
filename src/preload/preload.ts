@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
-  GitNetAPI,
+  GitCanopyAPI,
   AppEvent,
   Repository,
   Commit,
@@ -13,13 +13,14 @@ import type {
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
-const gitnetAPI: GitNetAPI = {
+const gitcanopyAPI: GitCanopyAPI = {
   // Repository operations
   selectRepository: (): Promise<Repository | null> =>
     ipcRenderer.invoke("select-repository"),
 
   getRepository: (path: string) => ipcRenderer.invoke("get-repository", path),
   getStatus: (repoPath: string) => ipcRenderer.invoke("get-status", repoPath),
+  clone: (url: string, targetPath: string) => ipcRenderer.invoke("clone", url, targetPath),
   stageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("stage-file", repoPath, filePath),
   unstageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("unstage-file", repoPath, filePath),
   commit: (repoPath: string, message: string) => ipcRenderer.invoke("commit", repoPath, message),
@@ -132,14 +133,14 @@ const gitnetAPI: GitNetAPI = {
 
 // Expose the API to the renderer process
 if (process.env.NODE_ENV === "development") {
-  console.log("🔧 [Preload] Exposing gitnetAPI with keys:", Object.keys(gitnetAPI));
+  console.log("🔧 [Preload] Exposing gitcanopyAPI with keys:", Object.keys(gitcanopyAPI));
 }
-contextBridge.exposeInMainWorld("gitnetAPI", gitnetAPI);
+contextBridge.exposeInMainWorld("gitcanopyAPI", gitcanopyAPI);
 
 // Log that preload script has loaded (development only)
 if (process.env.NODE_ENV === "development") {
-  console.log("🔧 GitNet preload script loaded");
+  console.log("🔧 GitCanopy preload script loaded");
 }
 
 // Prevent the renderer process from accessing Node.js APIs
-Object.freeze(gitnetAPI);
+Object.freeze(gitcanopyAPI);

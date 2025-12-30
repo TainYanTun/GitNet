@@ -6,9 +6,9 @@ import { ThemeProvider } from "./components/ThemeContext";
 import { ToastProvider } from "./components/ToastContext";
 
 // Ensure we're running in the correct environment
-if (!window.gitnetAPI) {
+if (!window.gitcanopyAPI) {
   console.error(
-    "GitNet API not available. Make sure you are running this app within Electron.",
+    "GitCanopy API not available. Make sure you are running this app within Electron.",
   );
 }
 
@@ -30,5 +30,5 @@ root.render(
 
 // Log app start in development
 if (process.env.NODE_ENV === "development") {
-  console.log("🚀 GitNet renderer started");
+  console.log("🚀 GitCanopy renderer started");
 }

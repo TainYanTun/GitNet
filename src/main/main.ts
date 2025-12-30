@@ -7,7 +7,7 @@ import { RepositoryWatcher } from "./services/repository-watcher";
 import { SettingsService } from "./services/settings-service";
 import { CommitFilterOptions } from "../shared/types";
 
-class GitNetApp {
+class GitCanopyApp {
   private mainWindow: BrowserWindow | null = null;
   private gitService: GitService;
   private repositoryWatcher: RepositoryWatcher;
@@ -28,7 +28,7 @@ class GitNetApp {
         if (!isGitInstalled) {
           dialog.showErrorBox(
             "Git Not Found",
-            "Git is required to run GitNet. Please install Git and add it to your PATH, then restart the application.",
+            "Git is required to run GitCanopy. Please install Git and add it to your PATH, then restart the application.",
           );
           app.quit();
           return;
@@ -288,6 +288,9 @@ class GitNetApp {
     ipcMain.handle("get-status", (_, repoPath: string) => 
       this.gitService.getStatus(repoPath)
     );
+    ipcMain.handle("clone", (_, url: string, targetPath: string) => 
+      this.gitService.clone(url, targetPath)
+    );
     ipcMain.handle("stage-file", (_, repoPath: string, filePath: string) => 
       this.gitService.stageFile(repoPath, filePath)
     );
@@ -440,4 +443,4 @@ class GitNetApp {
 }
 
 // Create app instance
-new GitNetApp();
+new GitCanopyApp();

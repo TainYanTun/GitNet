@@ -7,9 +7,9 @@ export const HelpView: React.FC = () => {
         
         {/* Abstract */}
         <section className="space-y-4">
-          <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-zed-accent dark:text-zed-dark-accent font-mono">GitNet / Reference</h1>
+          <h1 className="text-sm font-bold uppercase tracking-[0.2em] text-zed-accent dark:text-zed-dark-accent font-mono">GitCanopy / Reference</h1>
           <p className="text-lg leading-relaxed text-zed-text dark:text-zed-dark-text font-medium">
-            GitNet is a non-linear version control visualizer. It maps the Directed Acyclic Graph (DAG) of a Git repository onto a stable, multi-lane grid system optimized for architectural clarity.
+            GitCanopy is a non-linear version control visualizer. It maps the Directed Acyclic Graph (DAG) of a Git repository onto a stable, multi-lane grid system optimized for architectural clarity.
           </p>
         </section>
 
@@ -71,7 +71,7 @@ export const HelpView: React.FC = () => {
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-zed-text dark:text-zed-dark-text uppercase">Semantic Commit Messages</h3>
               <p className="text-sm text-zed-muted dark:text-zed-dark-muted leading-relaxed">
-                GitNet automatically parses your commit subjects. Using prefixes like <code className="text-zed-accent dark:text-zed-dark-accent font-mono font-bold bg-zed-element dark:bg-zed-dark-element px-1.5 py-0.5 rounded">feat:</code> or <code className="text-zed-accent dark:text-zed-dark-accent font-mono font-bold bg-zed-element dark:bg-zed-dark-element px-1.5 py-0.5 rounded">fix:</code> allows the engine to instantly categorize work.
+                GitCanopy automatically parses your commit subjects. Using prefixes like <code className="text-zed-accent dark:text-zed-dark-accent font-mono font-bold bg-zed-element dark:bg-zed-dark-element px-1.5 py-0.5 rounded">feat:</code> or <code className="text-zed-accent dark:text-zed-dark-accent font-mono font-bold bg-zed-element dark:bg-zed-dark-element px-1.5 py-0.5 rounded">fix:</code> allows the engine to instantly categorize work.
               </p>
             </div>
 
@@ -194,7 +194,7 @@ export const HelpView: React.FC = () => {
           
           <div className="space-y-4 pl-8">
             <p className="text-sm text-zed-muted dark:text-zed-dark-muted leading-relaxed">
-              GitNet utilizes a recursive file-watcher targeting the <code className="text-zed-accent dark:text-zed-dark-accent font-mono font-bold bg-zed-element dark:bg-zed-dark-element px-1.5 rounded">.git</code> directory for event-driven UI refreshes.
+              GitCanopy utilizes a recursive file-watcher targeting the <code className="text-zed-accent dark:text-zed-dark-accent font-mono font-bold bg-zed-element dark:bg-zed-dark-element px-1.5 rounded">.git</code> directory for event-driven UI refreshes.
             </p>
             <div className="flex items-center gap-2.5 text-[10px] font-mono font-bold text-zed-accent dark:text-zed-dark-accent uppercase tracking-[0.2em] bg-zed-accent/5 dark:bg-zed-dark-accent/10 w-fit px-3 py-1.5 rounded-full border border-zed-accent/20">
               <span className="w-2 h-2 bg-zed-accent dark:bg-zed-dark-accent rounded-full animate-pulse shadow-[0_0_10px_rgba(97,175,239,0.6)]"></span>
@@ -214,7 +214,7 @@ export const HelpView: React.FC = () => {
             <ul className="text-sm space-y-6">
               <li className="flex gap-6 items-start">
                 <span className="text-zed-accent dark:text-zed-dark-accent font-mono text-xs font-black uppercase shrink-0 tracking-[0.2em] pt-1">Shield</span>
-                <p className="text-zed-muted dark:text-zed-dark-muted leading-relaxed font-medium"><strong>Read-Only Access:</strong> GitNet is built as a non-destructive browser. It cannot modify history or perform destructive write operations.</p>
+                <p className="text-zed-muted dark:text-zed-dark-muted leading-relaxed font-medium"><strong>Read-Only Access:</strong> GitCanopy is built as a non-destructive browser. It cannot modify history or perform destructive write operations.</p>
               </li>
               <li className="flex gap-6 items-start pt-4 border-t border-zed-border dark:border-zed-dark-border/50">
                 <span className="text-zed-accent dark:text-zed-dark-accent font-mono text-xs font-black uppercase shrink-0 tracking-[0.2em] pt-1">Local</span>
@@ -226,7 +226,7 @@ export const HelpView: React.FC = () => {
 
         {/* Colophon */}
         <footer className="pt-20 text-[9px] font-mono uppercase tracking-[0.5em] text-zed-muted dark:text-zed-dark-muted opacity-40 text-center">
-          GitNet Visualizer / Technical Manual / Rev 2025.12.28
+          GitCanopy Visualizer / Technical Manual / Rev 2025.12.28
         </footer>
       </div>
     </div>

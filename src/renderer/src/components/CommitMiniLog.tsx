@@ -19,7 +19,7 @@ export const CommitMiniLog: React.FC<CommitMiniLogProps> = ({ repoPath, onCommit
       setLoading(true);
       setError(null);
       try {
-        const fetchedCommits = await window.gitnetAPI.getRecentCommits(repoPath);
+        const fetchedCommits = await window.gitcanopyAPI.getRecentCommits(repoPath);
         setCommits(fetchedCommits);
       } catch (err) {
         console.error("Failed to fetch recent commits:", err);
@@ -37,8 +37,8 @@ export const CommitMiniLog: React.FC<CommitMiniLogProps> = ({ repoPath, onCommit
     };
 
     let unsubscribe: (() => void) | undefined;
-    if (window.gitnetAPI) {
-        unsubscribe = window.gitnetAPI.onCommitsUpdated(handleCommitsUpdated);
+    if (window.gitcanopyAPI) {
+        unsubscribe = window.gitcanopyAPI.onCommitsUpdated(handleCommitsUpdated);
     }
 
     return () => {

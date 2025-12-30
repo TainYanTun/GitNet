@@ -9,7 +9,7 @@ export const GitConsole: React.FC = () => {
 
   const fetchLogs = useCallback(async () => {
     try {
-      const history = await window.gitnetAPI.getGitCommandHistory();
+      const history = await window.gitcanopyAPI.getGitCommandHistory();
       setLogs(history);
     } catch (error) {
       console.error('Failed to fetch git logs:', error);
@@ -23,7 +23,7 @@ export const GitConsole: React.FC = () => {
   }, [fetchLogs]);
 
   const handleClear = async () => {
-    await window.gitnetAPI.clearGitCommandHistory();
+    await window.gitcanopyAPI.clearGitCommandHistory();
     setLogs([]);
   };
 

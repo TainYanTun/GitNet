@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "gitnet",
+      "name": "gitcanopy",
       "dependencies": {
         "@types/crypto-js": "^4.2.2",
         "antd": "^5.12.2",

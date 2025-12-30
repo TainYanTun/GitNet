@@ -251,6 +251,12 @@ export class GitService {
     await this.run(["add", filePath], repoPath);
   }
 
+  async clone(url: string, targetPath: string): Promise<void> {
+    const parentDir = path.dirname(targetPath);
+    const repoName = path.basename(targetPath);
+    await this.run(["clone", url, repoName], parentDir);
+  }
+
   async unstageFile(repoPath: string, filePath: string): Promise<void> {
     await this.run(["reset", "HEAD", "--", filePath], repoPath);
   }

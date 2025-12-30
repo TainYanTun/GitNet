@@ -14,7 +14,7 @@ export const Contributors: React.FC<ContributorsProps> = ({ repoPath }) => {
     const fetchContributors = async () => {
       setLoading(true);
       try {
-        const data = await window.gitnetAPI.getContributors(repoPath);
+        const data = await window.gitcanopyAPI.getContributors(repoPath);
         setContributors(data);
       } catch (error) {
         console.error("Failed to fetch contributors:", error);

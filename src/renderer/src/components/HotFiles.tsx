@@ -14,7 +14,7 @@ export const HotFiles: React.FC<HotFilesProps> = ({ repoPath, onFileClick }) => 
     const fetchHotFiles = async () => {
       setLoading(true);
       try {
-        const files = await window.gitnetAPI.getHotFiles(repoPath, 24);
+        const files = await window.gitcanopyAPI.getHotFiles(repoPath, 24);
         setHotFiles(files);
       } catch (error) {
         console.error("Failed to fetch hot files:", error);
@@ -55,7 +55,7 @@ export const HotFiles: React.FC<HotFilesProps> = ({ repoPath, onFileClick }) => 
                 const separator = repoPath.includes("\\") ? "\\" : "/";
                 const cleanRepoPath = repoPath.endsWith(separator) ? repoPath.slice(0, -1) : repoPath;
                 const fullPath = `${cleanRepoPath}${separator}${file.path.replace(/\//g, separator)}`;
-                window.gitnetAPI.showItemInFolder(fullPath);
+                window.gitcanopyAPI.showItemInFolder(fullPath);
               }
             }}
             title={onFileClick ? "Click to view file history" : "Click to reveal in file manager"}

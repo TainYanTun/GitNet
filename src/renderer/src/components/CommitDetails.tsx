@@ -40,7 +40,7 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
     setDiffContent("Loading diff...");
     setDiffModalVisible(true);
     try {
-      const diff = await window.gitnetAPI.getDiff(
+      const diff = await window.gitcanopyAPI.getDiff(
         repoPath,
         commit.hash,
         file.path,
@@ -57,7 +57,7 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
       setError(null);
       setFullCommitDetails(null); // Clear previous details
       try {
-        const details = await window.gitnetAPI.getCommitDetails(
+        const details = await window.gitcanopyAPI.getCommitDetails(
           repoPath,
           commit.hash,
         );

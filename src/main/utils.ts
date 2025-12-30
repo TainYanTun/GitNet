@@ -27,7 +27,7 @@ export const getUserDataPath = (): string => {
 // Get app data directory with subdirectory
 export const getAppDataPath = (subDir?: string): string => {
   const userDataPath = getUserDataPath();
-  const appDataPath = join(userDataPath, 'GitNet');
+  const appDataPath = join(userDataPath, 'GitCanopy');
 
   if (!existsSync(appDataPath)) {
     mkdirSync(appDataPath, { recursive: true });

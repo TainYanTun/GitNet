@@ -1,53 +1,38 @@
 # GitCanopy
 
-**A high-performance Git visualizer that reveals the architectural spine of your repository.**
+**A high-performance Git client and visualizer that reveals the architectural spine of your repository.**
 
-GitCanopy transforms complex Git histories into a stable, lane-based graph that keeps your main branch anchored and your merge patterns clear. Built for developers who need to understand the structural evolution of their codebase without visual clutter.
+GitCanopy transforms complex Git histories into a stable, lane-based graph that keeps your main branch anchored and your merge patterns clear. Built for developers who need architectural clarity and a hyper-minimalist, lightning-fast staging workflow.
 
 ---
 
 ## Core Capabilities
 
-**Main Spine Architecture**  
-Automatically organizes commits into persistent vertical lanes, with your primary branch (main/master) locked to the leftmost position. This creates a stable reference point as you navigate through branch hierarchies and merge histories.
+### 🚆 Visualization Engine
+- **Main Spine Architecture:** Vertical lanes keep your primary branch locked to the left, providing a stable reference point for navigation.
+- **Semantic Classification:** Commits are color-coded by intent (Features, Fixes, Docs) and geometry (Merges, Reverts, Stashes).
+- **Focus Mode:** Hover over any node to trace recursive lineage, isolating the "story" of a feature while dimming unrelated noise.
 
-**Semantic Classification**  
-Commits are color-coded by intent using Conventional Commits patterns:
-- Green → Features (`feat`)
-- Red → Bug fixes (`fix`)
-- Yellow → Refactoring
-- Blue → Documentation
-- Gray → Maintenance
+### ✍️ Professional Workflow
+- **Virtualized Performance:** Scroll through 10,000+ commits or massive diffs at 60FPS using industry-leading windowing techniques.
+- **Uncommitted Changes:** A dedicated view for your working directory status, allowing you to review modifications in a high-fidelity unified diff viewer.
+- **Stage & Commit:** A tightly integrated, hyper-minimalist interface for staging files and authoring commits.
+- **Push & Sync:** One-click synchronization with remote repositories.
 
-Node shapes convey structure: circles for standard commits, diamonds for merges, squares for reverts and stashes.
-
-**Focus Engine**  
-Hover over any commit to trace its lineage. GitCanopy recursively highlights ancestors and descendants while dimming unrelated paths, revealing the exact journey of a feature or fix through your codebase.
-
-**Real-Time Sync**  
-A background watcher monitors your `.git` directory and updates the visualization automatically when you commit, checkout, or rebase.
+### 📊 Repository Insights
+- **Team Metrics:** Analyze contributor impact and activity trends over time.
+- **File Hotspots:** Identify high-churn files and potential architectural bottlenecks.
+- **Stash Gallery:** Visual management of your Git stashes.
 
 ---
 
-## Visual Language
+## Technical Foundation
 
-The graph uses high-contrast colors against a dark background to minimize eye strain during extended sessions. When you select a commit, the sidebar provides:
-
-- Branch associations (where it originated, where it merged)
-- File changes with on-demand diff viewing
-- Author metadata and timestamp
-
-The "Hot Files" panel identifies high-churn areas in your repository, helping you spot architectural pain points.
-
----
-
-## Workflow
-
-1. **Open** a local repository from the welcome screen
-2. **Trace** commit paths by hovering over nodes
-3. **Analyze** structural patterns in the Insights view
-4. **Switch** branches via the Checkout tab (Git icon in status bar)
-5. **Sync** manually with `Cmd/Ctrl + R` if needed
+- **Environment:** Electron (isolated renderer, safe IPC)
+- **Frontend:** React + TypeScript (Virtualized rendering)
+- **Graph Engine:** D3.js (Background Web Worker layout)
+- **Styling:** Tailwind CSS (Zed-inspired hyper-minimalist theme)
+- **Engine:** Safe `spawn` Git binary interaction with 10MB safety buffers.
 
 ---
 
@@ -55,21 +40,11 @@ The "Hot Files" panel identifies high-churn areas in your repository, helping yo
 
 | Action | Binding |
 |--------|---------|
-| Refresh repository | `Cmd/Ctrl + R` |
-| Open repository | `Cmd/Ctrl + O` |
-| Close panels | `Esc` |
-| Jump to HEAD | Floating action button |
+| Refresh / Sync | `⌘ + R` |
+| Open Repository | `⌘ + O` |
+| Close Panels | `Esc` |
+| Commit | `⌘ + Enter` (in Changes view) |
 
 ---
 
-## Technical Foundation
-
-- **Runtime**: Electron (cross-platform desktop)
-- **Interface**: React + TypeScript
-- **Graph engine**: D3.js with SVG rendering
-- **Styling**: Tailwind CSS
-- **Package manager**: Bun
-
----
-
-**GitNet** — navigate the structure of your project's history.
+**GitCanopy** — navigate and author the structure of your project's history.

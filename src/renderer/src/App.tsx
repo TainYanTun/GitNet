@@ -29,10 +29,10 @@ const App: React.FC = () => {
 
       if (repoPath) {
         // If a path is provided (e.g., from recent repos), use it directly
-        repository = await window.gitnetAPI.getRepository(repoPath);
+        repository = await window.gitcanopyAPI.getRepository(repoPath);
       } else {
         // Otherwise, open the file dialog
-        repository = await window.gitnetAPI.selectRepository();
+        repository = await window.gitcanopyAPI.selectRepository();
       }
 
       if (repository) {
@@ -43,7 +43,7 @@ const App: React.FC = () => {
         });
 
         // Start watching the repository for changes
-        await window.gitnetAPI.watchRepository(repository.path);
+        await window.gitcanopyAPI.watchRepository(repository.path);
         showToast(`Repository loaded: ${repository.name}`, "success");
       } else {
         setState((prev) => ({ ...prev, loading: false }));
@@ -66,7 +66,7 @@ const App: React.FC = () => {
   const handleCloseRepository = async () => {
     if (state.repository) {
       try {
-        await window.gitnetAPI.unwatchRepository(state.repository.path);
+        await window.gitcanopyAPI.unwatchRepository(state.repository.path);
       } catch (error) {
         console.error("Failed to unwatch repository:", error);
       }
@@ -83,7 +83,7 @@ const App: React.FC = () => {
   const refreshRepository = async () => {
     if (state.repository) {
       try {
-        const updatedRepo = await window.gitnetAPI.getRepository(state.repository.path);
+        const updatedRepo = await window.gitcanopyAPI.getRepository(state.repository.path);
         setState((prev) => ({
           ...prev,
           repository: updatedRepo,
@@ -98,8 +98,8 @@ const App: React.FC = () => {
   useEffect(() => {
     const checkInitialRepo = async () => {
       try {
-        if (window.gitnetAPI && typeof window.gitnetAPI.getInitialRepo === 'function') {
-          const initialPath = await window.gitnetAPI.getInitialRepo();
+        if (window.gitcanopyAPI && typeof window.gitcanopyAPI.getInitialRepo === 'function') {
+          const initialPath = await window.gitcanopyAPI.getInitialRepo();
           if (initialPath) {
             console.log("Loading initial repository from CLI:", initialPath);
             handleSelectRepository(initialPath);
@@ -119,7 +119,7 @@ const App: React.FC = () => {
       console.log("Repository changed:", event);
       if (state.repository) {
         try {
-          const updatedRepo = await window.gitnetAPI.getRepository(state.repository.path);
+          const updatedRepo = await window.gitcanopyAPI.getRepository(state.repository.path);
           setState((prev) => ({
             ...prev,
             repository: updatedRepo,
@@ -134,7 +134,7 @@ const App: React.FC = () => {
       console.log("HEAD changed:", event);
       if (state.repository) {
         try {
-          const updatedRepo = await window.gitnetAPI.getRepository(state.repository.path);
+          const updatedRepo = await window.gitcanopyAPI.getRepository(state.repository.path);
           setState((prev) => ({
             ...prev,
             repository: updatedRepo,
@@ -149,9 +149,9 @@ const App: React.FC = () => {
     let unsubscribeRepo: (() => void) | undefined;
     let unsubscribeHead: (() => void) | undefined;
 
-    if (window.gitnetAPI) {
-      unsubscribeRepo = window.gitnetAPI.onRepositoryChanged(handleRepositoryChanged);
-      unsubscribeHead = window.gitnetAPI.onHeadChanged(handleHeadChanged);
+    if (window.gitcanopyAPI) {
+      unsubscribeRepo = window.gitcanopyAPI.onRepositoryChanged(handleRepositoryChanged);
+      unsubscribeHead = window.gitcanopyAPI.onHeadChanged(handleHeadChanged);
     }
 
     return () => {

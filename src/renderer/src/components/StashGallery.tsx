@@ -14,7 +14,7 @@ export const StashGallery: React.FC<StashGalleryProps> = ({ repoPath }) => {
   const fetchStashes = async () => {
     setLoading(true);
     try {
-      const fetchedStashes = await window.gitnetAPI.getStashList(repoPath);
+      const fetchedStashes = await window.gitcanopyAPI.getStashList(repoPath);
       setStashes(fetchedStashes);
     } catch (error) {
       console.error("Failed to fetch stashes:", error);
@@ -30,7 +30,7 @@ export const StashGallery: React.FC<StashGalleryProps> = ({ repoPath }) => {
   const handleApply = async (index: string) => {
     if (window.confirm("Are you sure you want to apply this stash?")) {
       try {
-        await window.gitnetAPI.applyStash(repoPath, index);
+        await window.gitcanopyAPI.applyStash(repoPath, index);
         showToast("Stash applied successfully", "success");
         fetchStashes();
       } catch (error) {
@@ -43,7 +43,7 @@ export const StashGallery: React.FC<StashGalleryProps> = ({ repoPath }) => {
   const handleDrop = async (index: string) => {
     if (window.confirm("Are you sure you want to drop this stash? This cannot be undone.")) {
       try {
-        await window.gitnetAPI.dropStash(repoPath, index);
+        await window.gitcanopyAPI.dropStash(repoPath, index);
         showToast("Stash dropped successfully", "success");
         fetchStashes();
       } catch (error) {

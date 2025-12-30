@@ -395,18 +395,25 @@ export const CommitGraph: React.FC<CommitGraphProps> = ({
       const isHighlighted = !highlightedInfo || highlightedInfo.nodes.has(d.id);
       const isSelected = d.id === selectedCommitHash;
       const isSearchMatch = directMatches?.has(d.id);
+      const group = d3.select<SVGGElement, GraphNode>(this as any);
 
-      d3.select(this)
-        .transition("style")
+      group.transition("style")
         .duration(150)
         .attr("opacity", isHighlighted ? 1.0 : 0.2)
         .attr("transform", `translate(${d.x}, ${d.y}) scale(${isSelected || d.id === hoveredCommitHash ? 1.2 : 1})`);
         
       // Selection ring
-      let ring = d3.select(this).select(".selection-ring");
+      let ring = group.select<SVGCircleElement>(".selection-ring");
       if (isSelected || isSearchMatch) {
-        if (ring.empty()) ring = d3.select(this).append("circle").attr("class", "selection-ring").attr("r", d.size + 4).attr("fill", "none").attr("stroke-width", 2);
-        ring.attr("stroke", isSearchMatch ? "#3b82f6" : "#fff").style("filter", isSearchMatch ? "drop-shadow(0 0 4px #3b82f6)" : "none");
+        if (ring.empty()) {
+          ring = group.append("circle")
+            .attr("class", "selection-ring")
+            .attr("r", d.size + 4)
+            .attr("fill", "none")
+            .attr("stroke-width", 2);
+        }
+        ring.attr("stroke", isSearchMatch ? "#3b82f6" : "#fff")
+            .style("filter", isSearchMatch ? "drop-shadow(0 0 4px #3b82f6)" : "none");
       } else {
         ring.remove();
       }

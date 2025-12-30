@@ -21,7 +21,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
 }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     // Check local storage or default to system
-    const saved = localStorage.getItem("gitnet-theme");
+    const saved = localStorage.getItem("gitcanopy-theme");
     return (saved as Theme) || "system";
   });
 
@@ -44,7 +44,7 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
     applyTheme(theme);
 
     // Persist preference
-    localStorage.setItem("gitnet-theme", theme);
+    localStorage.setItem("gitcanopy-theme", theme);
 
     // Listen for system changes if in system mode
     const handleSystemChange = (e: MediaQueryListEvent) => {

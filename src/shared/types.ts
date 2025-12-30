@@ -1,4 +1,4 @@
-// Shared type definitions for GitNet application
+// Shared type definitions for GitCanopy application
 
 export type CommitType =
   | "feat"
@@ -270,11 +270,12 @@ export interface WorkingTreeStatus {
   behind: number;
 }
 
-export interface GitNetAPI {
+export interface GitCanopyAPI {
   // Repository operations
   selectRepository: () => Promise<Repository | null>;
   getRepository: (path: string) => Promise<Repository>;
   getStatus: (repoPath: string) => Promise<WorkingTreeStatus>;
+  clone: (url: string, targetPath: string) => Promise<void>;
   stageFile: (repoPath: string, filePath: string) => Promise<void>;
   unstageFile: (repoPath: string, filePath: string) => Promise<void>;
   commit: (repoPath: string, message: string) => Promise<void>;
@@ -336,7 +337,7 @@ export interface GitNetAPI {
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    gitnetAPI: GitNetAPI;
+    gitcanopyAPI: GitCanopyAPI;
   }
 }
 
