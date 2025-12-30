@@ -216,9 +216,18 @@ export class GitService {
       
       const files: StatusFile[] = lines.map(line => {
         const xy = line.substring(0, 2);
-        const path = line.substring(3).replace(/"/g, "");
+        let rawPath = line.substring(3);
         
-        // X = index, Y = work tree
+        // Handle renamed files: "old -> new"
+        let finalPath = rawPath;
+        if (xy[0] === "R" || xy[1] === "R") {
+          const parts = rawPath.split(" -> ");
+          finalPath = parts[parts.length - 1]; // Use the 'new' path
+        }
+        
+        // Remove quotes if git returned a quoted path (usually for spaces)
+        finalPath = finalPath.replace(/^"(.*)"$/, "$1");
+
         const staged = xy[0] !== " " && xy[0] !== "?";
         
         let status: StatusFile["status"] = "modified";
@@ -228,7 +237,7 @@ export class GitService {
         else if (xy[0] === "D" || xy[1] === "D") status = "deleted";
         else if (xy[0] === "R" || xy[1] === "R") status = "renamed";
 
-        return { path, status, staged };
+        return { path: finalPath, status, staged };
       });
 
       return { files, ahead, behind };
@@ -236,6 +245,23 @@ export class GitService {
       console.error("Failed to get status:", error);
       return { files: [], ahead: 0, behind: 0 };
     }
+  }
+
+  async stageFile(repoPath: string, filePath: string): Promise<void> {
+    await this.run(["add", filePath], repoPath);
+  }
+
+  async unstageFile(repoPath: string, filePath: string): Promise<void> {
+    await this.run(["reset", "HEAD", "--", filePath], repoPath);
+  }
+
+  async commit(repoPath: string, message: string): Promise<void> {
+    if (!message.trim()) throw new Error("Commit message cannot be empty");
+    await this.run(["commit", "-m", message], repoPath);
+  }
+
+  async push(repoPath: string): Promise<void> {
+    await this.run(["push"], repoPath);
   }
 
   async getRepository(repoPath: string): Promise<Repository> {

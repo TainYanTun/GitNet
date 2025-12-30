@@ -20,6 +20,10 @@ const gitnetAPI: GitNetAPI = {
 
   getRepository: (path: string) => ipcRenderer.invoke("get-repository", path),
   getStatus: (repoPath: string) => ipcRenderer.invoke("get-status", repoPath),
+  stageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("stage-file", repoPath, filePath),
+  unstageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("unstage-file", repoPath, filePath),
+  commit: (repoPath: string, message: string) => ipcRenderer.invoke("commit", repoPath, message),
+  push: (repoPath: string) => ipcRenderer.invoke("push", repoPath),
 
   // Git data operations
   getCommits: (

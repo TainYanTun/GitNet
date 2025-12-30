@@ -275,6 +275,10 @@ export interface GitNetAPI {
   selectRepository: () => Promise<Repository | null>;
   getRepository: (path: string) => Promise<Repository>;
   getStatus: (repoPath: string) => Promise<WorkingTreeStatus>;
+  stageFile: (repoPath: string, filePath: string) => Promise<void>;
+  unstageFile: (repoPath: string, filePath: string) => Promise<void>;
+  commit: (repoPath: string, message: string) => Promise<void>;
+  push: (repoPath: string) => Promise<void>;
 
   // Git data operations
   getCommits: (

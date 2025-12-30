@@ -288,6 +288,18 @@ class GitNetApp {
     ipcMain.handle("get-status", (_, repoPath: string) => 
       this.gitService.getStatus(repoPath)
     );
+    ipcMain.handle("stage-file", (_, repoPath: string, filePath: string) => 
+      this.gitService.stageFile(repoPath, filePath)
+    );
+    ipcMain.handle("unstage-file", (_, repoPath: string, filePath: string) => 
+      this.gitService.unstageFile(repoPath, filePath)
+    );
+    ipcMain.handle("commit", (_, repoPath: string, message: string) => 
+      this.gitService.commit(repoPath, message)
+    );
+    ipcMain.handle("push", (_, repoPath: string) => 
+      this.gitService.push(repoPath)
+    );
 
     // Git data operations
     ipcMain.handle(
