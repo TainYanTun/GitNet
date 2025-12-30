@@ -1,10 +1,8 @@
 <div align="center">
 
-# GitCanopy: **A High-Performance, Node-link Git Client** designed for Professional Engineers
+# GitCanopy: Git Visulization Client designed for Professional Engineers
 
 Transform complex commit histories into stable, readable graphs with a hyper-minimalist, lightning-fast workflow.
-
-Traditional Git clients struggle with visualization clarity and repository scale. GitCanopy prioritizes **data density**, **rendering speed**, and **semantic clarity** to deliver an unmatched developer experience.
 
 [![Version](https://img.shields.io/badge/version-1.0.0_Stable-1f2937?style=flat&logo=git)](https://github.com/TainYanTun/GitCanopy/releases)
 [![Build](https://img.shields.io/badge/build-passing-success?style=flat)](https://github.com/TainYanTun/GitCanopy/actions)
