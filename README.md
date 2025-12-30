@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="src/renderer/public/interface.png" width="700" alt="GitCanopy Interface" />
-
 # GitCanopy
+
+<img src="src/renderer/public/interface.png" width="700" alt="GitCanopy Interface" />
 
 **The Architectural Spine of Your Repository**
 
