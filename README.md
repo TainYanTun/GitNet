@@ -1,31 +1,27 @@
 <div align="center">
 
-# GitCanopy
-
-<img src="src/renderer/public/interface.png" width="700" alt="GitCanopy Interface" />
+# GitCanopy: **A High-Performance, Node-link Git Client** designed for Professional Engineers
 
 **The Architectural Spine of Your Repository**
 
-[![Version](https://img.shields.io/badge/version-1.0.0_Stable-1f2937?style=for-the-badge&logo=git&logoColor=white)](https://github.com/TainYanTun/GitCanopy/releases)
-[![Build](https://img.shields.io/badge/build-passing-success?style=for-the-badge)](https://github.com/TainYanTun/GitCanopy/actions)
-[![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey?style=for-the-badge)](https://github.com/TainYanTun/GitCanopy)
+Transform complex commit histories into stable, readable graphs with a hyper-minimalist, lightning-fast workflow.
+
+Traditional Git clients struggle with visualization clarity and repository scale. GitCanopy prioritizes **data density**, **rendering speed**, and **semantic clarity** to deliver an unmatched developer experience.
+
+[![Version](https://img.shields.io/badge/version-1.0.0_Stable-1f2937?style=flat&logo=git)](https://github.com/TainYanTun/GitCanopy/releases)
+[![Build](https://img.shields.io/badge/build-passing-success?style=flat)](https://github.com/TainYanTun/GitCanopy/actions)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-red?style=flat)](https://github.com/TainYanTun/GitCanopy)
+
 
 [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Roadmap](#-roadmap) • [Contributing](#-contributing)
+
+<img src="src/renderer/public/interface.png" width="700" alt="GitCanopy Interface" />
 
 </div>
 
 ---
 
-## 📋 Overview
-
-GitCanopy is a **high-performance, railway-style Git client** designed for professional engineers who demand architectural clarity over decorative clutter. Transform complex commit histories into stable, readable graphs with a hyper-minimalist, lightning-fast workflow.
-
-### 🎯 Philosophy: Developer First
-
-Traditional Git clients struggle with visualization clarity and repository scale. GitCanopy prioritizes **data density**, **rendering speed**, and **semantic clarity** to deliver an unmatched developer experience.
-
----
 
 ## ✨ Features
 
