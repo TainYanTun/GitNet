@@ -207,9 +207,9 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   const hasUnstaged = Object.keys(unstagedGrouped).length > 0;
 
   return (
-    <div className="h-full flex flex-col bg-[#fcfcfc] dark:bg-[#181818] text-zed-text dark:text-zed-dark-text font-sans selection:bg-zed-accent/20">
+    <div className="h-full flex flex-col bg-[#fcfcfc] dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text font-sans selection:bg-zed-accent/20">
       {/* Slim Header */}
-      <div className="h-11 flex-shrink-0 flex items-center justify-between px-4 border-b border-zed-border dark:border-zed-dark-border bg-[#f6f6f6] dark:bg-[#1c1c1c]">
+      <div className="h-11 flex-shrink-0 flex items-center justify-between px-4 border-b border-zed-border dark:border-zed-dark-border bg-[#f6f6f6] dark:bg-zed-dark-bg">
         <div className="flex items-center gap-3">
           <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
             Source Control
@@ -244,7 +244,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       <div className="flex-1 flex overflow-hidden">
         {/* Unstaged Column */}
         <div className="flex-1 flex flex-col border-r border-zed-border dark:border-zed-dark-border">
-          <div className="h-9 flex items-center justify-between px-3 bg-[#f0f0f0] dark:bg-[#202020] border-b border-zed-border dark:border-zed-dark-border">
+          <div className="h-9 flex items-center justify-between px-3 bg-[#f0f0f0] dark:bg-zed-dark-bg border-b border-zed-border dark:border-zed-dark-border">
             <h2 className="text-[10px] font-bold uppercase tracking-widest opacity-80 flex items-center gap-2">
               <FileTextOutlined className="text-[8px]" /> Changes
             </h2>
@@ -287,8 +287,8 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
         </div>
 
         {/* Staged Column */}
-        <div className="flex-1 flex flex-col bg-[#fafafa] dark:bg-[#1a1a1a]">
-          <div className="h-9 flex items-center justify-between px-3 bg-[#f0f0f0] dark:bg-[#202020] border-b border-zed-border dark:border-zed-dark-border">
+        <div className="flex-1 flex flex-col bg-[#fafafa] dark:bg-zed-dark-bg">
+          <div className="h-9 flex items-center justify-between px-3 bg-[#f0f0f0] dark:bg-zed-dark-bg border-b border-zed-border dark:border-zed-dark-border">
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-green-600 dark:text-green-500 flex items-center gap-2">
               <PlusOutlined className="text-[8px]" /> Staged
             </h2>
@@ -332,7 +332,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       </div>
 
       {/* Commit Bar (inline: Summary + Commit) */}
-      <div className="p-4 bg-[#f6f6f6] dark:bg-[#1c1c1c] border-t border-zed-border dark:border-zed-dark-border">
+      <div className="p-4 bg-[#f6f6f6] dark:bg-zed-dark-surface border-t border-zed-border dark:border-zed-dark-border">
         <div className="max-w-5xl mx-auto flex gap-4 items-start">
           <div className="flex-1 flex flex-col gap-2">
             <div className="flex flex-col sm:flex-row w-full items-start gap-4">
@@ -346,7 +346,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
                     handleCommit();
                   }
                 }}
-                className="flex-1 bg-white dark:bg-[#121212] border border-zed-border dark:border-zed-dark-border px-3 py-2 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text rounded shadow-sm"
+                className="flex-1 bg-white dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border px-3 py-2 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text rounded shadow-sm"
               />
               <button
                 onClick={handleCommit}
@@ -375,7 +375,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
                   handleCommit();
                 }
               }}
-              className="w-full bg-white dark:bg-[#121212] border border-zed-border dark:border-zed-dark-border p-3 text-[12px] font-bold focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text resize-y min-h-[180px] max-h-[360px] overflow-auto font-sans rounded shadow-sm"
+              className="w-full bg-white dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border p-3 text-[12px] font-bold focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text resize-y min-h-[180px] max-h-[360px] overflow-auto font-sans rounded shadow-sm"
               rows={3}
             />
             <div className="text-[9px] opacity-40 font-mono flex justify-between px-1">
