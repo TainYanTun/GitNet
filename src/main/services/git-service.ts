@@ -21,6 +21,8 @@ export class GitService {
   private commandHistory: GitCommandLog[] = [];
   private maxHistorySize = 100;
   private avatarCache = new LRUCache<string, string>({ max: 500 });
+  private branchesCache = new LRUCache<string, Branch[]>({ max: 10, ttl: 1000 * 30 }); // 30s cache
+  private tagsCache = new LRUCache<string, Map<string, string[]>>({ max: 10, ttl: 1000 * 60 }); // 60s cache
 
   private getAvatarUrl(email: string): string {
     const cleanEmail = email.trim().toLowerCase();
@@ -436,6 +438,9 @@ export class GitService {
   }
 
   async getTags(repoPath: string): Promise<Map<string, string[]>> {
+    if (this.tagsCache.has(repoPath)) {
+      return this.tagsCache.get(repoPath)!;
+    }
     try {
       const output = await this.run(
         ["show-ref", "--tags", "--dereference"],
@@ -452,6 +457,7 @@ export class GitService {
             tagMap.set(hash, list);
         }
       });
+      this.tagsCache.set(repoPath, tagMap);
       return tagMap;
     } catch {
       return new Map();
@@ -459,12 +465,17 @@ export class GitService {
   }
 
   async getBranches(repoPath: string): Promise<Branch[]> {
+    if (this.branchesCache.has(repoPath)) {
+      return this.branchesCache.get(repoPath)!;
+    }
     try {
       const output = await this.run(
         ["branch", "-a", "--format=%(refname:short)|%(objectname)"],
         repoPath
       );
-      return this.parseBranches(output);
+      const branches = this.parseBranches(output);
+      this.branchesCache.set(repoPath, branches);
+      return branches;
     } catch {
       return [];
     }
