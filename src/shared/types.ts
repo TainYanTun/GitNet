@@ -273,9 +273,11 @@ export interface WorkingTreeStatus {
 export interface GitCanopyAPI {
   // Repository operations
   selectRepository: () => Promise<Repository | null>;
+  selectDirectory: () => Promise<string | null>;
   getRepository: (path: string) => Promise<Repository>;
   getStatus: (repoPath: string) => Promise<WorkingTreeStatus>;
   clone: (url: string, targetPath: string) => Promise<void>;
+  cloneToParent: (url: string, parentPath: string) => Promise<string>;
   stageFile: (repoPath: string, filePath: string) => Promise<void>;
   unstageFile: (repoPath: string, filePath: string) => Promise<void>;
   commit: (repoPath: string, message: string) => Promise<void>;

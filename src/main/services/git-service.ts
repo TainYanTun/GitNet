@@ -257,6 +257,30 @@ export class GitService {
     await this.run(["clone", url, repoName], parentDir);
   }
 
+  async cloneToParent(url: string, parentPath: string): Promise<string> {
+    // 1. Extract repo name
+    const cleanUrl = url.replace(/\/$/, '').replace(/\.git$/, '');
+    const repoName = cleanUrl.split('/').pop() || 'repository';
+    
+    // 2. Resolve full path
+    const targetPath = path.join(parentPath, repoName);
+    
+    // 3. Check if exists
+    if (fs.existsSync(targetPath)) {
+        throw new Error(`Destination '${repoName}' already exists in selected folder.`);
+    }
+    
+    // 4. Clone
+    await this.clone(url, targetPath);
+    
+    // 5. Verify existence
+    if (!fs.existsSync(targetPath)) {
+        throw new Error(`Clone operation completed but directory was not created: ${targetPath}`);
+    }
+    
+    return targetPath;
+  }
+
   async unstageFile(repoPath: string, filePath: string): Promise<void> {
     await this.run(["reset", "HEAD", "--", filePath], repoPath);
   }
@@ -271,11 +295,17 @@ export class GitService {
   }
 
   async getRepository(repoPath: string): Promise<Repository> {
+    // 0. Check if directory exists
+    if (!fs.existsSync(repoPath)) {
+      throw new Error(`Directory does not exist: ${repoPath}`);
+    }
+
     // Verify it's a Git repository
     try {
       await this.run(["rev-parse", "--is-inside-work-tree"], repoPath);
-    } catch {
-      throw new Error("Not a Git repository");
+    } catch (error) {
+       console.error(`[GitService] Validation failed for ${repoPath}:`, error);
+       throw new Error(`Not a valid Git repository: ${repoPath}`);
     }
 
     const name = repoPath.split("/").pop() || "Unknown";

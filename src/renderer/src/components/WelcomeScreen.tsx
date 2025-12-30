@@ -47,18 +47,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
     try {
       showToast("Select destination folder", "info");
-      const result = await window.gitcanopyAPI.selectRepository();
+      const parentPath = await window.gitcanopyAPI.selectDirectory();
       
-      if (!result) return;
+      if (!parentPath) return;
 
       setIsCloning(true);
       setShowCloneInput(false);
       showToast("Cloning repository...", "info");
       
-      await window.gitcanopyAPI.clone(cloneUrl, result.path);
+      const repoPath = await window.gitcanopyAPI.cloneToParent(cloneUrl, parentPath);
       
       showToast("Clone successful", "success");
-      onSelectRepository(result.path);
+      onSelectRepository(repoPath);
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Clone failed", "error");
       setIsCloning(false);
@@ -146,12 +146,20 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <div className="pt-8 border-t border-zed-border dark:border-zed-dark-border flex items-center gap-6">
               <a
                 href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.gitcanopyAPI.openExternal("https://github.com/TainYanTun/GitCanopy/blob/main/documentation.md");
+                }}
                 className="text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-zed-accent transition-all"
               >
                 Docs
               </a>
               <a
                 href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.gitcanopyAPI.openExternal("https://github.com/TainYanTun/GitCanopy");
+                }}
                 className="text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-zed-accent transition-all"
               >
                 Source
@@ -167,7 +175,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
             <div className="flex-1 overflow-y-auto custom-scrollbar space-y-1 pr-4">
               {recentRepos.length > 0 ? (
-                recentRepos.map((path) => {
+                recentRepos.slice(0, 5).map((path) => {
                   const name = path.split(/[\\/]/).pop();
                   return (
                     <button

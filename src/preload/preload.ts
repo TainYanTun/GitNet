@@ -18,9 +18,13 @@ const gitcanopyAPI: GitCanopyAPI = {
   selectRepository: (): Promise<Repository | null> =>
     ipcRenderer.invoke("select-repository"),
 
+  selectDirectory: (): Promise<string | null> =>
+    ipcRenderer.invoke("select-directory"),
+
   getRepository: (path: string) => ipcRenderer.invoke("get-repository", path),
   getStatus: (repoPath: string) => ipcRenderer.invoke("get-status", repoPath),
   clone: (url: string, targetPath: string) => ipcRenderer.invoke("clone", url, targetPath),
+  cloneToParent: (url: string, parentPath: string) => ipcRenderer.invoke("clone-to-parent", url, parentPath),
   stageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("stage-file", repoPath, filePath),
   unstageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("unstage-file", repoPath, filePath),
   commit: (repoPath: string, message: string) => ipcRenderer.invoke("commit", repoPath, message),

@@ -280,6 +280,7 @@ class GitCanopyApp {
   private setupIpcHandlers(): void {
     // Repository operations
     ipcMain.handle("select-repository", () => this.handleSelectRepository());
+    ipcMain.handle("select-directory", () => this.handleSelectDirectory());
     ipcMain.handle("get-repository", async (_, path: string) => {
       const repository = await this.gitService.getRepository(path);
       await this.settingsService.addRecentRepository(path);
@@ -290,6 +291,9 @@ class GitCanopyApp {
     );
     ipcMain.handle("clone", (_, url: string, targetPath: string) => 
       this.gitService.clone(url, targetPath)
+    );
+    ipcMain.handle("clone-to-parent", (_, url: string, parentPath: string) => 
+      this.gitService.cloneToParent(url, parentPath)
     );
     ipcMain.handle("stage-file", (_, repoPath: string, filePath: string) => 
       this.gitService.stageFile(repoPath, filePath)
@@ -439,6 +443,21 @@ class GitCanopyApp {
 
       return null;
     }
+  }
+
+  private async handleSelectDirectory(): Promise<string | null> {
+    const result = await dialog.showOpenDialog(this.mainWindow!, {
+      title: "Select Destination Directory",
+      buttonLabel: "Select Directory",
+      properties: ["openDirectory", "createDirectory"],
+      message: "Select a folder to clone the repository into",
+    });
+
+    if (result.canceled || !result.filePaths.length) {
+      return null;
+    }
+
+    return result.filePaths[0];
   }
 }
 
