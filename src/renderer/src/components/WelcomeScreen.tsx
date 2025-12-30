@@ -67,6 +67,15 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   return (
     <div className="h-full w-full bg-zed-bg dark:bg-zed-dark-bg flex flex-col font-sans overflow-hidden relative">
+      {/* Subtle Background Elements */}
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-[0.05] dark:opacity-[0.1]" 
+        style={{ 
+          backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)', 
+          backgroundSize: '24px 24px' 
+        }} 
+      />
+
       {/* Fake Title Bar */}
       <div className="h-9 border-b border-zed-border dark:border-zed-dark-border shrink-0 flex items-center px-4 bg-zed-bg dark:bg-zed-dark-bg relative z-10">
         <div className="w-16 shrink-0" />
@@ -97,22 +106,28 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                   <>
                     <button
                       onClick={() => onSelectRepository()}
-                      className="group flex items-center gap-4 p-4 bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border hover:border-zed-accent dark:hover:border-zed-dark-accent transition-all text-left shadow-sm hover:shadow-md active:scale-[0.99]"
+                      className="group flex items-center gap-3 px-4 py-3 w-full border border-zed-border dark:border-zed-dark-border bg-zed-bg dark:bg-zed-dark-bg hover:bg-zed-surface dark:hover:bg-zed-dark-surface hover:border-zed-accent dark:hover:border-zed-dark-accent transition-all duration-100"
                     >
-                      <FolderOpenOutlined className="text-sm text-zed-accent" />
-                      <span className="text-xs font-bold">Open Repository</span>
-                      <span className="ml-auto text-[10px] font-mono opacity-30">⌘O</span>
+                      <FolderOpenOutlined className="text-base text-zed-muted group-hover:text-zed-accent transition-colors" />
+                      <div className="flex flex-col items-start gap-0.5">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zed-text dark:text-zed-dark-text group-hover:text-zed-accent transition-colors">Open Repository</span>
+                        <span className="text-[10px] font-mono text-zed-muted dark:text-zed-dark-muted opacity-60">local filesystem</span>
+                      </div>
+                      <span className="ml-auto text-[10px] font-mono text-zed-muted opacity-40 group-hover:opacity-100 transition-opacity">⌘O</span>
                     </button>
 
                     <button 
                       onClick={() => setShowCloneInput(true)}
                       disabled={isCloning}
-                      className="group flex items-center gap-4 p-4 bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border hover:border-zed-accent dark:hover:border-zed-dark-accent transition-all text-left shadow-sm hover:shadow-md active:scale-[0.99] disabled:opacity-50"
+                      className="group flex items-center gap-3 px-4 py-3 w-full border border-zed-border dark:border-zed-dark-border bg-zed-bg dark:bg-zed-dark-bg hover:bg-zed-surface dark:hover:bg-zed-dark-surface hover:border-zed-accent dark:hover:border-zed-dark-accent transition-all duration-100 disabled:opacity-50"
                     >
-                      {isCloning ? <LoadingOutlined className="text-sm text-zed-accent" /> : <PlusCircleOutlined className="text-sm text-zed-accent" />}
-                      <span className="text-xs font-bold">
-                        {isCloning ? "Cloning..." : "Clone Repository"}
-                      </span>
+                      {isCloning ? <LoadingOutlined className="text-base text-zed-accent" /> : <PlusCircleOutlined className="text-base text-zed-muted group-hover:text-zed-accent transition-colors" />}
+                      <div className="flex flex-col items-start gap-0.5">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zed-text dark:text-zed-dark-text group-hover:text-zed-accent transition-colors">
+                          {isCloning ? "Cloning..." : "Clone Repository"}
+                        </span>
+                        <span className="text-[10px] font-mono text-zed-muted dark:text-zed-dark-muted opacity-60">https://...</span>
+                      </div>
                     </button>
                   </>
                 ) : (
