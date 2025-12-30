@@ -1,56 +1,44 @@
-# GitNet Project Requirements & Specification
+Security Analysis
+  The application demonstrates a strong security posture for an Electron app.
 
-GitNet is a high-performance, desktop-based Git visualization tool designed to provide a "Railway-style" commit graph. It focuses on clarity, speed, and deep architectural insights for developers.
+   * Electron Security Best Practices:
+       * ✅ Context Isolation & Node Integration: webPreferences are correctly configured with contextIsolation: true and nodeIntegration: false, preventing renderer
+         processes from accessing Node.js primitives directly.
+       * ✅ Webview Restrictions: The will-attach-webview event is handled to prevent unauthorized creation of <webview> tags, a common attack vector.
+       * ✅ Navigation Control: The will-navigate handler strictly limits navigation to localhost:3000 (in dev) or internal files, preventing the app from being redirected
+         to malicious external sites.
+       * ✅ Permission Denial: The permissionRequestHandler denies all permission requests (camera, mic, etc.) by default.
 
-## 1. Core Functional Requirements
+   * IPC & Command Injection:
+       * ✅ Safe IPC Handlers: open-external validates protocols (http/https) before opening URLs, mitigating URI scheme injection.
+       * ✅ Git Command Execution: The GitService uses child_process.spawn with an array of arguments (e.g., ["log", "--all"]) rather than exec with a shell string. This
+         effectively prevents shell injection attacks where a filename might contain malicious commands.
 
-### 1.1 Repository Management
-- **Selection:** Users can open any local folder containing a valid `.git` directory via a native file picker or CLI argument.
-- **Recent Repositories:** The application maintains a list of the 10 most recently opened repositories for quick access.
-- **Real-time Watching:** Instant UI updates when the repository state changes (e.g., new commits, branch switching, or stashing) using file system listeners.
+   * Recommendations:
+       * External Link Hardening: While open-external checks protocols, you could further enhance security by maintaining a whitelist of allowed domains (e.g., github.com,
+         gitlab.com) if the application's scope permits.
 
-### 1.2 Interactive Commit Graph
-- **Visualization:** A D3.js powered SVG graph using a dynamic lane-assignment algorithm.
-- **Semantic Coloring:** Branch colors are assigned based on name patterns (e.g., `feature/*`, `hotfix/*`) or stable hash-based generation.
-- **Node Interaction:** Clicking a commit node opens a detailed view; hovering highlights the lineage (ancestors and descendants).
-- **Search:** Filter commits by message, author, hash, or tags (using `tag:` prefix).
+  Performance Analysis
+  There are significant performance bottlenecks, particularly in the renderer's handling of large datasets.
 
-### 1.3 Commit Details & Diffing
-- **Metadata:** Display author (with Gravatar integration), timestamp, full message, parent hashes, and associated branches/tags.
-- **File Tree:** A navigable tree view of all files modified in a specific commit.
-- **Diff Viewer:** High-performance viewing of changes per file, retrieved asynchronously from the Git CLI.
+   * Renderer Process (Critical):
+       * 🔴 No List Virtualization: The CommitHistory component renders a standard HTML <table> mapping directly over the commits array. While pagination (onLoadMore)
+         mitigates initial load times, loading many pages will bloat the DOM, causing significant UI lag and memory usage.
+       * Impact: Scrolling through long histories will become jerky; the app may freeze with thousands of DOM nodes.
+       * Recommendation: Implement "virtualization" (or "windowing") to only render the rows currently visible on screen. Since react-window or react-virtuoso are not in
+         package.json, they should be added.
 
-### 1.4 Repository Insights
-- **Contributor Stats:** Analysis of project activity per author, including commit counts, additions/deletions, and chronological activity heatmaps.
-- **Hotspots:** Identification of "Hot Files" based on modification frequency across the entire history.
-- **Stash Management:** Visual gallery and list of Git stashes.
+   * Main Process:
+       * ⚠️ Stdout Buffering: The GitService.run method buffers the entire standard output of git commands into a single string in memory (stdout += data).
+       * Impact: Operations returning huge datasets (e.g., a diff of a very large file that passes the "lines" check but has huge line lengths, or a massive log output)
+         could cause high memory spikes or crash the main process.
+       * Mitigation: The code currently limits getHotFiles and logs to 5000 entries, which is a good safeguard.
 
-## 2. Technical Architecture
+   * File Tree:
+       * ⚠️ Recursive Rendering: FileTree.tsx recursively renders components. For a flat directory with thousands of files, this will be slow.
 
-### 2.1 Stack
-- **Framework:** Electron (Main/Renderer/Preload architecture).
-- **Frontend:** React with TypeScript and Vite.
-- **Styling:** Tailwind CSS with a "Zed-inspired" UI palette (One Dark/Light).
-- **Graph Engine:** D3.js.
-- **Data Source:** Native Git CLI via Node.js `child_process`.
-
-### 2.2 Performance Standards
-- **Asynchronous Execution:** All Git operations must use non-blocking `spawn` calls to ensure the UI remains responsive (60fps) even during heavy I/O.
-- **Data Buffering:** Main process handles Git output streams to prevent memory overflows on large logs.
-
-### 2.3 Security (Hardened)
-- **Context Isolation:** Enabled to bridge the gap between renderer and Node.js securely.
-- **Content Security Policy (CSP):** Strict policy preventing unauthorized script execution and restricting data sources.
-- **Shell Injection Protection:** Git commands must use array-based arguments (no shell interpolation) to prevent malicious input execution.
-- **Permission Lockdown:** All unnecessary Electron permissions (Camera, Mic, Notifications) are denied by default.
-
-## 3. UI/UX Requirements
-- **Theme Support:** Native Light, Dark, and System modes.
-- **Typography:** High-legibility monospaced fonts for Git hashes and code paths.
-- **Scrollbar UI:** Modern, thin, floating scrollbars that adapt to the active theme.
-- **Persistence:** Application remembers window size, position, and recent repositories across sessions.
-
-## 4. Deployment & Distribution
-- **Build System:** `electron-builder` for multi-platform packaging.
-- **Git Requirement:** The app must verify Git installation on startup and provide a user-friendly error if missing.
-- **Assets:** Platform-specific icons (`.icns`, `.ico`) are required for professional OS integration.
+  Summary of Recommendations
+   1. Install `react-window` (or similar) and refactor CommitHistory.tsx to use a virtualized list.
+   2. Refactor `GitService` to handle streams for large data operations instead of buffering all output, or enforce stricter limits on buffer sizes.
+   3. Consider `antd` Table: Since antd is already installed, check if its Table component (with virtualization enabled if supported by the version) can replace the custom
+      HTML table for better performance.

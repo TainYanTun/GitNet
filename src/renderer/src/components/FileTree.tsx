@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { FileChange } from "@shared/types";
 
 interface FileTreeNode {
@@ -17,30 +17,33 @@ interface FileTreeProps {
 export const FileTree: React.FC<FileTreeProps> = ({ files, onFileClick }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(["root"]));
 
-  // Build the tree
-  const root: FileTreeNode = { name: "root", path: "", children: new Map(), isFolder: true };
-  
-  files.forEach(file => {
-    const parts = file.path.split("/");
-    let current = root;
-    let currentPath = "";
+  // Build the tree - memoized to prevent recalculation on every render
+  const root = useMemo(() => {
+    const rootNode: FileTreeNode = { name: "root", path: "", children: new Map(), isFolder: true };
+    
+    files.forEach(file => {
+      const parts = file.path.split("/");
+      let current = rootNode;
+      let currentPath = "";
 
-    parts.forEach((part, index) => {
-      currentPath = currentPath ? `${currentPath}/${part}` : part;
-      const isLast = index === parts.length - 1;
+      parts.forEach((part, index) => {
+        currentPath = currentPath ? `${currentPath}/${part}` : part;
+        const isLast = index === parts.length - 1;
 
-      if (!current.children.has(part)) {
-        current.children.set(part, {
-          name: part,
-          path: currentPath,
-          children: new Map(),
-          isFolder: !isLast,
-          change: isLast ? file : undefined
-        });
-      }
-      current = current.children.get(part)!;
+        if (!current.children.has(part)) {
+          current.children.set(part, {
+            name: part,
+            path: currentPath,
+            children: new Map(),
+            isFolder: !isLast,
+            change: isLast ? file : undefined
+          });
+        }
+        current = current.children.get(part)!;
+      });
     });
-  });
+    return rootNode;
+  }, [files]);
 
   const toggleFolder = (path: string) => {
     const newExpanded = new Set(expandedFolders);
