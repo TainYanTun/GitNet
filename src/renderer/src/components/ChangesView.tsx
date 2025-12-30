@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { WorkingTreeStatus, StatusFile } from "@shared/types";
 import { 
   CloudUploadOutlined, 
@@ -6,13 +6,21 @@ import {
   PlusOutlined, 
   MinusOutlined,
   UndoOutlined,
-  FileTextOutlined
+  FileTextOutlined,
+  FolderOpenOutlined,
+  CaretDownOutlined,
+  CaretRightOutlined,
+  CheckCircleOutlined
 } from "@ant-design/icons";
 import { DiffModal } from "./DiffModal";
 import { useToast } from "./ToastContext";
 
 interface ChangesViewProps {
   repoPath: string;
+}
+
+interface GroupedFiles {
+  [dir: string]: StatusFile[];
 }
 
 export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
@@ -22,9 +30,11 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   const [selectedFile, setSelectedFile] = useState<StatusFile | null>(null);
   const [diffContent, setDiffContent] = useState<string>("");
   const [isDiffVisible, setIsDiffVisible] = useState(false);
-  const [commitMessage, setCommitMessage] = useState("");
+  const [commitSummary, setCommitSummary] = useState("");
+  const [commitDescription, setCommitDescription] = useState("");
   const [isCommitting, setIsCommitting] = useState(false);
   const [isPushing, setIsPushing] = useState(false);
+  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(['.']));
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -48,6 +58,26 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       unsubscribeCommits();
     };
   }, [fetchStatus]);
+
+  const groupFiles = (files: StatusFile[]): GroupedFiles => {
+    return files.reduce((acc, file) => {
+      const parts = file.path.split('/');
+      const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '.';
+      if (!acc[dir]) acc[dir] = [];
+      acc[dir].push(file);
+      return acc;
+    }, {} as GroupedFiles);
+  };
+
+  const stagedGrouped = useMemo(() => groupFiles(status?.files.filter(f => f.staged) || []), [status]);
+  const unstagedGrouped = useMemo(() => groupFiles(status?.files.filter(f => !f.staged) || []), [status]);
+
+  const toggleDir = (dir: string) => {
+    const newExpanded = new Set(expandedDirs);
+    if (newExpanded.has(dir)) newExpanded.delete(dir);
+    else newExpanded.add(dir);
+    setExpandedDirs(newExpanded);
+  };
 
   const handleFileClick = async (file: StatusFile) => {
     setSelectedFile(file);
@@ -103,27 +133,26 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
 
   const handleDiscard = async (file: StatusFile, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`Are you sure you want to discard changes to ${file.path}? This cannot be undone.`)) {
-      return;
-    }
+    if (!window.confirm(`Discard changes to ${file.path}?`)) return;
     try {
       await window.gitcanopyAPI.discardChanges(repoPath, file.path);
       fetchStatus();
-      showToast(`Discarded changes to ${file.path.split('/').pop()}`, "info");
     } catch (err) {
       showToast("Failed to discard changes", "error");
     }
   };
 
   const handleCommit = async () => {
-    if (!commitMessage.trim()) {
-      showToast("Enter a commit message", "info");
-      return;
-    }
+    if (!commitSummary.trim()) return;
     setIsCommitting(true);
     try {
-      await window.gitcanopyAPI.commit(repoPath, commitMessage);
-      setCommitMessage("");
+      const fullMessage = commitDescription.trim() 
+        ? `${commitSummary.trim()}\n\n${commitDescription.trim()}`
+        : commitSummary.trim();
+
+      await window.gitcanopyAPI.commit(repoPath, fullMessage);
+      setCommitSummary("");
+      setCommitDescription("");
       showToast("Committed", "success");
       fetchStatus();
     } catch (err) {
@@ -149,164 +178,147 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   if (loading && !status) {
     return (
       <div className="flex items-center justify-center h-full bg-zed-bg dark:bg-zed-dark-bg">
-        <div className="text-xs font-mono text-zed-text dark:text-zed-dark-text animate-pulse uppercase tracking-[0.2em]">
-          Scanning Working Tree
-        </div>
+        <div className="text-[10px] font-mono animate-pulse uppercase tracking-widest opacity-50">Indexing...</div>
       </div>
     );
   }
 
-  const stagedFiles = status?.files.filter(f => f.staged) || [];
-  const unstagedFiles = status?.files.filter(f => !f.staged) || [];
+  const hasStaged = Object.keys(stagedGrouped).length > 0;
+  const hasUnstaged = Object.keys(unstagedGrouped).length > 0;
 
   return (
-    <div className="h-full flex flex-col bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text font-sans selection:bg-zed-accent/30 dark:selection:bg-zed-dark-accent/30">
-      {/* High-contrast Header */}
-      <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xs font-black uppercase tracking-[0.2em] text-zed-text dark:text-zed-dark-text">
-            Changes
-          </h1>
+    <div className="h-full flex flex-col bg-[#fcfcfc] dark:bg-[#181818] text-zed-text dark:text-zed-dark-text font-sans selection:bg-zed-accent/20">
+      {/* Slim Header */}
+      <div className="h-11 flex-shrink-0 flex items-center justify-between px-4 border-b border-zed-border dark:border-zed-dark-border bg-[#f6f6f6] dark:bg-[#1c1c1c]">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">Source Control</span>
           {status && (status.ahead > 0 || status.behind > 0) && (
-            <div className="flex gap-2">
-              {status.ahead > 0 && (
-                <span className="text-[10px] font-mono font-bold text-white bg-zed-accent dark:bg-zed-dark-accent px-2 py-0.5 rounded-sm">
-                  ↑{status.ahead}
-                </span>
-              )}
-              {status.behind > 0 && (
-                <span className="text-[10px] font-mono font-bold text-white bg-commit-fix px-2 py-0.5 rounded-sm">
-                  ↓{status.behind}
-                </span>
-              )}
+            <div className="flex gap-1">
+              {status.ahead > 0 && <span className="text-[9px] bg-zed-accent px-1.5 rounded-sm text-white">↑{status.ahead}</span>}
+              {status.behind > 0 && <span className="text-[9px] bg-commit-fix px-1.5 rounded-sm text-white">↓{status.behind}</span>}
             </div>
           )}
         </div>
-
         {status && status.ahead > 0 && (
-          <button
-            onClick={handlePush}
-            disabled={isPushing}
-            className="flex items-center gap-2 px-4 py-1.5 text-[10px] font-black uppercase tracking-widest bg-zed-accent dark:bg-zed-dark-accent text-white hover:opacity-90 transition-all disabled:opacity-30"
-          >
-            <CloudUploadOutlined className={isPushing ? "animate-bounce" : ""} />
-            {isPushing ? "Pushing" : "Push to Remote"}
+          <button onClick={handlePush} disabled={isPushing} className="h-6 px-3 text-[9px] font-bold uppercase tracking-wider bg-zed-accent text-white rounded-sm hover:opacity-90 disabled:opacity-30 transition-all flex items-center gap-2">
+            <CloudUploadOutlined /> {isPushing ? "Pushing..." : "Sync Changes"}
           </button>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="max-w-4xl mx-auto py-8 px-6 space-y-12">
-          {/* STAGED SECTION */}
-          <section>
-            <div className="flex items-center justify-between mb-4 border-b border-zed-border dark:border-zed-dark-border pb-2">
-              <h2 className="text-[11px] font-black uppercase tracking-[0.15em] text-green-600 dark:text-green-400 flex items-center gap-2">
-                <PlusOutlined className="text-[9px]" /> Staged ({stagedFiles.length})
-              </h2>
-              {stagedFiles.length > 0 && (
-                <button 
-                  onClick={handleUnstageAll}
-                  className="text-[9px] font-bold uppercase tracking-widest text-zed-muted hover:text-zed-text transition-colors"
-                >
-                  [ Unstage_All ]
-                </button>
-              )}
-            </div>
-            
-            {stagedFiles.length > 0 ? (
-              <div className="space-y-px">
-                {stagedFiles.map(file => (
-                  <ZedFileRow 
-                    key={file.path} 
-                    file={file} 
-                    onClick={() => handleFileClick(file)} 
-                    onAction={(e) => handleUnstage(file, e)}
-                    onDiscard={(e) => handleDiscard(file, e)}
-                    actionIcon={<MinusOutlined />}
-                    isStaged
-                  />
-                ))}
-              </div>
+      {/* Split Pane Layout */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Unstaged Column */}
+        <div className="flex-1 flex flex-col border-r border-zed-border dark:border-zed-dark-border">
+          <div className="h-9 flex items-center justify-between px-3 bg-[#f0f0f0] dark:bg-[#202020] border-b border-zed-border dark:border-zed-dark-border">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest opacity-80 flex items-center gap-2">
+              <FileTextOutlined className="text-[8px]" /> Changes
+            </h2>
+            {hasUnstaged && (
+              <button onClick={handleStageAll} className="text-[9px] font-bold text-zed-accent hover:underline">Stage All</button>
+            )}
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+            {hasUnstaged ? (
+              Object.entries(unstagedGrouped).sort().map(([dir, files]) => (
+                <DirectoryGroup 
+                  key={dir} dir={dir} files={files} 
+                  isExpanded={expandedDirs.has(dir)}
+                  onToggle={() => toggleDir(dir)}
+                  onFileClick={handleFileClick}
+                  onAction={handleStage}
+                  onDiscard={handleDiscard}
+                  actionIcon={<PlusOutlined />}
+                  actionTitle="Stage"
+                />
+              ))
             ) : (
-              <div className="py-6 px-2 text-[11px] font-mono text-zed-muted dark:text-zed-dark-muted italic border border-dashed border-zed-border/40 dark:border-zed-dark-border/40 rounded-sm text-center">
-                No files staged for commit.
+              <div className="h-full flex flex-col items-center justify-center opacity-30">
+                <CheckCircleOutlined className="text-2xl mb-2" />
+                <span className="text-[10px] uppercase font-bold tracking-widest">Tree Clean</span>
               </div>
             )}
-          </section>
+          </div>
+        </div>
 
-          {/* UNSTAGED SECTION */}
-          <section>
-            <div className="flex items-center justify-between mb-4 border-b border-zed-border dark:border-zed-dark-border pb-2">
-              <h2 className="text-[11px] font-black uppercase tracking-[0.15em] text-zed-text dark:text-zed-dark-text flex items-center gap-2">
-                <FileTextOutlined className="text-[9px]" /> Working Directory ({unstagedFiles.length})
-              </h2>
-              {unstagedFiles.length > 0 && (
-                <button 
-                  onClick={handleStageAll}
-                  className="text-[9px] font-bold uppercase tracking-widest text-zed-muted hover:text-zed-text transition-colors"
-                >
-                  [ Stage_All ]
-                </button>
-              )}
-            </div>
-
-            {unstagedFiles.length > 0 ? (
-              <div className="space-y-px">
-                {unstagedFiles.map(file => (
-                  <ZedFileRow 
-                    key={file.path} 
-                    file={file} 
-                    onClick={() => handleFileClick(file)} 
-                    onAction={(e) => handleStage(file, e)}
-                    onDiscard={(e) => handleDiscard(file, e)}
-                    actionIcon={<PlusOutlined />}
-                  />
-                ))}
-              </div>
+        {/* Staged Column */}
+        <div className="flex-1 flex flex-col bg-[#fafafa] dark:bg-[#1a1a1a]">
+          <div className="h-9 flex items-center justify-between px-3 bg-[#f0f0f0] dark:bg-[#202020] border-b border-zed-border dark:border-zed-dark-border">
+            <h2 className="text-[10px] font-bold uppercase tracking-widest text-green-600 dark:text-green-500 flex items-center gap-2">
+              <PlusOutlined className="text-[8px]" /> Staged
+            </h2>
+            {hasStaged && (
+              <button onClick={handleUnstageAll} className="text-[9px] font-bold opacity-60 hover:opacity-100 transition-opacity">Unstage All</button>
+            )}
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+            {hasStaged ? (
+              Object.entries(stagedGrouped).sort().map(([dir, files]) => (
+                <DirectoryGroup 
+                  key={dir} dir={dir} files={files} 
+                  isExpanded={expandedDirs.has(dir)}
+                  onToggle={() => toggleDir(dir)}
+                  onFileClick={handleFileClick}
+                  onAction={handleUnstage}
+                  onDiscard={handleDiscard}
+                  actionIcon={<MinusOutlined />}
+                  actionTitle="Unstage"
+                  isStaged
+                />
+              ))
             ) : (
-              <div className="py-6 px-2 text-[11px] font-mono text-zed-muted dark:text-zed-dark-muted italic border border-dashed border-zed-border/40 dark:border-zed-dark-border/40 rounded-sm text-center">
-                Your working tree is clean.
+              <div className="h-full flex flex-col items-center justify-center opacity-20">
+                <span className="text-[10px] uppercase font-bold tracking-widest italic">Nothing Staged</span>
               </div>
             )}
-          </section>
+          </div>
         </div>
       </div>
 
-      {/* High-Contrast Commit Footer */}
-      <div className="shrink-0 p-6 bg-zed-surface dark:bg-zed-dark-surface border-t border-zed-border dark:border-zed-dark-border shadow-2xl">
-        <div className="max-w-4xl mx-auto flex items-end gap-6">
-          <div className="flex-1">
-            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-zed-text dark:text-zed-dark-text mb-3">
-              Commit Message
-            </label>
+      {/* Commit Bar */}
+      <div className="p-4 bg-[#f6f6f6] dark:bg-[#1c1c1c] border-t border-zed-border dark:border-zed-dark-border">
+        <div className="max-w-5xl mx-auto flex gap-4 items-start">
+          <div className="flex-1 flex flex-col gap-2">
+            <input
+              type="text"
+              placeholder="Summary (required)"
+              value={commitSummary}
+              onChange={(e) => setCommitSummary(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  handleCommit();
+                }
+              }}
+              className="w-full bg-white dark:bg-[#121212] border border-zed-border dark:border-zed-dark-border px-3 py-2 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text rounded shadow-sm"
+            />
             <textarea
-              placeholder="Explain your changes..."
-              value={commitMessage}
-              onChange={(e) => setCommitMessage(e.target.value)}
-              className="w-full bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border p-3 text-sm focus:outline-none focus:border-zed-accent dark:focus:border-zed-dark-accent placeholder:text-zed-muted/50 dark:placeholder:text-zed-dark-muted/50 text-zed-text dark:text-zed-dark-text resize-none font-sans rounded-sm shadow-inner"
+              placeholder="Description (optional context...)"
+              value={commitDescription}
+              onChange={(e) => setCommitDescription(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                  handleCommit();
+                }
+              }}
+              className="w-full bg-white dark:bg-[#121212] border border-zed-border dark:border-zed-dark-border p-3 text-[11px] focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text resize-none font-sans rounded shadow-sm"
               rows={2}
             />
+            <div className="text-[9px] opacity-40 font-mono flex justify-between px-1">
+              <span className={commitSummary.length > 50 ? "text-red-500 font-bold" : ""}>
+                {commitSummary.length}/50
+              </span>
+              <span>⌘ + Enter to commit</span>
+            </div>
           </div>
           <button
             onClick={handleCommit}
-            disabled={isCommitting || stagedFiles.length === 0}
-            className={`flex items-center gap-3 px-8 py-3 rounded-sm font-black uppercase tracking-[0.2em] text-[11px] transition-all duration-200 shadow-sm ${
-              isCommitting || stagedFiles.length === 0
-                ? "bg-zed-element dark:bg-zed-dark-element text-zed-muted dark:text-zed-dark-muted cursor-not-allowed border border-zed-border dark:border-zed-dark-border"
-                : "bg-zed-text dark:bg-zed-dark-text text-zed-bg dark:text-zed-dark-bg hover:shadow-md active:scale-[0.98] border border-transparent"
+            disabled={isCommitting || !hasStaged || !commitSummary.trim()}
+            className={`flex items-center gap-2 px-8 py-4 rounded font-bold uppercase tracking-widest text-[10px] transition-all ${ isCommitting || !hasStaged || !commitSummary.trim()
+                ? "bg-zed-element/50 dark:bg-zed-dark-element/50 text-zed-muted opacity-50 cursor-not-allowed"
+                : "bg-zed-text dark:bg-white text-zed-bg dark:text-black hover:opacity-90 active:scale-95 shadow-lg h-[84px]"
             }`}
           >
-            {isCommitting ? (
-              <span className="flex items-center gap-2">
-                <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                <span>Processing</span>
-              </span>
-            ) : (
-              <>
-                <span>Commit</span>
-                <SendOutlined className="text-[10px]" />
-              </>
-            )}
+            {isCommitting ? "..." : <>Commit <SendOutlined className="text-[9px]" /></>}
           </button>
         </div>
       </div>
@@ -323,58 +335,96 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   );
 };
 
-const ZedFileRow: React.FC<{ 
+const DirectoryGroup: React.FC <{
+  dir: string;
+  files: StatusFile[];
+  isExpanded: boolean;
+  onToggle: () => void;
+  onFileClick: (f: StatusFile) => void;
+  onAction: (f: StatusFile, e: React.MouseEvent) => void;
+  onDiscard: (f: StatusFile, e: React.MouseEvent) => void;
+  actionIcon: React.ReactNode;
+  actionTitle: string;
+  isStaged?: boolean;
+}> = ({ dir, files, isExpanded, onToggle, onFileClick, onAction, onDiscard, actionIcon, actionTitle, isStaged }) => (
+  <div className="mb-1">
+    <div 
+      onClick={onToggle}
+      className="flex items-center gap-2 py-1 px-2 hover:bg-zed-element/40 dark:hover:bg-zed-dark-element/40 cursor-pointer rounded-sm group transition-colors"
+    >
+      <span className="text-zed-muted opacity-60 text-[10px]">
+        {isExpanded ? <CaretDownOutlined /> : <CaretRightOutlined />}
+      </span>
+      <FolderOpenOutlined className="text-[11px] text-zed-accent/70" />
+      <span className="text-[11px] font-bold opacity-70 truncate flex-1">{dir}</span>
+      <span className="text-[9px] font-mono opacity-40 px-1.5 bg-zed-element dark:bg-zed-dark-element rounded">{files.length}</span>
+    </div>
+    
+    {isExpanded && (
+      <div className="ml-4 mt-0.5 space-y-0.5 border-l border-zed-border dark:border-zed-dark-border pl-1">
+        {files.map(file => (
+          <FileRow 
+            key={file.path} 
+            file={file} 
+            onClick={() => onFileClick(file)}
+            onAction={(e) => onAction(file, e)}
+            onDiscard={(e) => onDiscard(file, e)}
+            actionIcon={actionIcon}
+            actionTitle={actionTitle}
+            isStaged={isStaged}
+          />
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const FileRow: React.FC <{
   file: StatusFile; 
   onClick: () => void;
   onAction: (e: React.MouseEvent) => void;
   onDiscard: (e: React.MouseEvent) => void;
   actionIcon: React.ReactNode;
+  actionTitle: string;
   isStaged?: boolean;
-}> = ({ file, onClick, onAction, onDiscard, actionIcon, isStaged }) => {
+}> = ({ file, onClick, onAction, onDiscard, actionIcon, actionTitle, isStaged }) => {
   const statusConfig = {
-    added: { char: "A", color: "text-green-600 dark:text-green-400" },
-    modified: { char: "M", color: "text-yellow-600 dark:text-yellow-400" },
-    deleted: { char: "D", color: "text-red-600 dark:text-red-400" },
-    renamed: { char: "R", color: "text-blue-600 dark:text-blue-400" },
-    untracked: { char: "?", color: "text-zed-text dark:text-zed-dark-text opacity-60" },
-    conflicted: { char: "U", color: "text-commit-fix animate-pulse font-bold" }
+    added: { char: "A", color: "text-green-500" },
+    modified: { char: "M", color: "text-yellow-500" },
+    deleted: { char: "D", color: "text-red-500" },
+    renamed: { char: "R", color: "text-blue-500" },
+    untracked: { char: "U", color: "text-zed-muted" },
+    conflicted: { char: "!", color: "text-red-600 font-bold animate-pulse" }
   };
 
   const config = statusConfig[file.status];
+  const fileName = file.path.split('/').pop();
 
   return (
     <div 
       onClick={onClick}
-      className="group flex items-center gap-4 py-2.5 px-3 hover:bg-zed-element dark:hover:bg-zed-dark-element transition-all cursor-pointer border-b border-zed-border/10 dark:border-zed-dark-border/10 last:border-0"
+      className="group flex items-center gap-3 py-1.5 px-2 hover:bg-zed-element/60 dark:hover:bg-zed-dark-element/60 rounded cursor-pointer transition-all border border-transparent hover:border-zed-border/30 dark:hover:border-zed-dark-border/30"
     >
-      <div className={`w-5 text-center text-[11px] font-mono font-black ${config.color}`}>
-        {config.char}
-      </div>
+      <span className={`w-4 text-[10px] font-mono font-bold text-center ${config.color}`}>{config.char}</span>
+      <span className="text-xs font-medium text-zed-text dark:text-zed-dark-text flex-1 truncate">{fileName}</span>
       
-      <div className="flex-1 flex items-baseline gap-4 min-w-0">
-        <span className="text-sm font-bold text-zed-text dark:text-zed-dark-text truncate">
-          {file.path.split('/').pop()}
-        </span>
-        <span className="text-[10px] font-mono text-zed-text dark:text-zed-dark-text opacity-50 truncate flex-1">
-          {file.path.split('/').slice(0, -1).join('/') || './'}
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         <button 
-          className="p-2 text-xs bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border text-zed-text dark:text-zed-dark-text hover:text-zed-accent dark:hover:text-zed-dark-accent hover:border-zed-accent dark:hover:border-zed-dark-accent rounded-sm transition-all shadow-sm group-hover:opacity-100 opacity-0"
           onClick={onAction}
-          title={isStaged ? "Unstage" : "Stage"}
+          className="p-1 text-[10px] hover:text-zed-accent transition-colors"
+          title={actionTitle}
         >
           {actionIcon}
         </button>
-        <button 
-          className="p-2 text-xs bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border text-zed-text dark:text-zed-dark-text hover:text-commit-fix hover:border-commit-fix rounded-sm transition-all shadow-sm group-hover:opacity-100 opacity-0"
-          title="Discard"
-          onClick={onDiscard}
-        >
-          <UndoOutlined />
-        </button>
+        {!isStaged && (
+          <button 
+            onClick={onDiscard}
+            className="p-1 text-[10px] hover:text-red-500 transition-colors"
+            title="Discard"
+          >
+            <UndoOutlined />
+          </button>
+        )}
       </div>
     </div>
   );
