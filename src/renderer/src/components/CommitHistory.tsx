@@ -71,15 +71,16 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
     setSearch(filters.query || "");
   }, [filters.query]);
 
-  const Row = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
+  const Row = useCallback(({ index, style, ariaAttributes }: { index: number; style: React.CSSProperties; ariaAttributes: { "aria-posinset": number; "aria-setsize": number; role: "listitem"; } }): React.ReactElement => {
     const commit = commits[index];
-    if (!commit) return null;
+    if (!commit) return <div style={style} />;
 
     const isSelected = selectedCommitHash === commit.hash;
 
     return (
       <div
         style={style}
+        {...ariaAttributes}
         onClick={() => onCommitSelect(commit)}
         className={`flex items-center hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50 cursor-pointer transition-colors group border-b border-zed-border/10 dark:border-zed-dark-border/10 ${
           isSelected ? "bg-zed-element dark:bg-zed-dark-element" : ""
@@ -120,11 +121,6 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
     );
   }, [commits, selectedCommitHash, onCommitSelect]);
 
-  const handleItemsRendered = useCallback(({ overscanStopIndex }: { overscanStopIndex: number }) => {
-    if (hasMore && onLoadMore && overscanStopIndex >= commits.length - 5) {
-      onLoadMore();
-    }
-  }, [hasMore, onLoadMore, commits.length]);
 
   return (
     <div className="flex flex-col h-full bg-zed-surface dark:bg-zed-dark-surface animate-in fade-in slide-in-from-bottom-4">
@@ -301,20 +297,23 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
 
           {/* Virtualized List */}
           <div className="flex-1 min-h-0">
-            <AutoSizer>
-              {({ height, width }) => (
+            <AutoSizer
+              Child={({ height, width }) => (
                 <List
-                  height={height}
-                  itemCount={commits.length}
-                  itemSize={48}
-                  width={width}
-                  onItemsRendered={handleItemsRendered}
+                  style={{ height: height || 0, width: width || 0 }}
+                  rowCount={commits.length}
+                  rowHeight={48}
+                  onRowsRendered={({ stopIndex }) => {
+                    if (hasMore && onLoadMore && stopIndex >= commits.length - 5) {
+                      onLoadMore();
+                    }
+                  }}
+                  rowComponent={Row}
+                  rowProps={{}}
                   className="custom-scrollbar"
-                >
-                  {Row}
-                </List>
+                />
               )}
-            </AutoSizer>
+            />
             {commits.length === 0 && (
               <div className="p-12 text-center text-zed-muted italic font-mono text-sm opacity-50 bg-zed-bg dark:bg-zed-dark-bg h-full flex items-center justify-center">
                 No commits match your criteria.

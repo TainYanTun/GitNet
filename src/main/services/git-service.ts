@@ -32,8 +32,17 @@ export class GitService {
       const gitProcess = spawn("git", args, { cwd });
       let stdout = "";
       let stderr = "";
+      const MAX_BUFFER_SIZE = 10 * 1024 * 1024; // 10MB limit
 
-      gitProcess.stdout.on("data", (data) => (stdout += data));
+      gitProcess.stdout.on("data", (data) => {
+        if (stdout.length + data.length > MAX_BUFFER_SIZE) {
+          gitProcess.kill();
+          reject(new Error(`Git command output exceeded maximum buffer size of ${MAX_BUFFER_SIZE} bytes`));
+          return;
+        }
+        stdout += data;
+      });
+
       gitProcess.stderr.on("data", (data) => (stderr += data));
 
       gitProcess.on("close", (code) => {
@@ -43,7 +52,11 @@ export class GitService {
         if (code === 0) {
           resolve(stdout);
         } else {
-          reject(new Error(stderr || `Git command failed with code ${code}`));
+          // If the process was killed due to buffer size, the reject is already handled.
+          // Only reject here if it wasn't already rejected.
+          if (stdout.length <= MAX_BUFFER_SIZE) {
+             reject(new Error(stderr || `Git command failed with code ${code}`));
+          }
         }
       });
 
