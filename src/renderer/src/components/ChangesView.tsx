@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { WorkingTreeStatus, StatusFile } from "@shared/types";
-import { 
-  CloudUploadOutlined, 
-  SendOutlined, 
-  PlusOutlined, 
+import {
+  CloudUploadOutlined,
+  SendOutlined,
+  PlusOutlined,
   MinusOutlined,
   UndoOutlined,
   FileTextOutlined,
   FolderOpenOutlined,
   CaretDownOutlined,
   CaretRightOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import { DiffModal } from "./DiffModal";
 import { useToast } from "./ToastContext";
@@ -34,7 +34,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   const [commitDescription, setCommitDescription] = useState("");
   const [isCommitting, setIsCommitting] = useState(false);
   const [isPushing, setIsPushing] = useState(false);
-  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(['.']));
+  const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set(["."]));
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -49,9 +49,11 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
 
   useEffect(() => {
     fetchStatus();
-    const unsubscribeRepo = window.gitcanopyAPI.onRepositoryChanged(fetchStatus);
+    const unsubscribeRepo =
+      window.gitcanopyAPI.onRepositoryChanged(fetchStatus);
     const unsubscribeHead = window.gitcanopyAPI.onHeadChanged(fetchStatus);
-    const unsubscribeCommits = window.gitcanopyAPI.onCommitsUpdated(fetchStatus);
+    const unsubscribeCommits =
+      window.gitcanopyAPI.onCommitsUpdated(fetchStatus);
     return () => {
       unsubscribeRepo();
       unsubscribeHead();
@@ -61,16 +63,22 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
 
   const groupFiles = (files: StatusFile[]): GroupedFiles => {
     return files.reduce((acc, file) => {
-      const parts = file.path.split('/');
-      const dir = parts.length > 1 ? parts.slice(0, -1).join('/') : '.';
+      const parts = file.path.split("/");
+      const dir = parts.length > 1 ? parts.slice(0, -1).join("/") : ".";
       if (!acc[dir]) acc[dir] = [];
       acc[dir].push(file);
       return acc;
     }, {} as GroupedFiles);
   };
 
-  const stagedGrouped = useMemo(() => groupFiles(status?.files.filter(f => f.staged) || []), [status]);
-  const unstagedGrouped = useMemo(() => groupFiles(status?.files.filter(f => !f.staged) || []), [status]);
+  const stagedGrouped = useMemo(
+    () => groupFiles(status?.files.filter((f) => f.staged) || []),
+    [status],
+  );
+  const unstagedGrouped = useMemo(
+    () => groupFiles(status?.files.filter((f) => !f.staged) || []),
+    [status],
+  );
 
   const toggleDir = (dir: string) => {
     const newExpanded = new Set(expandedDirs);
@@ -84,7 +92,11 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
     setIsDiffVisible(true);
     setDiffContent("Loading diff...");
     try {
-      const diff = await window.gitcanopyAPI.getDiff(repoPath, file.staged ? "HEAD" : "", file.path);
+      const diff = await window.gitcanopyAPI.getDiff(
+        repoPath,
+        file.staged ? "HEAD" : "",
+        file.path,
+      );
       setDiffContent(diff);
     } catch (err) {
       setDiffContent("Failed to load diff.");
@@ -97,7 +109,10 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       await window.gitcanopyAPI.stageFile(repoPath, file.path);
       fetchStatus();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Failed to stage file", "error");
+      showToast(
+        err instanceof Error ? err.message : "Failed to stage file",
+        "error",
+      );
     }
   };
 
@@ -107,7 +122,10 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       await window.gitcanopyAPI.unstageFile(repoPath, file.path);
       fetchStatus();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "Failed to unstage file", "error");
+      showToast(
+        err instanceof Error ? err.message : "Failed to unstage file",
+        "error",
+      );
     }
   };
 
@@ -146,7 +164,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
     if (!commitSummary.trim()) return;
     setIsCommitting(true);
     try {
-      const fullMessage = commitDescription.trim() 
+      const fullMessage = commitDescription.trim()
         ? `${commitSummary.trim()}\n\n${commitDescription.trim()}`
         : commitSummary.trim();
 
@@ -178,7 +196,9 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   if (loading && !status) {
     return (
       <div className="flex items-center justify-center h-full bg-zed-bg dark:bg-zed-dark-bg">
-        <div className="text-[10px] font-mono animate-pulse uppercase tracking-widest opacity-50">Indexing...</div>
+        <div className="text-[10px] font-mono animate-pulse uppercase tracking-widest opacity-50">
+          Indexing...
+        </div>
       </div>
     );
   }
@@ -191,16 +211,30 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       {/* Slim Header */}
       <div className="h-11 flex-shrink-0 flex items-center justify-between px-4 border-b border-zed-border dark:border-zed-dark-border bg-[#f6f6f6] dark:bg-[#1c1c1c]">
         <div className="flex items-center gap-3">
-          <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">Source Control</span>
+          <span className="text-[10px] font-bold uppercase tracking-wider opacity-60">
+            Source Control
+          </span>
           {status && (status.ahead > 0 || status.behind > 0) && (
             <div className="flex gap-1">
-              {status.ahead > 0 && <span className="text-[9px] bg-zed-accent px-1.5 rounded-sm text-white">↑{status.ahead}</span>}
-              {status.behind > 0 && <span className="text-[9px] bg-commit-fix px-1.5 rounded-sm text-white">↓{status.behind}</span>}
+              {status.ahead > 0 && (
+                <span className="text-[9px] bg-zed-accent px-1.5 rounded-sm text-white">
+                  ↑{status.ahead}
+                </span>
+              )}
+              {status.behind > 0 && (
+                <span className="text-[9px] bg-commit-fix px-1.5 rounded-sm text-white">
+                  ↓{status.behind}
+                </span>
+              )}
             </div>
           )}
         </div>
         {status && status.ahead > 0 && (
-          <button onClick={handlePush} disabled={isPushing} className="h-6 px-3 text-[9px] font-bold uppercase tracking-wider bg-zed-accent text-white rounded-sm hover:opacity-90 disabled:opacity-30 transition-all flex items-center gap-2">
+          <button
+            onClick={handlePush}
+            disabled={isPushing}
+            className="h-6 px-3 text-[9px] font-bold uppercase tracking-wider bg-zed-accent text-white rounded-sm hover:opacity-90 disabled:opacity-30 transition-all flex items-center gap-2"
+          >
             <CloudUploadOutlined /> {isPushing ? "Pushing..." : "Sync Changes"}
           </button>
         )}
@@ -215,27 +249,38 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
               <FileTextOutlined className="text-[8px]" /> Changes
             </h2>
             {hasUnstaged && (
-              <button onClick={handleStageAll} className="text-[9px] font-bold text-zed-accent hover:underline">Stage All</button>
+              <button
+                onClick={handleStageAll}
+                className="text-[9px] font-bold text-zed-accent hover:underline"
+              >
+                Stage All
+              </button>
             )}
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
             {hasUnstaged ? (
-              Object.entries(unstagedGrouped).sort().map(([dir, files]) => (
-                <DirectoryGroup 
-                  key={dir} dir={dir} files={files} 
-                  isExpanded={expandedDirs.has(dir)}
-                  onToggle={() => toggleDir(dir)}
-                  onFileClick={handleFileClick}
-                  onAction={handleStage}
-                  onDiscard={handleDiscard}
-                  actionIcon={<PlusOutlined />}
-                  actionTitle="Stage"
-                />
-              ))
+              Object.entries(unstagedGrouped)
+                .sort()
+                .map(([dir, files]) => (
+                  <DirectoryGroup
+                    key={dir}
+                    dir={dir}
+                    files={files}
+                    isExpanded={expandedDirs.has(dir)}
+                    onToggle={() => toggleDir(dir)}
+                    onFileClick={handleFileClick}
+                    onAction={handleStage}
+                    onDiscard={handleDiscard}
+                    actionIcon={<PlusOutlined />}
+                    actionTitle="Stage"
+                  />
+                ))
             ) : (
               <div className="h-full flex flex-col items-center justify-center opacity-30">
                 <CheckCircleOutlined className="text-2xl mb-2" />
-                <span className="text-[10px] uppercase font-bold tracking-widest">Tree Clean</span>
+                <span className="text-[10px] uppercase font-bold tracking-widest">
+                  Tree Clean
+                </span>
               </div>
             )}
           </div>
@@ -248,55 +293,85 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
               <PlusOutlined className="text-[8px]" /> Staged
             </h2>
             {hasStaged && (
-              <button onClick={handleUnstageAll} className="text-[9px] font-bold opacity-60 hover:opacity-100 transition-opacity">Unstage All</button>
+              <button
+                onClick={handleUnstageAll}
+                className="text-[9px] font-bold opacity-60 hover:opacity-100 transition-opacity"
+              >
+                Unstage All
+              </button>
             )}
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
             {hasStaged ? (
-              Object.entries(stagedGrouped).sort().map(([dir, files]) => (
-                <DirectoryGroup 
-                  key={dir} dir={dir} files={files} 
-                  isExpanded={expandedDirs.has(dir)}
-                  onToggle={() => toggleDir(dir)}
-                  onFileClick={handleFileClick}
-                  onAction={handleUnstage}
-                  onDiscard={handleDiscard}
-                  actionIcon={<MinusOutlined />}
-                  actionTitle="Unstage"
-                  isStaged
-                />
-              ))
+              Object.entries(stagedGrouped)
+                .sort()
+                .map(([dir, files]) => (
+                  <DirectoryGroup
+                    key={dir}
+                    dir={dir}
+                    files={files}
+                    isExpanded={expandedDirs.has(dir)}
+                    onToggle={() => toggleDir(dir)}
+                    onFileClick={handleFileClick}
+                    onAction={handleUnstage}
+                    onDiscard={handleDiscard}
+                    actionIcon={<MinusOutlined />}
+                    actionTitle="Unstage"
+                    isStaged
+                  />
+                ))
             ) : (
               <div className="h-full flex flex-col items-center justify-center opacity-20">
-                <span className="text-[10px] uppercase font-bold tracking-widest italic">Nothing Staged</span>
+                <span className="text-[10px] uppercase font-bold tracking-widest italic">
+                  Nothing Staged
+                </span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Commit Bar */}
+      {/* Commit Bar (inline: Summary + Commit) */}
       <div className="p-4 bg-[#f6f6f6] dark:bg-[#1c1c1c] border-t border-zed-border dark:border-zed-dark-border">
         <div className="max-w-5xl mx-auto flex gap-4 items-start">
           <div className="flex-1 flex flex-col gap-2">
-            <input
-              type="text"
-              placeholder="Summary (required)"
-              value={commitSummary}
-              onChange={(e) => setCommitSummary(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                  handleCommit();
-                }
-              }}
-              className="w-full bg-white dark:bg-[#121212] border border-zed-border dark:border-zed-dark-border px-3 py-2 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text rounded shadow-sm"
-            />
+            <div className="flex items-center gap-2 w-full">
+              <input
+                type="text"
+                placeholder="Summary (required)"
+                value={commitSummary}
+                onChange={(e) => setCommitSummary(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                    handleCommit();
+                  }
+                }}
+                className="flex-1 bg-white dark:bg-[#121212] border border-zed-border dark:border-zed-dark-border px-3 py-2 text-xs font-bold focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text rounded shadow-sm"
+              />
+              <button
+                onClick={handleCommit}
+                disabled={isCommitting || !hasStaged || !commitSummary.trim()}
+                className={`h-8 px-4 py-2 rounded font-bold uppercase tracking-widest text-[10px] transition-all ${
+                  isCommitting || !hasStaged || !commitSummary.trim()
+                    ? "bg-zed-element/50 dark:bg-zed-dark-element/50 text-zed-muted opacity-50 cursor-not-allowed"
+                    : "bg-zed-text dark:bg-white text-zed-bg dark:text-black hover:opacity-90 active:scale-95 shadow-lg"
+                }`}
+              >
+                {isCommitting ? (
+                  "..."
+                ) : (
+                  <>
+                    Commit <SendOutlined className="text-[9px]" />
+                  </>
+                )}
+              </button>
+            </div>
             <textarea
               placeholder="Description (optional context...)"
               value={commitDescription}
               onChange={(e) => setCommitDescription(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                   handleCommit();
                 }
               }}
@@ -304,27 +379,21 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
               rows={2}
             />
             <div className="text-[9px] opacity-40 font-mono flex justify-between px-1">
-              <span className={commitSummary.length > 50 ? "text-red-500 font-bold" : ""}>
+              <span
+                className={
+                  commitSummary.length > 50 ? "text-red-500 font-bold" : ""
+                }
+              >
                 {commitSummary.length}/50
               </span>
-              <span>⌘ + Enter to commit</span>
+              <span>⌘ + Enter to commit</span>F
             </div>
           </div>
-          <button
-            onClick={handleCommit}
-            disabled={isCommitting || !hasStaged || !commitSummary.trim()}
-            className={`flex items-center gap-2 px-8 py-4 rounded font-bold uppercase tracking-widest text-[10px] transition-all ${ isCommitting || !hasStaged || !commitSummary.trim()
-                ? "bg-zed-element/50 dark:bg-zed-dark-element/50 text-zed-muted opacity-50 cursor-not-allowed"
-                : "bg-zed-text dark:bg-white text-zed-bg dark:text-black hover:opacity-90 active:scale-95 shadow-lg h-[84px]"
-            }`}
-          >
-            {isCommitting ? "..." : <>Commit <SendOutlined className="text-[9px]" /></>}
-          </button>
         </div>
       </div>
 
       {selectedFile && (
-        <DiffModal 
+        <DiffModal
           visible={isDiffVisible}
           onClose={() => setIsDiffVisible(false)}
           filePath={selectedFile.path}
@@ -335,7 +404,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
   );
 };
 
-const DirectoryGroup: React.FC <{
+const DirectoryGroup: React.FC<{
   dir: string;
   files: StatusFile[];
   isExpanded: boolean;
@@ -346,9 +415,20 @@ const DirectoryGroup: React.FC <{
   actionIcon: React.ReactNode;
   actionTitle: string;
   isStaged?: boolean;
-}> = ({ dir, files, isExpanded, onToggle, onFileClick, onAction, onDiscard, actionIcon, actionTitle, isStaged }) => (
+}> = ({
+  dir,
+  files,
+  isExpanded,
+  onToggle,
+  onFileClick,
+  onAction,
+  onDiscard,
+  actionIcon,
+  actionTitle,
+  isStaged,
+}) => (
   <div className="mb-1">
-    <div 
+    <div
       onClick={onToggle}
       className="flex items-center gap-2 py-1 px-2 hover:bg-zed-element/40 dark:hover:bg-zed-dark-element/40 cursor-pointer rounded-sm group transition-colors"
     >
@@ -356,16 +436,20 @@ const DirectoryGroup: React.FC <{
         {isExpanded ? <CaretDownOutlined /> : <CaretRightOutlined />}
       </span>
       <FolderOpenOutlined className="text-[11px] text-zed-accent/70" />
-      <span className="text-[11px] font-bold opacity-70 truncate flex-1">{dir}</span>
-      <span className="text-[9px] font-mono opacity-40 px-1.5 bg-zed-element dark:bg-zed-dark-element rounded">{files.length}</span>
+      <span className="text-[11px] font-bold opacity-70 truncate flex-1">
+        {dir}
+      </span>
+      <span className="text-[9px] font-mono opacity-40 px-1.5 bg-zed-element dark:bg-zed-dark-element rounded">
+        {files.length}
+      </span>
     </div>
-    
+
     {isExpanded && (
       <div className="ml-4 mt-0.5 space-y-0.5 border-l border-zed-border dark:border-zed-dark-border pl-1">
-        {files.map(file => (
-          <FileRow 
-            key={file.path} 
-            file={file} 
+        {files.map((file) => (
+          <FileRow
+            key={file.path}
+            file={file}
             onClick={() => onFileClick(file)}
             onAction={(e) => onAction(file, e)}
             onDiscard={(e) => onDiscard(file, e)}
@@ -379,37 +463,51 @@ const DirectoryGroup: React.FC <{
   </div>
 );
 
-const FileRow: React.FC <{
-  file: StatusFile; 
+const FileRow: React.FC<{
+  file: StatusFile;
   onClick: () => void;
   onAction: (e: React.MouseEvent) => void;
   onDiscard: (e: React.MouseEvent) => void;
   actionIcon: React.ReactNode;
   actionTitle: string;
   isStaged?: boolean;
-}> = ({ file, onClick, onAction, onDiscard, actionIcon, actionTitle, isStaged }) => {
+}> = ({
+  file,
+  onClick,
+  onAction,
+  onDiscard,
+  actionIcon,
+  actionTitle,
+  isStaged,
+}) => {
   const statusConfig = {
     added: { char: "A", color: "text-green-500" },
     modified: { char: "M", color: "text-yellow-500" },
     deleted: { char: "D", color: "text-red-500" },
     renamed: { char: "R", color: "text-blue-500" },
     untracked: { char: "U", color: "text-zed-muted" },
-    conflicted: { char: "!", color: "text-red-600 font-bold animate-pulse" }
+    conflicted: { char: "!", color: "text-red-600 font-bold animate-pulse" },
   };
 
   const config = statusConfig[file.status];
-  const fileName = file.path.split('/').pop();
+  const fileName = file.path.split("/").pop();
 
   return (
-    <div 
+    <div
       onClick={onClick}
       className="group flex items-center gap-3 py-1.5 px-2 hover:bg-zed-element/60 dark:hover:bg-zed-dark-element/60 rounded cursor-pointer transition-all border border-transparent hover:border-zed-border/30 dark:hover:border-zed-dark-border/30"
     >
-      <span className={`w-4 text-[10px] font-mono font-bold text-center ${config.color}`}>{config.char}</span>
-      <span className="text-xs font-medium text-zed-text dark:text-zed-dark-text flex-1 truncate">{fileName}</span>
-      
+      <span
+        className={`w-4 text-[10px] font-mono font-bold text-center ${config.color}`}
+      >
+        {config.char}
+      </span>
+      <span className="text-xs font-medium text-zed-text dark:text-zed-dark-text flex-1 truncate">
+        {fileName}
+      </span>
+
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button 
+        <button
           onClick={onAction}
           className="p-1 text-[10px] hover:text-zed-accent transition-colors"
           title={actionTitle}
@@ -417,7 +515,7 @@ const FileRow: React.FC <{
           {actionIcon}
         </button>
         {!isStaged && (
-          <button 
+          <button
             onClick={onDiscard}
             className="p-1 text-[10px] hover:text-red-500 transition-colors"
             title="Discard"
