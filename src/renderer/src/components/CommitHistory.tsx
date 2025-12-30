@@ -71,7 +71,7 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
     setSearch(filters.query || "");
   }, [filters.query]);
 
-  const Row = useCallback(({ index, style, ariaAttributes }: { index: number; style: React.CSSProperties; ariaAttributes: { "aria-posinset": number; "aria-setsize": number; role: "listitem"; } }): React.ReactElement => {
+  const Row = useCallback(({ index, style }: { index: number; style: React.CSSProperties }): React.ReactElement => {
     const commit = commits[index];
     if (!commit) return <div style={style} />;
 
@@ -80,7 +80,6 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
     return (
       <div
         style={style}
-        {...ariaAttributes}
         onClick={() => onCommitSelect(commit)}
         className={`flex items-center hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50 cursor-pointer transition-colors group border-b border-zed-border/10 dark:border-zed-dark-border/10 ${
           isSelected ? "bg-zed-element dark:bg-zed-dark-element" : ""
@@ -120,6 +119,7 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
       </div>
     );
   }, [commits, selectedCommitHash, onCommitSelect]);
+
 
 
   return (
@@ -298,18 +298,18 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
           {/* Virtualized List */}
           <div className="flex-1 min-h-0">
             <AutoSizer
-              Child={({ height, width }) => (
+              Child={({ height, width }: any) => (
                 <List
                   style={{ height: height || 0, width: width || 0 }}
                   rowCount={commits.length}
                   rowHeight={48}
-                  onRowsRendered={({ stopIndex }) => {
-                    if (hasMore && onLoadMore && stopIndex >= commits.length - 5) {
+                  onRowsRendered={({ stopIndex }: { stopIndex: number }) => {
+                    if (hasMore && onLoadMore && stopIndex >= commits.length - 10) {
                       onLoadMore();
                     }
                   }}
                   rowComponent={Row}
-                  rowProps={{}}
+                  rowProps={{} as any}
                   className="custom-scrollbar"
                 />
               )}

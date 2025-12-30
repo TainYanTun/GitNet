@@ -104,8 +104,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
     ({
       index,
       style,
-      ariaAttributes,
-    }: { index: number; style: React.CSSProperties; ariaAttributes: { "aria-posinset": number; "aria-setsize": number; role: "listitem"; }; }): React.ReactElement => {
+    }: { index: number; style: React.CSSProperties }): React.ReactElement => {
       const diffLine = diffLines[index];
 
       if (!diffLine) return <div style={style} />;
@@ -118,7 +117,6 @@ export const DiffModal: React.FC<DiffModalProps> = ({
       return (
         <div
           style={style}
-          {...ariaAttributes}
           className={`flex group border-b border-transparent transition-colors duration-75 ${isAddition ? "bg-green-500/10 dark:bg-green-900/20 hover:bg-green-500/20 dark:hover:bg-green-900/30" : isDeletion ? "bg-red-500/10 dark:bg-red-900/20 hover:bg-red-500/20 dark:hover:bg-red-900/30" : isHunk ? "bg-zed-accent/5 dark:bg-zed-accent/10 text-zed-accent/80 font-bold" : isInfo ? "bg-zed-element/30 dark:bg-zed-dark-element/30 text-zed-muted italic" : "hover:bg-zed-element/40 dark:hover:bg-zed-dark-element/40"}`}
         >
           {/* Gutter: Line Numbers */} 
@@ -147,6 +145,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
     },
     [diffLines],
   );
+
 
   return (
     <Modal
@@ -221,13 +220,13 @@ export const DiffModal: React.FC<DiffModalProps> = ({
         {/* Diff Container */} 
         <div className="flex-1 bg-zed-bg dark:bg-zed-dark-bg overflow-hidden relative">
           <AutoSizer
-            Child={({ height, width }) => (
+            Child={({ height, width }: any) => (
               <List
                 style={{ height: height || 0, width: width || 0 }}
                 rowCount={diffLines.length}
                 rowHeight={24}
                 rowComponent={Row}
-                rowProps={{}}
+                rowProps={{} as any}
                 className="custom-scrollbar"
               />
             )}

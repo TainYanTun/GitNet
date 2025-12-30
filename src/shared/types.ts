@@ -280,6 +280,9 @@ export interface GitCanopyAPI {
   cloneToParent: (url: string, parentPath: string) => Promise<string>;
   stageFile: (repoPath: string, filePath: string) => Promise<void>;
   unstageFile: (repoPath: string, filePath: string) => Promise<void>;
+  discardChanges: (repoPath: string, filePath: string) => Promise<void>;
+  stageAll: (repoPath: string) => Promise<void>;
+  unstageAll: (repoPath: string) => Promise<void>;
   commit: (repoPath: string, message: string) => Promise<void>;
   push: (repoPath: string) => Promise<void>;
 

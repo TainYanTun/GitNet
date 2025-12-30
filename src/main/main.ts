@@ -298,8 +298,17 @@ class GitCanopyApp {
     ipcMain.handle("stage-file", (_, repoPath: string, filePath: string) => 
       this.gitService.stageFile(repoPath, filePath)
     );
+    ipcMain.handle("stage-all", (_, repoPath: string) => 
+      this.gitService.stageAll(repoPath)
+    );
     ipcMain.handle("unstage-file", (_, repoPath: string, filePath: string) => 
       this.gitService.unstageFile(repoPath, filePath)
+    );
+    ipcMain.handle("unstage-all", (_, repoPath: string) => 
+      this.gitService.unstageAll(repoPath)
+    );
+    ipcMain.handle("discard-changes", (_, repoPath: string, filePath: string) => 
+      this.gitService.discardChanges(repoPath, filePath)
     );
     ipcMain.handle("commit", (_, repoPath: string, message: string) => 
       this.gitService.commit(repoPath, message)

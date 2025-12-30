@@ -26,7 +26,10 @@ const gitcanopyAPI: GitCanopyAPI = {
   clone: (url: string, targetPath: string) => ipcRenderer.invoke("clone", url, targetPath),
   cloneToParent: (url: string, parentPath: string) => ipcRenderer.invoke("clone-to-parent", url, parentPath),
   stageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("stage-file", repoPath, filePath),
+  stageAll: (repoPath: string) => ipcRenderer.invoke("stage-all", repoPath),
   unstageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("unstage-file", repoPath, filePath),
+  unstageAll: (repoPath: string) => ipcRenderer.invoke("unstage-all", repoPath),
+  discardChanges: (repoPath: string, filePath: string) => ipcRenderer.invoke("discard-changes", repoPath, filePath),
   commit: (repoPath: string, message: string) => ipcRenderer.invoke("commit", repoPath, message),
   push: (repoPath: string) => ipcRenderer.invoke("push", repoPath),
 

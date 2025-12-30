@@ -81,6 +81,40 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
     }
   };
 
+  const handleStageAll = async () => {
+    try {
+      await window.gitcanopyAPI.stageAll(repoPath);
+      fetchStatus();
+      showToast("All changes staged", "success");
+    } catch (err) {
+      showToast("Failed to stage all changes", "error");
+    }
+  };
+
+  const handleUnstageAll = async () => {
+    try {
+      await window.gitcanopyAPI.unstageAll(repoPath);
+      fetchStatus();
+      showToast("All changes unstaged", "info");
+    } catch (err) {
+      showToast("Failed to unstage all changes", "error");
+    }
+  };
+
+  const handleDiscard = async (file: StatusFile, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm(`Are you sure you want to discard changes to ${file.path}? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      await window.gitcanopyAPI.discardChanges(repoPath, file.path);
+      fetchStatus();
+      showToast(`Discarded changes to ${file.path.split('/').pop()}`, "info");
+    } catch (err) {
+      showToast("Failed to discard changes", "error");
+    }
+  };
+
   const handleCommit = async () => {
     if (!commitMessage.trim()) {
       showToast("Enter a commit message", "info");
@@ -169,6 +203,14 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
               <h2 className="text-[11px] font-black uppercase tracking-[0.15em] text-green-600 dark:text-green-400 flex items-center gap-2">
                 <PlusOutlined className="text-[9px]" /> Staged ({stagedFiles.length})
               </h2>
+              {stagedFiles.length > 0 && (
+                <button 
+                  onClick={handleUnstageAll}
+                  className="text-[9px] font-bold uppercase tracking-widest text-zed-muted hover:text-zed-text transition-colors"
+                >
+                  [ Unstage_All ]
+                </button>
+              )}
             </div>
             
             {stagedFiles.length > 0 ? (
@@ -179,6 +221,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
                     file={file} 
                     onClick={() => handleFileClick(file)} 
                     onAction={(e) => handleUnstage(file, e)}
+                    onDiscard={(e) => handleDiscard(file, e)}
                     actionIcon={<MinusOutlined />}
                     isStaged
                   />
@@ -197,6 +240,14 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
               <h2 className="text-[11px] font-black uppercase tracking-[0.15em] text-zed-text dark:text-zed-dark-text flex items-center gap-2">
                 <FileTextOutlined className="text-[9px]" /> Working Directory ({unstagedFiles.length})
               </h2>
+              {unstagedFiles.length > 0 && (
+                <button 
+                  onClick={handleStageAll}
+                  className="text-[9px] font-bold uppercase tracking-widest text-zed-muted hover:text-zed-text transition-colors"
+                >
+                  [ Stage_All ]
+                </button>
+              )}
             </div>
 
             {unstagedFiles.length > 0 ? (
@@ -207,6 +258,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
                     file={file} 
                     onClick={() => handleFileClick(file)} 
                     onAction={(e) => handleStage(file, e)}
+                    onDiscard={(e) => handleDiscard(file, e)}
                     actionIcon={<PlusOutlined />}
                   />
                 ))}
@@ -275,9 +327,10 @@ const ZedFileRow: React.FC<{
   file: StatusFile; 
   onClick: () => void;
   onAction: (e: React.MouseEvent) => void;
+  onDiscard: (e: React.MouseEvent) => void;
   actionIcon: React.ReactNode;
   isStaged?: boolean;
-}> = ({ file, onClick, onAction, actionIcon, isStaged }) => {
+}> = ({ file, onClick, onAction, onDiscard, actionIcon, isStaged }) => {
   const statusConfig = {
     added: { char: "A", color: "text-green-600 dark:text-green-400" },
     modified: { char: "M", color: "text-yellow-600 dark:text-yellow-400" },
@@ -318,7 +371,7 @@ const ZedFileRow: React.FC<{
         <button 
           className="p-2 text-xs bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border text-zed-text dark:text-zed-dark-text hover:text-commit-fix hover:border-commit-fix rounded-sm transition-all shadow-sm group-hover:opacity-100 opacity-0"
           title="Discard"
-          onClick={(e) => { e.stopPropagation(); }}
+          onClick={onDiscard}
         >
           <UndoOutlined />
         </button>

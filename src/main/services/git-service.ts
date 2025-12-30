@@ -2,6 +2,7 @@ import { spawn } from "child_process";
 import * as crypto from "crypto";
 import * as fs from "fs";
 import * as path from "path";
+import { LRUCache } from "lru-cache";
 import {
   Repository,
   Commit,
@@ -19,13 +20,22 @@ import {
 export class GitService {
   private commandHistory: GitCommandLog[] = [];
   private maxHistorySize = 100;
+  private avatarCache = new LRUCache<string, string>({ max: 500 });
 
   private getAvatarUrl(email: string): string {
+    const cleanEmail = email.trim().toLowerCase();
+    if (this.avatarCache.has(cleanEmail)) {
+      return this.avatarCache.get(cleanEmail)!;
+    }
+
     const hash = crypto
       .createHash("md5")
-      .update(email.trim().toLowerCase())
+      .update(cleanEmail)
       .digest("hex");
-    return `https://www.gravatar.com/avatar/${hash}?s=64&d=identicon`;
+    const url = `https://www.gravatar.com/avatar/${hash}?s=64&d=identicon`;
+    
+    this.avatarCache.set(cleanEmail, url);
+    return url;
   }
 
   private async run(args: string[], cwd: string): Promise<string> {
@@ -251,6 +261,10 @@ export class GitService {
     await this.run(["add", filePath], repoPath);
   }
 
+  async stageAll(repoPath: string): Promise<void> {
+    await this.run(["add", "."], repoPath);
+  }
+
   async clone(url: string, targetPath: string): Promise<void> {
     const parentDir = path.dirname(targetPath);
     const repoName = path.basename(targetPath);
@@ -283,6 +297,22 @@ export class GitService {
 
   async unstageFile(repoPath: string, filePath: string): Promise<void> {
     await this.run(["reset", "HEAD", "--", filePath], repoPath);
+  }
+
+  async unstageAll(repoPath: string): Promise<void> {
+    await this.run(["reset", "HEAD"], repoPath);
+  }
+
+  async discardChanges(repoPath: string, filePath: string): Promise<void> {
+    // For untracked files, we should probably delete them? 
+    // Usually 'discard' means git checkout for tracked and rm for untracked.
+    // Let's check status first or just try checkout.
+    try {
+      await this.run(["checkout", "--", filePath], repoPath);
+    } catch (err) {
+      // If checkout fails, maybe it's untracked
+      await this.run(["clean", "-f", "--", filePath], repoPath);
+    }
   }
 
   async commit(repoPath: string, message: string): Promise<void> {
