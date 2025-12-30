@@ -1,6 +1,6 @@
 # GitCanopy
 
-<img src="src/renderer/public/interface.png" width="850" />
+<img src="src/renderer/public/interface.png" width="600" />
 
 ![GitCanopy Banner](https://img.shields.io/badge/GitCanopy-v1.0.0_Stable-1f2937?style=for-the-badge&logo=git&logoColor=white)
 ![Build Status](https://img.shields.io/badge/build-passing-success?style=for-the-badge)
