@@ -335,7 +335,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       <div className="p-4 bg-[#f6f6f6] dark:bg-[#1c1c1c] border-t border-zed-border dark:border-zed-dark-border">
         <div className="max-w-5xl mx-auto flex gap-4 items-start">
           <div className="flex-1 flex flex-col gap-2">
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex flex-col sm:flex-row w-full items-start gap-4">
               <input
                 type="text"
                 placeholder="Summary (required)"
@@ -375,8 +375,8 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
                   handleCommit();
                 }
               }}
-              className="w-full bg-white dark:bg-[#121212] border border-zed-border dark:border-zed-dark-border p-3 text-[11px] focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text resize-none font-sans rounded shadow-sm"
-              rows={2}
+              className="w-full bg-white dark:bg-[#121212] border border-zed-border dark:border-zed-dark-border p-3 text-[12px] font-bold focus:outline-none focus:ring-1 focus:ring-zed-accent/50 dark:focus:ring-zed-dark-accent/50 placeholder:opacity-30 text-zed-text dark:text-zed-dark-text resize-y min-h-[180px] max-h-[360px] overflow-auto font-sans rounded shadow-sm"
+              rows={3}
             />
             <div className="text-[9px] opacity-40 font-mono flex justify-between px-1">
               <span
@@ -386,7 +386,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
               >
                 {commitSummary.length}/50
               </span>
-              <span>⌘ + Enter to commit</span>F
+              <span>⌘ + Enter to commit</span>
             </div>
           </div>
         </div>
