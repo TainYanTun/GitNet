@@ -2,8 +2,6 @@
 
 # GitCanopy: **A High-Performance, Node-link Git Client** designed for Professional Engineers
 
-**The Architectural Spine of Your Repository**
-
 Transform complex commit histories into stable, readable graphs with a hyper-minimalist, lightning-fast workflow.
 
 Traditional Git clients struggle with visualization clarity and repository scale. GitCanopy prioritizes **data density**, **rendering speed**, and **semantic clarity** to deliver an unmatched developer experience.
@@ -12,6 +10,8 @@ Traditional Git clients struggle with visualization clarity and repository scale
 [![Build](https://img.shields.io/badge/build-passing-success?style=flat)](https://github.com/TainYanTun/GitCanopy/actions)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-red?style=flat)](https://github.com/TainYanTun/GitCanopy)
+
+**The Architectural Spine of the Repository**
 
 
 [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Roadmap](#-roadmap) • [Contributing](#-contributing)
