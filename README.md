@@ -87,12 +87,34 @@ bun run dist
 *   Or press `⌘ + O` (Ctrl+O on Windows/Linux).
 *   Select any folder containing a `.git` directory.
 
-### 🧭 Navigation
+## 🧭 Navigation
 *   **Graph View**: The primary visual DAG for history navigation.
 *   **Commit History**: A searchable list of all commits.
 *   **Changes View**: Review and stage your local modifications.
+*   **Documentation**: For a detailed feature breakdown and setup guide, see our [Full Documentation](documentation.md).
 
-### ⌨️ Keyboard Shortcuts
+---
+
+## 🗺 Roadmap
+
+### 🏁 Phase 1: Core Performance (Current)
+*   [x] High-speed Git binary interaction with safety buffers.
+*   [x] Virtualized commit history list (60FPS scrolling).
+*   [x] Secure IPC bridge for Main/Renderer communication.
+
+### 🚆 Phase 2: Advanced Visualization (Next)
+*   [ ] Interactive D3.js commit graph with zoom/pan.
+*   [ ] Recursive lineage tracing (Focus Mode).
+*   [ ] Multi-branch lane assignment optimization.
+
+### 🛠 Phase 3: Power User Tools
+*   [ ] Visual Interactive Rebase.
+*   [ ] Advanced Conflict Resolution UI.
+*   [ ] Extension system for custom commit classifications.
+
+---
+
+## ⌨️ Keyboard Shortcuts
 
 | Action | macOS | Windows/Linux |
 | :--- | :--- | :--- |
@@ -111,10 +133,10 @@ GitCanopy is built on a modern, type-safe stack designed for security and mainta
 ```mermaid
 graph TD
     A[Electron Main Process] -->|IPC| B(Preload Script);
-    B -->|Context Bridge| C[React Renderer];
-    C -->|Worker Thread| D[D3.js Graph Engine];
-    A -->|Spawn| E[Git Binary];
-    A -->|Watch| F[File System];
+    B -->|Context Bridge| C[React Renderer);
+    C -->|Worker Thread| D[D3.js Graph Engine);
+    A -->|Spawn| E[Git Binary);
+    A -->|Watch| F[File System);
 ```
 
 *   **Environment**: Electron (Isolated Renderer, Safe IPC)
@@ -126,7 +148,7 @@ graph TD
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Roadmap](PRODUCTION_ROADMAP.md) for current priorities.
+We welcome contributions! Please check the roadmap above for current priorities.
 
 1.  Fork the repository.
 2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).

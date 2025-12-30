@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Repository, Branch, Commit, CommitFilterOptions } from "@src/shared/types";
+import {
+  Repository,
+  Branch,
+  Commit,
+  CommitFilterOptions,
+} from "@src/shared/types";
 import { useTheme } from "./ThemeContext";
 import { useToast } from "./ToastContext";
 import { BranchExplorer } from "./BranchExplorer";
@@ -58,13 +63,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       const [fetchedBranches, fetchedCommits, fetchedStashes] =
         await Promise.all([
           window.gitcanopyAPI.getBranches(repository.path),
-          window.gitcanopyAPI.getCommits(repository.path, PAGE_SIZE, 0, commitFilters),
+          window.gitcanopyAPI.getCommits(
+            repository.path,
+            PAGE_SIZE,
+            0,
+            commitFilters,
+          ),
           window.gitcanopyAPI.getStashList(repository.path),
         ]);
       setBranches(fetchedBranches);
       setCommits(fetchedCommits);
       setStashes(fetchedStashes);
-      
+
       if (fetchedCommits.length < PAGE_SIZE) {
         setHasMore(false);
       }
@@ -84,7 +94,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         repository.path,
         PAGE_SIZE,
         nextOffset,
-        commitFilters
+        commitFilters,
       );
 
       if (newCommits.length < PAGE_SIZE) {
@@ -101,12 +111,15 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
 
   const loadAllCommits = async () => {
     try {
-      showToast("Loading full repository history... This may take a moment.", "info");
+      showToast(
+        "Loading full repository history... This may take a moment.",
+        "info",
+      );
       const allCommits = await window.gitcanopyAPI.getCommits(
         repository.path,
         10000, // Large enough limit for "all"
         0,
-        commitFilters
+        commitFilters,
       );
       setCommits(allCommits);
       setHasMore(false);
@@ -170,7 +183,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const handleFileHistorySelect = (filePath: string) => {
     setCommitFilters({ path: filePath });
     setCurrentView("history");
-    showToast(`Filtering history for ${filePath.split('/').pop()}`, "info");
+    showToast(`Filtering history for ${filePath.split("/").pop()}`, "info");
   };
 
   const clearFilters = () => {
@@ -269,8 +282,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
                     Hotspots / Top Modified
                   </h2>
                 </div>
-                <HotFiles 
-                  repoPath={repository.path} 
+                <HotFiles
+                  repoPath={repository.path}
                   onFileClick={handleFileHistorySelect}
                 />
               </div>
@@ -542,7 +555,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Status Bar */}
       <div className="h-8 flex items-center justify-between px-3 bg-zed-surface dark:bg-zed-dark-surface border-t border-zed-border dark:border-zed-dark-border text-[11px] text-zed-text dark:text-zed-dark-text select-none py-1">
         <div className="flex items-center">
-          <div className="w-[228px] flex items-center gap-1 border-r border-zed-border dark:border-zed-dark-border mr-3">
+          <div className="w-[228px] flex items-center gap-2.5 border-r border-zed-border dark:border-zed-dark-border mr-3">
             <button
               onClick={() => setCurrentView("graph")}
               className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "graph" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
