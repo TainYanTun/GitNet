@@ -14,118 +14,31 @@ Transform complex commit histories into stable, readable graphs with a hyper-min
 
 [Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Roadmap](#-roadmap) • [Contributing](#-contributing)
 
-<img src="src/renderer/public/interface.png" width="700" alt="GitCanopy Interface" />
+<img src="src/renderer/public/interface.png" width="850" alt="GitCanopy Interface" />
 
 </div>
 
 ---
 
-
 ## ✨ Features
 
-<table>
-<tr>
-<td width="50%">
-
-### 🚆 Visualization Engine
-
-**Main Spine Architecture**  
-Vertical lanes lock your primary branch to the left, creating a stable reference point for navigation
-
-**Semantic Coloring**  
-Instantly recognize commit intent—Features, Fixes, Docs—through color-coded geometry
-
-**Focus Mode**  
-Hover over nodes to trace recursive lineage and isolate feature stories
-
-</td>
-<td width="50%">
-
-### ⚡ Professional Performance
-
-**Virtualized Rendering**  
-Scroll through 10,000+ commits at 60FPS using industry-leading windowing
-
-**Web Worker Layout**  
-Off-thread graph calculations ensure zero UI lag
-
-**Memory Safety**  
-Safe spawn interaction with 10MB buffers prevents crashes on massive diffs
-
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### ✍️ Seamless Workflow
-
-**Uncommitted Changes**  
-Dedicated view with high-fidelity unified diffs
-
-**Stage & Commit**  
-Keyboard-friendly interface for atomic commits
-
-**Push & Sync**  
-One-click remote synchronization
-
-</td>
-<td width="50%">
-
-### 📊 Deep Insights
-
-**Team Metrics**  
-Analyze contributor impact and activity trends
-
-**File Hotspots**  
-Identify high-churn files and architectural bottlenecks
-
-**Stash Gallery**  
-Visual stash management at your fingertips
-
-</td>
-</tr>
-</table>
+- **🚆 Visualization Engine:** Lane-persistent commit graphs with semantic coloring and lineage tracing.
+- **⚡ Professional Performance:** 60FPS virtualized rendering and background worker-powered layouts.
+- **✍️ Seamless Workflow:** Atomic staging, high-fidelity diffs, and integrated remote synchronization.
+- **📊 Deep Insights:** Contributor metrics, file hotspot analysis, and a visual stash gallery.
 
 ---
 
-## 🚀 Installation
+## 📦 Download
 
-### Prerequisites
+GitCanopy is an open-source project hosted on GitHub. You can find the latest installers for macOS, Windows, and Linux on our **Releases** page:
 
-Before you begin, ensure you have the following installed:
+👉 **[Download GitCanopy from GitHub](https://github.com/TainYanTun/GitCanopy/releases)**
 
-| Requirement | Version | Purpose |
-|------------|---------|---------|
-| **Node.js** | ≥ 18.0.0 | JavaScript runtime |
-| **Git** | Latest | Version control (must be in PATH) |
-| **Bun** | Latest | Fast package manager (recommended) |
+> **Note for macOS users:** Since the app is currently unsigned, you will need to **Right-Click > Open** the first time you launch it to bypass the security verification.
 
-### Quick Start
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/TainYanTun/GitCanopy.git
-cd GitCanopy
-
-# 2. Install dependencies (choose one)
-bun install        # Recommended: Fastest
-# or
-npm install        # Alternative
-
-# 3. Launch development mode
-bun run dev
-```
-
-The application will start with hot-reload enabled for both Electron and React.
-
-### 📦 Build for Production
-
-```bash
-# Create distributable for your current OS
-bun run dist
-
-# Outputs will be in the /dist directory
-```
+### 🛠️ Development Setup
+For developers looking to build from source or contribute, please refer to the [Setup Guide](setup.md).
 
 ---
 
@@ -229,34 +142,10 @@ graph TD
 
 ## 🗺️ Roadmap
 
-### 🏁 Phase 1: Core Performance ✅ *Current*
-
-- [x] High-speed Git binary interaction with safety buffers
-- [x] Virtualized commit history (60FPS scrolling)
-- [x] Secure IPC bridge for Main/Renderer communication
-- [x] Unified diff viewer with syntax highlighting
-
-### 🚆 Phase 2: Advanced Visualization 🔄 *In Progress*
-
-- [ ] Interactive D3.js commit graph with zoom/pan
-- [ ] Recursive lineage tracing (Focus Mode)
-- [ ] Multi-branch lane assignment optimization
-- [ ] Real-time collaboration indicators
-
-### 🛠️ Phase 3: Power User Tools 📅 *Planned*
-
-- [ ] Visual Interactive Rebase
-- [ ] Advanced Conflict Resolution UI
-- [ ] Extension system for custom commit classifications
-- [ ] AI-powered commit message suggestions
-- [ ] Integrated code review workflow
-
-### 🌐 Phase 4: Ecosystem Integration
-
-- [ ] GitHub/GitLab/Bitbucket deep integration
-- [ ] VS Code extension compatibility
-- [ ] CLI companion tool
-- [ ] Cloud sync for preferences
+- [ ] **Visual Interactive Rebase:** Drag-and-drop history management and rewriting.
+- [ ] **Conflict Resolution UI:** Advanced tools for solving complex merges.
+- [ ] **Ecosystem Integration:** First-class support for GitHub, GitLab, and Bitbucket.
+- [ ] **Extensibility:** Custom themes and commit classification plugin system.
 
 ---
 
@@ -307,6 +196,6 @@ modify it, and distribute it as you see fit.
 
 <div align="center">
 
-**GitCanopy**:  [Report Bug](https://github.com/TainYanTun/GitCanopy/issues) • [Request Feature](https://github.com/TainYanTun/GitCanopy/issues) • [Documentation](documentation.md)
+**GitCanopy**:  [🐞 Report Bug](https://github.com/TainYanTun/GitCanopy/issues/new?template=bug_report.md) • [🚀 Request Feature](https://github.com/TainYanTun/GitCanopy/issues/new?template=feature_request.md) • [📖 Documentation](documentation.md)
 
 </div>
