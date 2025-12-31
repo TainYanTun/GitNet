@@ -74,7 +74,8 @@
     "appId": "com.gitcanopy.app",
     "productName": "GitCanopy",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "assets"
     },
     "files": [
       "dist/**/*",
