@@ -12,7 +12,7 @@ Transform complex commit histories into stable, readable graphs with a hyper-min
 **The Architectural Spine of the Repository**
 
 
-[Features](#-features) • [Installation](#-installation) • [Usage](#-usage) • [Roadmap](#-roadmap) • [Contributing](#-contributing)
+[Features](#-features) • [Download](#-download) • [Usage](#-usage) • [Roadmap](#-roadmap) • [Contributing](#-contributing)
 
 <img src="src/renderer/public/interface.png" width="850" alt="GitCanopy Interface" />
 
@@ -22,10 +22,10 @@ Transform complex commit histories into stable, readable graphs with a hyper-min
 
 ## ✨ Features
 
-- **🚆 Visualization Engine:** Lane-persistent commit graphs with semantic coloring and lineage tracing.
-- **⚡ Professional Performance:** 60FPS virtualized rendering and background worker-powered layouts.
-- **✍️ Seamless Workflow:** Atomic staging, high-fidelity diffs, and integrated remote synchronization.
-- **📊 Deep Insights:** Contributor metrics, file hotspot analysis, and a visual stash gallery.
+- **Visualization Engine:** Lane-persistent commit graphs with semantic coloring and lineage tracing.
+- **Professional Performance:** 60FPS virtualized rendering and background worker-powered layouts.
+- **Seamless Workflow:** Atomic staging, high-fidelity diffs, and integrated remote synchronization.
+- **Deep Insights:** Contributor metrics, file hotspot analysis, and a visual stash gallery.
 
 ---
 
@@ -76,7 +76,7 @@ For developers looking to build from source or contribute, please refer to the [
 | **Team Insights** | Analytics dashboard for contributor activity |
 | **Stash Manager** | Visual gallery of saved work-in-progress states |
 
-> 💡 **Pro Tip:** For a comprehensive feature breakdown and advanced workflows, check out our [Full Documentation](documentation.md)
+> **Pro Tip:** For a comprehensive feature breakdown and advanced workflows, check out our [Full Documentation](documentation.md)
 
 ---
 
@@ -196,6 +196,6 @@ modify it, and distribute it as you see fit.
 
 <div align="center">
 
-**GitCanopy**:  [🐞 Report Bug](https://github.com/TainYanTun/GitCanopy/issues/new?template=bug_report.md) • [🚀 Request Feature](https://github.com/TainYanTun/GitCanopy/issues/new?template=feature_request.md) • [📖 Documentation](documentation.md)
+{ [Report Bug](https://github.com/TainYanTun/GitCanopy/issues/new?template=bug_report.md) • [Request Feature](https://github.com/TainYanTun/GitCanopy/issues/new?template=feature_request.md) • [Documentation](documentation.md) }
 
 </div>
