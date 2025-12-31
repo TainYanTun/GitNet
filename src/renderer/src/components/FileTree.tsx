@@ -1,5 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { FileChange } from "@shared/types";
+import { List } from "react-window";
+import { AutoSizer } from "react-virtualized-auto-sizer";
 
 interface FileTreeNode {
   name: string;
@@ -7,6 +9,11 @@ interface FileTreeNode {
   children: Map<string, FileTreeNode>;
   change?: FileChange;
   isFolder: boolean;
+}
+
+interface FlattenedNode {
+  node: FileTreeNode;
+  depth: number;
 }
 
 interface FileTreeProps {
@@ -17,7 +24,7 @@ interface FileTreeProps {
 export const FileTree: React.FC<FileTreeProps> = ({ files, onFileClick }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(["root"]));
 
-  // Build the tree - memoized to prevent recalculation on every render
+  // Build the tree
   const root = useMemo(() => {
     const rootNode: FileTreeNode = { name: "root", path: "", children: new Map(), isFolder: true };
     
@@ -45,15 +52,37 @@ export const FileTree: React.FC<FileTreeProps> = ({ files, onFileClick }) => {
     return rootNode;
   }, [files]);
 
-  const toggleFolder = (path: string) => {
-    const newExpanded = new Set(expandedFolders);
-    if (newExpanded.has(path)) {
-      newExpanded.delete(path);
-    } else {
-      newExpanded.add(path);
-    }
-    setExpandedFolders(newExpanded);
-  };
+  // Flatten the tree for virtualization based on expanded folders
+  const flattenedData = useMemo(() => {
+    const result: FlattenedNode[] = [];
+    
+    const flatten = (node: FileTreeNode, depth: number) => {
+      const sortedChildren = Array.from(node.children.values()).sort((a, b) => {
+        if (a.isFolder && !b.isFolder) return -1;
+        if (!a.isFolder && b.isFolder) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      sortedChildren.forEach(child => {
+        result.push({ node: child, depth });
+        if (child.isFolder && expandedFolders.has(child.path)) {
+          flatten(child, depth + 1);
+        }
+      });
+    };
+
+    flatten(root, 0);
+    return result;
+  }, [root, expandedFolders]);
+
+  const toggleFolder = useCallback((path: string) => {
+    setExpandedFolders(prev => {
+      const next = new Set(prev);
+      if (next.has(path)) next.delete(path);
+      else next.add(path);
+      return next;
+    });
+  }, []);
 
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -65,26 +94,17 @@ export const FileTree: React.FC<FileTreeProps> = ({ files, onFileClick }) => {
     }
   };
 
-  const renderNode = (node: FileTreeNode, depth: number) => {
+  const Row = useCallback(({ index, style }: { index: number; style: React.CSSProperties }): React.ReactElement => {
+    const { node, depth } = flattenedData[index];
     const isExpanded = expandedFolders.has(node.path);
-    const sortedChildren = Array.from(node.children.values()).sort((a, b) => {
-        if (a.isFolder && !b.isFolder) return -1;
-        if (!a.isFolder && b.isFolder) return 1;
-        return a.name.localeCompare(b.name);
-    });
-
-    if (node.path === "") {
-        return <div className="space-y-0.5">{sortedChildren.map(child => renderNode(child, 0))}</div>;
-    }
 
     return (
-      <div key={node.path} className="select-none">
+      <div style={style} className="select-none">
         <div 
-          className="flex items-center gap-2 px-2 py-1 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element cursor-pointer group transition-colors relative"
+          className="flex items-center gap-2 px-2 py-1 rounded hover:bg-zed-element dark:hover:bg-zed-dark-element cursor-pointer group transition-colors relative h-full"
           style={{ paddingLeft: `${depth * 16 + 12}px` }}
           onClick={() => node.isFolder ? toggleFolder(node.path) : node.change && onFileClick(node.change)}
         >
-          {/* Indentation Guide */}
           {depth > 0 && (
             <div 
               className="absolute left-0 top-0 bottom-0 border-l border-zed-border/30 dark:border-zed-dark-border/30"
@@ -116,26 +136,30 @@ export const FileTree: React.FC<FileTreeProps> = ({ files, onFileClick }) => {
                     {node.name}
                 </span>
                 
-                {/* Status Badge */}
                 <div className={`ml-auto shrink-0 w-4 h-4 flex items-center justify-center rounded text-[9px] font-bold border border-current opacity-80 ${getStatusColor(node.change?.status)}`}>
                   {node.change?.status}
                 </div>
             </div>
           )}
         </div>
-
-        {node.isFolder && isExpanded && (
-          <div className="flex flex-col">
-            {sortedChildren.map(child => renderNode(child, depth + 1))}
-          </div>
-        )}
       </div>
     );
-  };
+  }, [flattenedData, expandedFolders, toggleFolder, onFileClick]);
 
   return (
-    <div className="py-1">
-      {renderNode(root, 0)}
+    <div style={{ height: "320px", width: "100%" }}>
+      <AutoSizer
+        Child={({ height, width }: { height: number | undefined; width: number | undefined }) => (
+          <List
+            style={{ height: height || 0, width: width || 0 }}
+            rowCount={flattenedData.length}
+            rowHeight={28}
+            rowComponent={Row}
+            rowProps={{} as any}
+            className="custom-scrollbar"
+          />
+        )}
+      />
     </div>
   );
 };

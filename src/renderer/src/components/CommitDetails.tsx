@@ -350,7 +350,7 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
           <div className="text-xs text-zed-muted dark:text-zed-dark-muted uppercase px-1">
             File Changes ({displayCommit.fileChanges.length})
           </div>
-          <div className="max-h-80 overflow-y-auto custom-scrollbar border border-zed-border dark:border-zed-dark-border rounded bg-zed-bg/30 dark:bg-zed-dark-bg/30">
+          <div className="border border-zed-border dark:border-zed-dark-border rounded bg-zed-bg/30 dark:bg-zed-dark-bg/30 overflow-hidden">
             <FileTree
               files={displayCommit.fileChanges}
               onFileClick={handleFileClick}
