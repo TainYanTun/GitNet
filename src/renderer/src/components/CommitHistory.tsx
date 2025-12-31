@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { Commit, Branch, CommitFilterOptions } from "@shared/types";
 import moment from "moment";
 import { List } from "react-window";
@@ -71,56 +71,63 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
     setSearch(filters.query || "");
   }, [filters.query]);
 
-  const Row = useCallback(({ index, style }: { index: number; style: React.CSSProperties }): React.ReactElement => {
-    const commit = commits[index];
-    if (!commit) return <div style={style} />;
+  const Row = useCallback(
+    ({
+      index,
+      style,
+    }: {
+      index: number;
+      style: React.CSSProperties;
+    }): React.ReactElement => {
+      const commit = commits[index];
+      if (!commit) return <div style={style} />;
 
-    const isSelected = selectedCommitHash === commit.hash;
+      const isSelected = selectedCommitHash === commit.hash;
 
-    return (
-      <div
-        style={style}
-        onClick={() => onCommitSelect(commit)}
-        className={`flex items-center hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50 cursor-pointer transition-colors group border-b border-zed-border/10 dark:border-zed-dark-border/10 ${
-          isSelected ? "bg-zed-element dark:bg-zed-dark-element" : ""
-        }`}
-      >
-        <div className="w-14 shrink-0 flex items-center justify-center">
-          <div
-            className={`w-6 h-6 flex items-center justify-center text-[10px] font-black border border-current rounded-none ${
-              typeColorMap[commit.type] || "text-zed-muted"
-            }`}
-          >
-            {typeInitialMap[commit.type] || "O"}
+      return (
+        <div
+          style={style}
+          onClick={() => onCommitSelect(commit)}
+          className={`flex items-center hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50 cursor-pointer transition-colors group border-b border-zed-border/10 dark:border-zed-dark-border/10 ${
+            isSelected ? "bg-zed-element dark:bg-zed-dark-element" : ""
+          }`}
+        >
+          <div className="w-14 shrink-0 flex items-center justify-center">
+            <div
+              className={`w-6 h-6 flex items-center justify-center text-[10px] font-black border border-current rounded-none ${
+                typeColorMap[commit.type] || "text-zed-muted"
+              }`}
+            >
+              {typeInitialMap[commit.type] || "O"}
+            </div>
+          </div>
+          <div className="flex-1 min-w-0 px-4 flex items-center gap-2 overflow-hidden">
+            <span className="text-sm font-medium text-zed-text dark:text-zed-dark-text truncate">
+              {commit.shortMessage}
+            </span>
+            {commit.tags?.slice(0, 1).map((tag) => (
+              <span
+                key={tag}
+                className="px-1 py-0 text-[9px] bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border border-yellow-500/20 uppercase font-bold tracking-tight shrink-0"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          <div className="w-32 shrink-0 px-4 truncate text-xs text-zed-text dark:text-zed-dark-text opacity-80 font-mono">
+            {commit.author.name}
+          </div>
+          <div className="w-24 shrink-0 px-4 whitespace-nowrap text-[11px] text-zed-muted dark:text-zed-dark-muted font-mono opacity-60">
+            {moment.unix(commit.timestamp).format("MMM D, YY")}
+          </div>
+          <div className="w-24 shrink-0 px-4 text-right font-mono text-[10px] text-zed-muted/50 group-hover:text-zed-accent transition-colors">
+            {commit.shortHash}
           </div>
         </div>
-        <div className="flex-1 min-w-0 px-4 flex items-center gap-2 overflow-hidden">
-          <span className="text-sm font-medium text-zed-text dark:text-zed-dark-text truncate">
-            {commit.shortMessage}
-          </span>
-          {commit.tags?.slice(0, 1).map((tag) => (
-            <span
-              key={tag}
-              className="px-1 py-0 text-[9px] bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 border border-yellow-500/20 uppercase font-bold tracking-tight shrink-0"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-        <div className="w-32 shrink-0 px-4 truncate text-xs text-zed-text dark:text-zed-dark-text opacity-80 font-mono">
-          {commit.author.name}
-        </div>
-        <div className="w-24 shrink-0 px-4 whitespace-nowrap text-[11px] text-zed-muted dark:text-zed-dark-muted font-mono opacity-60">
-          {moment.unix(commit.timestamp).format("MMM D, YY")}
-        </div>
-        <div className="w-24 shrink-0 px-4 text-right font-mono text-[10px] text-zed-muted/50 group-hover:text-zed-accent transition-colors">
-          {commit.shortHash}
-        </div>
-      </div>
-    );
-  }, [commits, selectedCommitHash, onCommitSelect]);
-
-
+      );
+    },
+    [commits, selectedCommitHash, onCommitSelect],
+  );
 
   return (
     <div className="flex flex-col h-full bg-zed-surface dark:bg-zed-dark-surface animate-in fade-in slide-in-from-bottom-4">
@@ -142,7 +149,11 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
               Active Filters:
             </span>
             {filters.query && (
-              <FilterBadge label="Search" value={filters.query} onClear={() => setSearch("")} />
+              <FilterBadge
+                label="Search"
+                value={filters.query}
+                onClear={() => setSearch("")}
+              />
             )}
             {filters.path && (
               <FilterBadge
@@ -155,7 +166,9 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
               <FilterBadge
                 label="Author"
                 value={filters.author}
-                onClear={() => onFilterChange({ ...filters, author: undefined })}
+                onClear={() =>
+                  onFilterChange({ ...filters, author: undefined })
+                }
               />
             )}
             {filters.since && (
@@ -215,7 +228,12 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
                 : "bg-zed-bg dark:bg-zed-dark-bg border-zed-border dark:border-zed-dark-border text-zed-muted hover:text-zed-text"
             }`}
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-3.5 h-3.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -238,7 +256,10 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
                 placeholder="e.g. John Doe"
                 value={filters.author || ""}
                 onChange={(e) =>
-                  onFilterChange({ ...filters, author: e.target.value || undefined })
+                  onFilterChange({
+                    ...filters,
+                    author: e.target.value || undefined,
+                  })
                 }
                 className="w-full bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border p-2 text-xs font-mono focus:outline-none focus:border-zed-accent"
               />
@@ -251,7 +272,10 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
                 type="date"
                 value={filters.since || ""}
                 onChange={(e) =>
-                  onFilterChange({ ...filters, since: e.target.value || undefined })
+                  onFilterChange({
+                    ...filters,
+                    since: e.target.value || undefined,
+                  })
                 }
                 className="w-full bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border p-2 text-xs font-mono focus:outline-none focus:border-zed-accent"
               />
@@ -264,7 +288,10 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
                 type="date"
                 value={filters.until || ""}
                 onChange={(e) =>
-                  onFilterChange({ ...filters, until: e.target.value || undefined })
+                  onFilterChange({
+                    ...filters,
+                    until: e.target.value || undefined,
+                  })
                 }
                 className="w-full bg-zed-surface dark:bg-zed-dark-surface border border-zed-border dark:border-zed-dark-border p-2 text-xs font-mono focus:outline-none focus:border-zed-accent"
               />
@@ -304,7 +331,11 @@ export const CommitHistory: React.FC<CommitHistoryProps> = ({
                   rowCount={commits.length}
                   rowHeight={48}
                   onRowsRendered={({ stopIndex }: { stopIndex: number }) => {
-                    if (hasMore && onLoadMore && stopIndex >= commits.length - 10) {
+                    if (
+                      hasMore &&
+                      onLoadMore &&
+                      stopIndex >= commits.length - 10
+                    ) {
                       onLoadMore();
                     }
                   }}
@@ -340,8 +371,18 @@ const FilterBadge: React.FC<FilterBadgeProps> = ({ label, value, onClear }) => (
       onClick={onClear}
       className="ml-1 p-0.5 hover:bg-commit-fix hover:text-white rounded-full transition-all"
     >
-      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+      <svg
+        className="w-3 h-3"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2.5}
+          d="M6 18L18 6M6 6l12 12"
+        />
       </svg>
     </button>
   </div>

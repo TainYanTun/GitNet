@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, shell, ipcMain, dialog } from "electron";
+import { app, BrowserWindow, Menu, shell, ipcMain, dialog, clipboard } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import { isDev, checkGitInstallation } from "./utils";
@@ -411,7 +411,6 @@ class GitCanopyApp {
       shell.showItemInFolder(path),
     );
     ipcMain.handle("copy-to-clipboard", (_, text: string) => {
-      const { clipboard } = require("electron");
       clipboard.writeText(text);
     });
     ipcMain.handle("open-external", (_, url: string) => {

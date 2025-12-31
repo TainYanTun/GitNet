@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
   GitCanopyAPI,
-  AppEvent,
   Repository,
   Commit,
   Branch,
@@ -23,14 +22,20 @@ const gitcanopyAPI: GitCanopyAPI = {
 
   getRepository: (path: string) => ipcRenderer.invoke("get-repository", path),
   getStatus: (repoPath: string) => ipcRenderer.invoke("get-status", repoPath),
-  clone: (url: string, targetPath: string) => ipcRenderer.invoke("clone", url, targetPath),
-  cloneToParent: (url: string, parentPath: string) => ipcRenderer.invoke("clone-to-parent", url, parentPath),
-  stageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("stage-file", repoPath, filePath),
+  clone: (url: string, targetPath: string) =>
+    ipcRenderer.invoke("clone", url, targetPath),
+  cloneToParent: (url: string, parentPath: string) =>
+    ipcRenderer.invoke("clone-to-parent", url, parentPath),
+  stageFile: (repoPath: string, filePath: string) =>
+    ipcRenderer.invoke("stage-file", repoPath, filePath),
   stageAll: (repoPath: string) => ipcRenderer.invoke("stage-all", repoPath),
-  unstageFile: (repoPath: string, filePath: string) => ipcRenderer.invoke("unstage-file", repoPath, filePath),
+  unstageFile: (repoPath: string, filePath: string) =>
+    ipcRenderer.invoke("unstage-file", repoPath, filePath),
   unstageAll: (repoPath: string) => ipcRenderer.invoke("unstage-all", repoPath),
-  discardChanges: (repoPath: string, filePath: string) => ipcRenderer.invoke("discard-changes", repoPath, filePath),
-  commit: (repoPath: string, message: string) => ipcRenderer.invoke("commit", repoPath, message),
+  discardChanges: (repoPath: string, filePath: string) =>
+    ipcRenderer.invoke("discard-changes", repoPath, filePath),
+  commit: (repoPath: string, message: string) =>
+    ipcRenderer.invoke("commit", repoPath, message),
   push: (repoPath: string) => ipcRenderer.invoke("push", repoPath),
 
   // Git data operations
@@ -44,7 +49,6 @@ const gitcanopyAPI: GitCanopyAPI = {
 
   getRecentCommits: (repoPath: string): Promise<Commit[]> =>
     ipcRenderer.invoke("get-recent-commits", repoPath),
-
 
   getBranches: (repoPath: string): Promise<Branch[]> =>
     ipcRenderer.invoke("get-branches", repoPath),
@@ -73,7 +77,10 @@ const gitcanopyAPI: GitCanopyAPI = {
     ipcRenderer.invoke("git:get-hot-files", repoPath, limit),
   getContributors: (repoPath: string) =>
     ipcRenderer.invoke("git:get-contributors", repoPath),
-  getGitCommandHistory: (limit?: number, offset?: number): Promise<GitCommandLog[]> =>
+  getGitCommandHistory: (
+    limit?: number,
+    offset?: number,
+  ): Promise<GitCommandLog[]> =>
     ipcRenderer.invoke("get-git-command-history", limit, offset),
   clearGitCommandHistory: (): Promise<void> =>
     ipcRenderer.invoke("clear-git-command-history"),
@@ -143,7 +150,10 @@ const gitcanopyAPI: GitCanopyAPI = {
 
 // Expose the API to the renderer process
 if (process.env.NODE_ENV === "development") {
-  console.log("🔧 [Preload] Exposing gitcanopyAPI with keys:", Object.keys(gitcanopyAPI));
+  console.log(
+    "🔧 [Preload] Exposing gitcanopyAPI with keys:",
+    Object.keys(gitcanopyAPI),
+  );
 }
 contextBridge.exposeInMainWorld("gitcanopyAPI", gitcanopyAPI);
 

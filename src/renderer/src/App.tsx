@@ -101,7 +101,6 @@ const App: React.FC = () => {
         if (window.gitcanopyAPI && typeof window.gitcanopyAPI.getInitialRepo === 'function') {
           const initialPath = await window.gitcanopyAPI.getInitialRepo();
           if (initialPath) {
-            console.log("Loading initial repository from CLI:", initialPath);
             handleSelectRepository(initialPath);
           }
         }
@@ -116,7 +115,6 @@ const App: React.FC = () => {
   // Set up event listeners for repository changes
   useEffect(() => {
     const handleRepositoryChanged = async (event: any) => {
-      console.log("Repository changed:", event);
       if (state.repository) {
         try {
           const updatedRepo = await window.gitcanopyAPI.getRepository(state.repository.path);
@@ -131,7 +129,6 @@ const App: React.FC = () => {
     };
 
     const handleHeadChanged = async (event: any) => {
-      console.log("HEAD changed:", event);
       if (state.repository) {
         try {
           const updatedRepo = await window.gitcanopyAPI.getRepository(state.repository.path);

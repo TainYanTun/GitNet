@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
   FolderOpenOutlined,
-  GithubOutlined,
-  HistoryOutlined,
   PlusCircleOutlined,
   LoadingOutlined,
   ArrowRightOutlined,
-  CloseOutlined
+  CloseOutlined,
 } from "@ant-design/icons";
 import { useToast } from "./ToastContext";
 
@@ -48,15 +46,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     try {
       showToast("Select destination folder", "info");
       const parentPath = await window.gitcanopyAPI.selectDirectory();
-      
+
       if (!parentPath) return;
 
       setIsCloning(true);
       setShowCloneInput(false);
       showToast("Cloning repository...", "info");
-      
-      const repoPath = await window.gitcanopyAPI.cloneToParent(cloneUrl, parentPath);
-      
+
+      const repoPath = await window.gitcanopyAPI.cloneToParent(
+        cloneUrl,
+        parentPath,
+      );
+
       showToast("Clone successful", "success");
       onSelectRepository(repoPath);
     } catch (err) {
@@ -68,12 +69,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   return (
     <div className="h-full w-full bg-zed-bg dark:bg-zed-dark-bg flex flex-col font-sans overflow-hidden relative">
       {/* Subtle Background Elements */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-[0.05] dark:opacity-[0.1]" 
-        style={{ 
-          backgroundImage: 'radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)', 
-          backgroundSize: '24px 24px' 
-        }} 
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.05] dark:opacity-[0.1]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
+          backgroundSize: "24px 24px",
+        }}
       />
 
       {/* Fake Title Bar */}
@@ -110,43 +112,62 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     >
                       <FolderOpenOutlined className="text-base text-zed-muted group-hover:text-zed-accent transition-colors" />
                       <div className="flex flex-col items-start gap-0.5">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-zed-text dark:text-zed-dark-text group-hover:text-zed-accent transition-colors">Open Repository</span>
-                        <span className="text-[10px] font-mono text-zed-muted dark:text-zed-dark-muted opacity-60">local filesystem</span>
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zed-text dark:text-zed-dark-text group-hover:text-zed-accent transition-colors">
+                          Open Repository
+                        </span>
+                        <span className="text-[10px] font-mono text-zed-muted dark:text-zed-dark-muted opacity-60">
+                          local filesystem
+                        </span>
                       </div>
-                      <span className="ml-auto text-[10px] font-mono text-zed-muted opacity-40 group-hover:opacity-100 transition-opacity">⌘O</span>
+                      <span className="ml-auto text-[10px] font-mono text-zed-muted opacity-40 group-hover:opacity-100 transition-opacity">
+                        ⌘O
+                      </span>
                     </button>
 
-                    <button 
+                    <button
                       onClick={() => setShowCloneInput(true)}
                       disabled={isCloning}
                       className="group flex items-center gap-3 px-4 py-3 w-full border border-zed-border dark:border-zed-dark-border bg-zed-bg dark:bg-zed-dark-bg hover:bg-zed-surface dark:hover:bg-zed-dark-surface hover:border-zed-accent dark:hover:border-zed-dark-accent transition-all duration-100 disabled:opacity-50"
                     >
-                      {isCloning ? <LoadingOutlined className="text-base text-zed-accent" /> : <PlusCircleOutlined className="text-base text-zed-muted group-hover:text-zed-accent transition-colors" />}
+                      {isCloning ? (
+                        <LoadingOutlined className="text-base text-zed-accent" />
+                      ) : (
+                        <PlusCircleOutlined className="text-base text-zed-muted group-hover:text-zed-accent transition-colors" />
+                      )}
                       <div className="flex flex-col items-start gap-0.5">
                         <span className="text-[11px] font-bold uppercase tracking-widest text-zed-text dark:text-zed-dark-text group-hover:text-zed-accent transition-colors">
                           {isCloning ? "Cloning..." : "Clone Repository"}
                         </span>
-                        <span className="text-[10px] font-mono text-zed-muted dark:text-zed-dark-muted opacity-60">https://...</span>
+                        <span className="text-[10px] font-mono text-zed-muted dark:text-zed-dark-muted opacity-60">
+                          https://...
+                        </span>
                       </div>
                     </button>
                   </>
                 ) : (
                   <div className="p-4 bg-zed-surface dark:bg-zed-dark-surface border border-zed-accent dark:border-zed-dark-accent shadow-lg animate-in slide-in-from-top-2">
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-zed-accent">Clone Remote</span>
-                      <button onClick={() => setShowCloneInput(false)} className="ml-auto text-zed-muted hover:text-zed-text"><CloseOutlined className="text-xs" /></button>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zed-accent">
+                        Clone Remote
+                      </span>
+                      <button
+                        onClick={() => setShowCloneInput(false)}
+                        className="ml-auto text-zed-muted hover:text-zed-text"
+                      >
+                        <CloseOutlined className="text-xs" />
+                      </button>
                     </div>
                     <div className="flex gap-2">
-                      <input 
+                      <input
                         ref={inputRef}
                         type="text"
                         placeholder="https://github.com/user/repo.git"
                         value={cloneUrl}
                         onChange={(e) => setCloneUrl(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && executeClone()}
+                        onKeyDown={(e) => e.key === "Enter" && executeClone()}
                         className="flex-1 bg-zed-bg dark:bg-zed-dark-bg border border-zed-border dark:border-zed-dark-border px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-zed-accent text-zed-text dark:text-zed-dark-text"
                       />
-                      <button 
+                      <button
                         onClick={executeClone}
                         className="bg-zed-accent text-white px-3 py-1.5 hover:opacity-90 transition-opacity"
                       >
@@ -163,7 +184,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  window.gitcanopyAPI.openExternal("https://github.com/TainYanTun/GitCanopy/blob/main/documentation.md");
+                  window.gitcanopyAPI.openExternal(
+                    "https://github.com/TainYanTun/GitCanopy/blob/main/documentation.md",
+                  );
                 }}
                 className="text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-zed-accent transition-all"
               >
@@ -173,7 +196,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  window.gitcanopyAPI.openExternal("https://github.com/TainYanTun/GitCanopy");
+                  window.gitcanopyAPI.openExternal(
+                    "https://github.com/TainYanTun/GitCanopy",
+                  );
                 }}
                 className="text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 hover:text-zed-accent transition-all"
               >

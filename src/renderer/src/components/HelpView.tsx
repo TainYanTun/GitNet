@@ -113,7 +113,7 @@ export const HelpView: React.FC = () => {
             <div className="space-y-3">
               <h3 className="font-bold text-zed-text dark:text-zed-dark-text">Linear Focus Mode</h3>
               <p className="text-zed-muted dark:text-zed-dark-muted leading-relaxed">
-                Hovering over any node triggers a recursive lineage trace. <span className="text-zed-text dark:text-zed-dark-text font-semibold underline decoration-zed-accent/30">Ancestors</span> and <span className="text-zed-text dark:text-zed-dark-text font-semibold underline decoration-zed-accent/30">Descendants</span> are highlighted, while unrelated branches are dimmed. This isolates the "story" of a feature from the noise of the rest of the repository.
+                Hovering over any node triggers a recursive lineage trace. <span className="text-zed-text dark:text-zed-dark-text font-semibold underline decoration-zed-accent/30">Ancestors</span> and <span className="text-zed-text dark:text-zed-dark-text font-semibold underline decoration-zed-accent/30">Descendants</span> are highlighted, while unrelated branches are dimmed. This isolates the &quot;story&quot; of a feature from the noise of the rest of the repository.
               </p>
             </div>
 

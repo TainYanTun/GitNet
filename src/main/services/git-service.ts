@@ -228,7 +228,7 @@ export class GitService {
       
       const files: StatusFile[] = lines.map(line => {
         const xy = line.substring(0, 2);
-        let rawPath = line.substring(3);
+        const rawPath = line.substring(3);
         
         // Handle renamed files: "old -> new"
         let finalPath = rawPath;

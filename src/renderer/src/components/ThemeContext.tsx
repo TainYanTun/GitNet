@@ -32,8 +32,6 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
     const applyTheme = (t: Theme) => {
       const isDark = t === "dark" || (t === "system" && systemDark.matches);
 
-      console.log("Applying theme:", t, "isDark:", isDark);
-
       if (isDark) {
         root.classList.add("dark");
       } else {
@@ -62,11 +60,9 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({
   }, [theme]);
 
   const toggleTheme = () => {
-    console.log("Toggling theme...");
     setTheme((prev) => {
       const next =
         prev === "light" ? "dark" : prev === "dark" ? "system" : "light";
-      console.log("Theme changed from", prev, "to", next);
       return next;
     });
   };

@@ -1,4 +1,10 @@
-import { Commit, Branch, VisualizationData, GraphNode, GraphEdge, LaneSegment } from "@shared/types";
+import {
+  Commit,
+  Branch,
+  VisualizationData,
+  GraphNode,
+  GraphEdge,
+} from "@shared/types";
 
 /**
  * GitKraken-style layout engine.
@@ -8,7 +14,7 @@ export const calculateLayout = (
   commits: Commit[],
   branches: Branch[],
   headCommitHash?: string,
-  stashes: string[] = []
+  stashes: string[] = [],
 ): VisualizationData => {
   if (commits.length === 0) {
     return {
@@ -24,17 +30,20 @@ export const calculateLayout = (
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
   const commitToLane = new Map<string, number>();
-  const activeLanes: (string | null)[] = []; 
-  
-  const laneWidth = 40; 
+  const activeLanes: (string | null)[] = [];
+
+  const laneWidth = 40;
   const commitHeight = 60;
 
-  const isMainBranch = (name?: string) => 
-    name === "main" || name === "master" || name === "origin/main" || name === "origin/master";
+  const isMainBranch = (name?: string) =>
+    name === "main" ||
+    name === "master" ||
+    name === "origin/main" ||
+    name === "origin/master";
 
   const getBranchColor = (branchName?: string) => {
     if (!branchName) return "#7c3aed";
-    const branch = branches.find(b => b.name === branchName);
+    const branch = branches.find((b) => b.name === branchName);
     return branch ? branch.color : "#7c3aed";
   };
 
@@ -44,9 +53,9 @@ export const calculateLayout = (
 
     // Main branches prefer Lane 0
     if (lane === -1 && isMainBranch(commit.branchName)) {
-        if (activeLanes[0] === null || activeLanes[0] === undefined) {
-            lane = 0;
-        }
+      if (activeLanes[0] === null || activeLanes[0] === undefined) {
+        lane = 0;
+      }
     }
 
     if (lane === -1) {
@@ -70,12 +79,12 @@ export const calculateLayout = (
     const parents = commit.parents || [];
     if (parents.length > 0) {
       const primaryParent = parents[0];
-      
+
       // Primary parent continues the lane if not already assigned
       if (activeLanes.indexOf(primaryParent) === -1) {
-          activeLanes[lane] = primaryParent;
+        activeLanes[lane] = primaryParent;
       } else {
-          activeLanes[lane] = null; // Lane ends or merges elsewhere
+        activeLanes[lane] = null; // Lane ends or merges elsewhere
       }
 
       // Other parents (merges)
@@ -83,7 +92,10 @@ export const calculateLayout = (
         const pHash = parents[i];
         if (activeLanes.indexOf(pHash) === -1) {
           let nextSlot = 0;
-          while (nextSlot < activeLanes.length && activeLanes[nextSlot] !== null) {
+          while (
+            nextSlot < activeLanes.length &&
+            activeLanes[nextSlot] !== null
+          ) {
             nextSlot++;
           }
           if (nextSlot === activeLanes.length) {
@@ -107,7 +119,11 @@ export const calculateLayout = (
       y: (yIndex + 1) * commitHeight,
       lane,
       color,
-      shape: commit.isMerge ? "diamond" : (commit.type === "revert" ? "square" : "circle"),
+      shape: commit.isMerge
+        ? "diamond"
+        : commit.type === "revert"
+          ? "square"
+          : "circle",
       size: isHead ? 10 : 7,
       children: [],
       parents: commit.parents || [],
@@ -116,9 +132,9 @@ export const calculateLayout = (
 
   // 2. Create Edges with node lookups
   const nodeMap = new Map<string, GraphNode>();
-  nodes.forEach(n => nodeMap.set(n.id, n));
+  nodes.forEach((n) => nodeMap.set(n.id, n));
 
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     node.parents.forEach((parentHash, pIndex) => {
       const parentNode = nodeMap.get(parentHash);
       if (parentNode) {
@@ -126,17 +142,17 @@ export const calculateLayout = (
           id: `${parentHash}-${node.id}`,
           source: parentHash,
           target: node.id,
-          color: pIndex === 0 ? node.color : (parentNode.color || node.color),
+          color: pIndex === 0 ? node.color : parentNode.color || node.color,
           type: pIndex > 0 ? "merge" : "normal",
-          points: [] // Points calculated by renderer
+          points: [], // Points calculated by renderer
         });
         parentNode.children.push(node.id);
       }
     });
   });
 
-  const maxX = Math.max(...nodes.map(n => n.x), 0) + laneWidth * 2;
-  const maxY = Math.max(...nodes.map(n => n.y), 0) + commitHeight;
+  const maxX = Math.max(...nodes.map((n) => n.x), 0) + laneWidth * 2;
+  const maxY = Math.max(...nodes.map((n) => n.y), 0) + commitHeight;
 
   return {
     nodes,
@@ -151,55 +167,55 @@ export const calculateLayout = (
 export const prepareTableLayout = (
   commits: Commit[],
   branches: Branch[],
-  headCommitHash?: string
+  headCommitHash?: string,
 ) => {
-    // Simplified version for the table row view, using same lane logic
-    const activeLanes: (string | null)[] = [];
-    
-    return commits.map((commit) => {
-        let lane = activeLanes.indexOf(commit.hash);
-        if (lane === -1) {
-            lane = activeLanes.indexOf(null);
-            if (lane === -1) {
-                lane = activeLanes.length;
-                activeLanes.push(commit.hash);
-            } else {
-                activeLanes[lane] = commit.hash;
-            }
-        } else {
-            activeLanes[lane] = commit.hash;
+  // Simplified version for the table row view, using same lane logic
+  const activeLanes: (string | null)[] = [];
+
+  return commits.map((commit) => {
+    let lane = activeLanes.indexOf(commit.hash);
+    if (lane === -1) {
+      lane = activeLanes.indexOf(null);
+      if (lane === -1) {
+        lane = activeLanes.length;
+        activeLanes.push(commit.hash);
+      } else {
+        activeLanes[lane] = commit.hash;
+      }
+    } else {
+      activeLanes[lane] = commit.hash;
+    }
+
+    const lanesAtThisRow = [...activeLanes];
+
+    // Update for parents
+    const parents = commit.parents || [];
+    if (parents.length > 0) {
+      const primaryParent = parents[0];
+      if (activeLanes.indexOf(primaryParent) === -1) {
+        activeLanes[lane] = primaryParent;
+      } else {
+        activeLanes[lane] = null;
+      }
+
+      for (let i = 1; i < parents.length; i++) {
+        const pHash = parents[i];
+        if (activeLanes.indexOf(pHash) === -1) {
+          const slot = activeLanes.indexOf(null);
+          if (slot === -1) activeLanes.push(pHash);
+          else activeLanes[slot] = pHash;
         }
+      }
+    } else {
+      activeLanes[lane] = null;
+    }
 
-        const lanesAtThisRow = [...activeLanes];
-
-        // Update for parents
-        const parents = commit.parents || [];
-        if (parents.length > 0) {
-            const primaryParent = parents[0];
-            if (activeLanes.indexOf(primaryParent) === -1) {
-                activeLanes[lane] = primaryParent;
-            } else {
-                activeLanes[lane] = null;
-            }
-
-            for (let i = 1; i < parents.length; i++) {
-                const pHash = parents[i];
-                if (activeLanes.indexOf(pHash) === -1) {
-                    const slot = activeLanes.indexOf(null);
-                    if (slot === -1) activeLanes.push(pHash);
-                    else activeLanes[slot] = pHash;
-                }
-            }
-        } else {
-            activeLanes[lane] = null;
-        }
-
-        const branch = branches.find(b => b.name === commit.branchName);
-        return {
-            commit,
-            lane,
-            lanesAtThisRow,
-            color: branch ? branch.color : "#7c3aed"
-        };
-    });
+    const branch = branches.find((b) => b.name === commit.branchName);
+    return {
+      commit,
+      lane,
+      lanesAtThisRow,
+      color: branch ? branch.color : "#7c3aed",
+    };
+  });
 };
