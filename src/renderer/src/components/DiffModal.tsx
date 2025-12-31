@@ -156,24 +156,7 @@ export const DiffModal: React.FC<DiffModalProps> = ({
       width="90%"
       style={{ top: 20 }}
       centered={false}
-      closeIcon={
-        <div className="text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text p-1 rounded transition-colors duration-200">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="w-5 h-5"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </div>
-      }
+      closable={false}
       classNames={{
         content: "p-0 overflow-hidden bg-zed-surface dark:bg-zed-dark-surface rounded-lg border border-zed-border dark:border-zed-dark-border shadow-2xl",
         mask: "bg-black/60 backdrop-blur-sm",
@@ -206,6 +189,26 @@ export const DiffModal: React.FC<DiffModalProps> = ({
             >
               {copied ? <CheckOutlined className="animate-in zoom-in" /> : <CopyOutlined />}
               <span>{copied ? "Copied" : "Copy Full Diff"}</span>
+            </button>
+            <div className="w-px h-4 bg-zed-border dark:border-zed-dark-border mx-1" />
+            <button
+              onClick={onClose}
+              className="text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text p-1.5 rounded transition-colors duration-200 hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={2}
+                stroke="currentColor"
+                className="w-4 h-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
           </div>
         </div>

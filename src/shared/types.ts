@@ -337,6 +337,7 @@ export interface GitCanopyAPI {
   // Utility
   showItemInFolder: (path: string) => Promise<void>;
   openExternal: (url: string) => Promise<void>;
+  copyToClipboard: (text: string) => Promise<void>;
 }
 
 // Extend Window interface for TypeScript

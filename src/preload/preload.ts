@@ -136,6 +136,9 @@ const gitcanopyAPI: GitCanopyAPI = {
 
   openExternal: (url: string): Promise<void> =>
     ipcRenderer.invoke("open-external", url),
+
+  copyToClipboard: (text: string): Promise<void> =>
+    ipcRenderer.invoke("copy-to-clipboard", text),
 };
 
 // Expose the API to the renderer process

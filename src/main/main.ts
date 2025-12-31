@@ -410,6 +410,10 @@ class GitCanopyApp {
     ipcMain.handle("show-item-in-folder", (_, path: string) =>
       shell.showItemInFolder(path),
     );
+    ipcMain.handle("copy-to-clipboard", (_, text: string) => {
+      const { clipboard } = require("electron");
+      clipboard.writeText(text);
+    });
     ipcMain.handle("open-external", (_, url: string) => {
       try {
         const parsed = new URL(url);

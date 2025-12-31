@@ -27,12 +27,17 @@ export const GitConsole: React.FC = () => {
     setLogs([]);
   };
 
-  const handleCopy = (log: GitCommandLog) => {
+  const handleCopy = async (log: GitCommandLog) => {
     const fullCommand = `git ${log.args.join(' ')}`;
-    navigator.clipboard.writeText(fullCommand);
-    setCopiedId(log.id);
-    showToast("Command copied to clipboard", "success", 2000);
-    setTimeout(() => setCopiedId(null), 2000);
+    try {
+      await window.gitcanopyAPI.copyToClipboard(fullCommand);
+      setCopiedId(log.id);
+      showToast("Command copied to clipboard", "success", 2000);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy command:", error);
+      showToast("Failed to copy command", "error", 2000);
+    }
   };
 
   return (
