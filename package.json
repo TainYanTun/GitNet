@@ -6,6 +6,10 @@
   "homepage": "./",
   "author": "TainYanTun",
   "license": "MIT",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/TainYanTun"
+  },
   "private": true,
   "scripts": {
     "dev": "bun run build:preload && concurrently \"bun run dev:renderer\" \"bun run dev:main\"",

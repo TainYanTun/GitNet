@@ -44,41 +44,12 @@ For developers looking to build from source or contribute, please refer to the [
 
 ## 🎮 Usage
 
-### Opening Your First Repository
+- **Open Repository:** Click the button on the welcome screen or use `⌘ + O` / `Ctrl + O`.
+- **Explore History:** Navigate the interactive **Graph** or search through the **Commit History**.
+- **Manage Changes:** Stage, commit, and push your work from the **Changes View**.
+- **Analyze Activity:** Use **Team Insights** and **File Hotspots** to track contributor impact.
 
-<table>
-<tr>
-<td width="50%">
-
-**Method 1: Welcome Screen**
-1. Launch GitCanopy
-2. Click **Open Repository**
-3. Navigate to any folder with a `.git` directory
-
-</td>
-<td width="50%">
-
-**Method 2: Keyboard Shortcut**
-- macOS: `⌘ + O`
-- Windows/Linux: `Ctrl + O`
-
-</td>
-</tr>
-</table>
-
-### 🧭 Interface Navigation
-
-| View | Description |
-|------|-------------|
-| **Graph View** | Primary visual DAG for history navigation—the heart of GitCanopy |
-| **Commit History** | Searchable, chronological list of all commits with filters |
-| **Changes View** | Review, stage, and commit local modifications |
-| **Team Insights** | Analytics dashboard for contributor activity |
-| **Stash Manager** | Visual gallery of saved work-in-progress states |
-
-> **Pro Tip:** For a comprehensive feature breakdown and advanced workflows, check out our [Full Documentation](documentation.md)
-
----
+> 💡 See [Full Documentation](documentation.md) for advanced features.
 
 ## ⌨️ Keyboard Shortcuts
 
@@ -151,35 +122,17 @@ graph TD
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Whether it's bug reports, feature requests, or code contributions, every bit helps make GitCanopy better.
+We welcome contributions from the community! Whether it's bug reports, feature requests, or code contributions, every bit helps make GitCanopy better. Refer to our [Development Guide](setup.md) to get started.
 
-### How to Contribute
+---
 
-1. **Fork** the repository
-2. **Create** your feature branch  
-   ```bash
-   git checkout -b feature/AmazingFeature
-   ```
-3. **Commit** your changes  
-   ```bash
-   git commit -m 'Add some AmazingFeature'
-   ```
-4. **Push** to the branch  
-   ```bash
-   git push origin feature/AmazingFeature
-   ```
-5. **Open** a Pull Request
+## 💖 Support the Project
 
-### Development Guidelines
+GitCanopy is a solo developer project built with passion. If you find it useful, please consider supporting its growth:
 
-- Follow the existing code style (TypeScript + ESLint)
-- Write tests for new features
-- Update documentation as needed
-- Keep commits atomic and well-described
-
-### Priority Areas
-
-Check our [Roadmap](#-roadmap) for current development priorities. Issues labeled `good-first-issue` are great entry points for new contributors.
+- ⭐ **Star this repository** to help others discover the project.
+- 🚀 **Share GitCanopy** with your team or on social media.
+- 🤝 **[Sponsor the Developer](https://github.com/sponsors/TainYanTun)** on GitHub.
 
 ---
 

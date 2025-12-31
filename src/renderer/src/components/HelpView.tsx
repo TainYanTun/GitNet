@@ -405,9 +405,10 @@ export const HelpView: React.FC = () => {
                   Shield
                 </span>
                 <p className="text-zed-muted dark:text-zed-dark-muted leading-relaxed font-medium">
-                  <strong>Read-Only Access:</strong> GitCanopy is built as a
-                  non-destructive browser. It cannot modify history or perform
-                  destructive write operations.
+                  <strong>Secure Interaction:</strong> GitCanopy prioritizes
+                  repository integrity. While it supports standard staging and
+                  committing, all graph navigation and data extraction (like
+                  copying hashes) are strictly non-destructive operations.
                 </p>
               </li>
               <li className="flex gap-6 items-start pt-4 border-t border-zed-border dark:border-zed-dark-border/50">
@@ -425,8 +426,32 @@ export const HelpView: React.FC = () => {
         </section>
 
         {/* Colophon */}
-        <footer className="pt-20 text-[9px] font-mono uppercase tracking-[0.5em] text-zed-muted dark:text-zed-dark-muted opacity-40 text-center">
-          GitCanopy Visualizer / Technical Manual / Rev 2025.12.28
+        <footer className="pt-20 space-y-4 text-center">
+          <div className="flex justify-center gap-6">
+            <button
+              onClick={() =>
+                window.gitcanopyAPI.openExternal(
+                  "https://github.com/sponsors/TainYanTun",
+                )
+              }
+              className="text-[10px] font-bold uppercase tracking-widest text-zed-accent dark:text-zed-dark-accent hover:underline transition-all"
+            >
+              • Support Development
+            </button>
+            <button
+              onClick={() =>
+                window.gitcanopyAPI.openExternal(
+                  "https://github.com/TainYanTun/GitCanopy",
+                )
+              }
+              className="text-[10px] font-bold uppercase tracking-widest text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text transition-all"
+            >
+              • Star on GitHub
+            </button>
+          </div>
+          <div className="text-[9px] font-mono uppercase tracking-[0.5em] text-zed-muted dark:text-zed-dark-muted opacity-40">
+            GitCanopy Visualizer / Technical Manual / Rev 2025.12.28
+          </div>
         </footer>
       </div>
     </div>
