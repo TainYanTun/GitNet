@@ -14,7 +14,7 @@ export const calculateLayout = (
   commits: Commit[],
   branches: Branch[],
   headCommitHash?: string,
-  stashes: string[] = [],
+  _stashes: string[] = [],
 ): VisualizationData => {
   if (commits.length === 0) {
     return {
@@ -167,7 +167,7 @@ export const calculateLayout = (
 export const prepareTableLayout = (
   commits: Commit[],
   branches: Branch[],
-  headCommitHash?: string,
+  _headCommitHash?: string,
 ) => {
   // Simplified version for the table row view, using same lane logic
   const activeLanes: (string | null)[] = [];

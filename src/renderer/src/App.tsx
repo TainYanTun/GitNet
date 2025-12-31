@@ -83,7 +83,9 @@ const App: React.FC = () => {
   const refreshRepository = async () => {
     if (state.repository) {
       try {
-        const updatedRepo = await window.gitcanopyAPI.getRepository(state.repository.path);
+        const updatedRepo = await window.gitcanopyAPI.getRepository(
+          state.repository.path,
+        );
         setState((prev) => ({
           ...prev,
           repository: updatedRepo,
@@ -98,7 +100,10 @@ const App: React.FC = () => {
   useEffect(() => {
     const checkInitialRepo = async () => {
       try {
-        if (window.gitcanopyAPI && typeof window.gitcanopyAPI.getInitialRepo === 'function') {
+        if (
+          window.gitcanopyAPI &&
+          typeof window.gitcanopyAPI.getInitialRepo === "function"
+        ) {
           const initialPath = await window.gitcanopyAPI.getInitialRepo();
           if (initialPath) {
             handleSelectRepository(initialPath);
@@ -114,10 +119,12 @@ const App: React.FC = () => {
 
   // Set up event listeners for repository changes
   useEffect(() => {
-    const handleRepositoryChanged = async (event: any) => {
+    const handleRepositoryChanged = async (_event: any) => {
       if (state.repository) {
         try {
-          const updatedRepo = await window.gitcanopyAPI.getRepository(state.repository.path);
+          const updatedRepo = await window.gitcanopyAPI.getRepository(
+            state.repository.path,
+          );
           setState((prev) => ({
             ...prev,
             repository: updatedRepo,
@@ -128,10 +135,12 @@ const App: React.FC = () => {
       }
     };
 
-    const handleHeadChanged = async (event: any) => {
+    const handleHeadChanged = async (_event: any) => {
       if (state.repository) {
         try {
-          const updatedRepo = await window.gitcanopyAPI.getRepository(state.repository.path);
+          const updatedRepo = await window.gitcanopyAPI.getRepository(
+            state.repository.path,
+          );
           setState((prev) => ({
             ...prev,
             repository: updatedRepo,
@@ -147,7 +156,9 @@ const App: React.FC = () => {
     let unsubscribeHead: (() => void) | undefined;
 
     if (window.gitcanopyAPI) {
-      unsubscribeRepo = window.gitcanopyAPI.onRepositoryChanged(handleRepositoryChanged);
+      unsubscribeRepo = window.gitcanopyAPI.onRepositoryChanged(
+        handleRepositoryChanged,
+      );
       unsubscribeHead = window.gitcanopyAPI.onHeadChanged(handleHeadChanged);
     }
 
@@ -196,7 +207,10 @@ const App: React.FC = () => {
               <button onClick={handleErrorDismiss} className="btn-secondary">
                 Dismiss
               </button>
-              <button onClick={() => handleSelectRepository()} className="btn-primary">
+              <button
+                onClick={() => handleSelectRepository()}
+                className="btn-primary"
+              >
                 Try Again
               </button>
             </div>

@@ -43,8 +43,8 @@ const typeColorMap: Record<string, string> = {
 
 export const CommitHistory: React.FC<CommitHistoryProps> = ({
   commits,
-  branches,
-  headCommitHash,
+  branches: _branches,
+  headCommitHash: _headCommitHash,
   onCommitSelect,
   selectedCommitHash,
   filters,
