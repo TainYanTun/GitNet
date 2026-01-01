@@ -10,6 +10,10 @@
     "type": "github",
     "url": "https://github.com/sponsors/TainYanTun"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TainYanTun/GitCanopy.git"
+  },
   "private": true,
   "scripts": {
     "dev": "bun run build:preload && concurrently \"bun run dev:renderer\" \"bun run dev:main\"",
@@ -119,6 +123,11 @@
           ]
         }
       ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "TainYanTun",
+      "repo": "GitCanopy"
     }
   },
   "engines": {

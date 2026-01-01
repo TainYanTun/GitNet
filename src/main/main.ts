@@ -1,4 +1,12 @@
-import { app, BrowserWindow, Menu, shell, ipcMain, dialog, clipboard } from "electron";
+import {
+  app,
+  BrowserWindow,
+  Menu,
+  shell,
+  ipcMain,
+  dialog,
+  clipboard,
+} from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import { isDev, checkGitInstallation } from "./utils";
@@ -7,7 +15,7 @@ import { RepositoryWatcher } from "./services/repository-watcher";
 import { SettingsService } from "./services/settings-service";
 import { AuthService } from "./services/auth-service";
 import { UpdateService } from "./services/update-service";
-import { logger, logInfo, logError } from "./services/logger-service";
+import { logInfo, logError } from "./services/logger-service";
 import { CommitFilterOptions } from "../shared/types";
 
 class GitCanopyApp {
@@ -46,12 +54,11 @@ class GitCanopyApp {
         await this.createWindow();
         this.setupIpcHandlers();
         this.setupMenu();
-        
+
         // Check for updates after window is ready
         setTimeout(() => {
-            this.updateService.checkForUpdates();
+          this.updateService.checkForUpdates();
         }, 3000);
-
       } catch (error) {
         logError("App", error);
         console.error("Failed to initialize application:", error);
@@ -150,7 +157,9 @@ class GitCanopyApp {
       this.mainWindow.loadURL("http://localhost:3000");
       this.mainWindow.webContents.openDevTools();
     } else {
-      this.mainWindow.loadFile(path.join(__dirname, "../../renderer/index.html"));
+      this.mainWindow.loadFile(
+        path.join(__dirname, "../../renderer/index.html"),
+      );
     }
 
     // Show window when ready to prevent visual flash
@@ -306,42 +315,47 @@ class GitCanopyApp {
       await this.settingsService.addRecentRepository(path);
       return repository;
     });
-    ipcMain.handle("get-status", (_, repoPath: string) => 
-      this.gitService.getStatus(repoPath)
+    ipcMain.handle("get-status", (_, repoPath: string) =>
+      this.gitService.getStatus(repoPath),
     );
-    ipcMain.handle("clone", (_, url: string, targetPath: string) => 
-      this.gitService.clone(url, targetPath)
+    ipcMain.handle("clone", (_, url: string, targetPath: string) =>
+      this.gitService.clone(url, targetPath),
     );
-    ipcMain.handle("clone-to-parent", (_, url: string, parentPath: string) => 
-      this.gitService.cloneToParent(url, parentPath)
+    ipcMain.handle("clone-to-parent", (_, url: string, parentPath: string) =>
+      this.gitService.cloneToParent(url, parentPath),
     );
-    ipcMain.handle("stage-file", (_, repoPath: string, filePath: string) => 
-      this.gitService.stageFile(repoPath, filePath)
+    ipcMain.handle("stage-file", (_, repoPath: string, filePath: string) =>
+      this.gitService.stageFile(repoPath, filePath),
     );
-    ipcMain.handle("stage-all", (_, repoPath: string) => 
-      this.gitService.stageAll(repoPath)
+    ipcMain.handle("stage-all", (_, repoPath: string) =>
+      this.gitService.stageAll(repoPath),
     );
-    ipcMain.handle("unstage-file", (_, repoPath: string, filePath: string) => 
-      this.gitService.unstageFile(repoPath, filePath)
+    ipcMain.handle("unstage-file", (_, repoPath: string, filePath: string) =>
+      this.gitService.unstageFile(repoPath, filePath),
     );
-    ipcMain.handle("unstage-all", (_, repoPath: string) => 
-      this.gitService.unstageAll(repoPath)
+    ipcMain.handle("unstage-all", (_, repoPath: string) =>
+      this.gitService.unstageAll(repoPath),
     );
-    ipcMain.handle("discard-changes", (_, repoPath: string, filePath: string) => 
-      this.gitService.discardChanges(repoPath, filePath)
+    ipcMain.handle("discard-changes", (_, repoPath: string, filePath: string) =>
+      this.gitService.discardChanges(repoPath, filePath),
     );
-    ipcMain.handle("commit", (_, repoPath: string, message: string) => 
-      this.gitService.commit(repoPath, message)
+    ipcMain.handle("commit", (_, repoPath: string, message: string) =>
+      this.gitService.commit(repoPath, message),
     );
-    ipcMain.handle("push", (_, repoPath: string) => 
-      this.gitService.push(repoPath)
+    ipcMain.handle("push", (_, repoPath: string) =>
+      this.gitService.push(repoPath),
     );
 
     // Git data operations
     ipcMain.handle(
       "get-commits",
-      (_, repoPath: string, limit?: number, offset?: number, options?: CommitFilterOptions) =>
-        this.gitService.getCommits(repoPath, limit, offset, options),
+      (
+        _,
+        repoPath: string,
+        limit?: number,
+        offset?: number,
+        options?: CommitFilterOptions,
+      ) => this.gitService.getCommits(repoPath, limit, offset, options),
     );
     ipcMain.handle("get-recent-commits", async (_, repoPath: string) => {
       const LIMIT = 5; // Display the last 5 commits
@@ -399,33 +413,38 @@ class GitCanopyApp {
     ipcMain.handle("git:get-contributors", (_, repoPath) =>
       this.gitService.getContributors(repoPath),
     );
-    ipcMain.handle("get-git-command-history", (_, limit?: number, offset?: number) =>
-      this.gitService.getCommandHistory(limit, offset),
+    ipcMain.handle(
+      "get-git-command-history",
+      (_, limit?: number, offset?: number) =>
+        this.gitService.getCommandHistory(limit, offset),
     );
     ipcMain.handle("clear-git-command-history", () =>
       this.gitService.clearCommandHistory(),
     );
-    ipcMain.handle("get-file-data-url", async (_, repoPath: string, filePath: string) => {
-      try {
-        const absolutePath = path.join(repoPath, filePath);
-        if (!fs.existsSync(absolutePath)) return null;
-        
-        const buffer = await fs.promises.readFile(absolutePath);
-        const ext = path.extname(filePath).toLowerCase();
-        let mimeType = "application/octet-stream";
-        
-        if (ext === ".png") mimeType = "image/png";
-        else if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
-        else if (ext === ".gif") mimeType = "image/gif";
-        else if (ext === ".svg") mimeType = "image/svg+xml";
-        else if (ext === ".ico") mimeType = "image/x-icon";
-        
-        return `data:${mimeType};base64,${buffer.toString("base64")}`;
-      } catch (error) {
-        console.error("Failed to get file data URL:", error);
-        return null;
-      }
-    });
+    ipcMain.handle(
+      "get-file-data-url",
+      async (_, repoPath: string, filePath: string) => {
+        try {
+          const absolutePath = path.join(repoPath, filePath);
+          if (!fs.existsSync(absolutePath)) return null;
+
+          const buffer = await fs.promises.readFile(absolutePath);
+          const ext = path.extname(filePath).toLowerCase();
+          let mimeType = "application/octet-stream";
+
+          if (ext === ".png") mimeType = "image/png";
+          else if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
+          else if (ext === ".gif") mimeType = "image/gif";
+          else if (ext === ".svg") mimeType = "image/svg+xml";
+          else if (ext === ".ico") mimeType = "image/x-icon";
+
+          return `data:${mimeType};base64,${buffer.toString("base64")}`;
+        } catch (error) {
+          console.error("Failed to get file data URL:", error);
+          return null;
+        }
+      },
+    );
 
     // File system operations
     ipcMain.handle("watch-repository", (_, repoPath: string) => {
@@ -460,7 +479,9 @@ class GitCanopyApp {
         if (parsed.protocol === "http:" || parsed.protocol === "https:") {
           return shell.openExternal(url);
         }
-        console.warn(`Blocked attempt to open invalid protocol: ${parsed.protocol}`);
+        console.warn(
+          `Blocked attempt to open invalid protocol: ${parsed.protocol}`,
+        );
         return Promise.reject(new Error("Invalid protocol"));
       } catch (e) {
         console.warn(`Blocked attempt to open invalid URL: ${url}`);
@@ -469,7 +490,9 @@ class GitCanopyApp {
     });
 
     // Auth
-    ipcMain.handle("auth-submit", (_, answer: string) => this.authService.submitCredentials(answer));
+    ipcMain.handle("auth-submit", (_, answer: string) =>
+      this.authService.submitCredentials(answer),
+    );
     ipcMain.handle("auth-cancel", () => this.authService.cancelAuth());
   }
 
