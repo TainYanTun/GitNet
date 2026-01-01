@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.png" width="300" alt="GitCanopy Interface" />
+<img src="assets/logo.png" width="230" alt="GitCanopy Interface" />
 
 # GitCanopy: Git Visulization Client designed for Professional Engineers
 
