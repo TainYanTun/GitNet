@@ -6,6 +6,8 @@ import { GitService } from "./services/git-service";
 import { RepositoryWatcher } from "./services/repository-watcher";
 import { SettingsService } from "./services/settings-service";
 import { AuthService } from "./services/auth-service";
+import { UpdateService } from "./services/update-service";
+import { logger, logInfo, logError } from "./services/logger-service";
 import { CommitFilterOptions } from "../shared/types";
 
 class GitCanopyApp {
@@ -14,21 +16,25 @@ class GitCanopyApp {
   private repositoryWatcher: RepositoryWatcher;
   private settingsService: SettingsService;
   private authService: AuthService;
+  private updateService: UpdateService;
 
   constructor() {
     this.authService = new AuthService();
     this.gitService = new GitService(this.authService);
     this.repositoryWatcher = new RepositoryWatcher();
     this.settingsService = new SettingsService();
+    this.updateService = new UpdateService();
     this.initializeApp();
   }
 
   private initializeApp(): void {
     // Handle app ready
     app.whenReady().then(async () => {
+      logInfo("App", "Application starting...");
       try {
         const isGitInstalled = await checkGitInstallation();
         if (!isGitInstalled) {
+          logError("App", "Git not found");
           dialog.showErrorBox(
             "Git Not Found",
             "Git is required to run GitCanopy. Please install Git and add it to your PATH, then restart the application.",
@@ -40,7 +46,14 @@ class GitCanopyApp {
         await this.createWindow();
         this.setupIpcHandlers();
         this.setupMenu();
+        
+        // Check for updates after window is ready
+        setTimeout(() => {
+            this.updateService.checkForUpdates();
+        }, 3000);
+
       } catch (error) {
+        logError("App", error);
         console.error("Failed to initialize application:", error);
         dialog.showErrorBox(
           "Initialization Error",
@@ -145,6 +158,7 @@ class GitCanopyApp {
       this.mainWindow?.show();
       if (this.mainWindow) {
         this.authService.setMainWindow(this.mainWindow);
+        this.updateService.setMainWindow(this.mainWindow);
       }
 
       if (isDev) {
