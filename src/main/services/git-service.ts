@@ -620,28 +620,84 @@ export class GitService {
 
   async getDiff(repoPath: string, commitHash: string, filePath: string): Promise<string> {
     try {
-      // 1. First check the size/type using numstat
-      const statsArgs = ["diff", `${commitHash}^`, commitHash, "--numstat", "--", filePath];
-      const statsOutput = await this.run(statsArgs, repoPath).catch(() => "");
+      // 1. Handle Untracked / Unstaged / Staged / Commit Diffs
+      let args: string[] = [];
       
-      if (statsOutput) {
-        const [added, deleted] = statsOutput.split("\t");
-        if (added === "-" || deleted === "-") {
-          return "Binary file - preview unavailable.";
+      if (!commitHash) {
+        // Unstaged or Untracked
+        const status = await this.run(["status", "--porcelain", "--", filePath], repoPath);
+        if (status.startsWith("??")) {
+          // Untracked: Show as all additions
+          // We use --no-index to compare with empty file to get a full addition diff
+          // But a simpler way for Electron is to just return a special indicator for binary
+          // or read the file. Let's use git's own diff mechanism for consistency.
+          args = ["diff", "--no-index", "/dev/null", filePath];
+          // Note: git diff --no-index might need absolute paths or relative to CWD
+          // For simplicity and safety, let's try a different approach:
+          try {
+            const isBinary = await this.isBinaryFile(path.join(repoPath, filePath));
+            if (isBinary) return "BINARY_FILE";
+            
+            const content = await fs.promises.readFile(path.join(repoPath, filePath), 'utf8');
+            return content.split('\n').map(line => `+${line}`).join('\n');
+          } catch (e) {
+            return "Error reading untracked file.";
+          }
+        } else {
+          // Tracked but unstaged
+          args = ["diff", "--", filePath];
+        }
+      } else if (commitHash === "HEAD") {
+        // Staged changes
+        args = ["diff", "--cached", "--", filePath];
+      } else {
+        // Commit changes: Diff between commit and its parent
+        args = ["diff", `${commitHash}^`, commitHash, "--", filePath];
+      }
+
+      // 2. Check for binary before running full diff if it's a commit/staged diff
+      if (args.length > 0 && args[0] !== "diff") {
+         // This shouldn't happen with the logic above
+      } else if (args.length > 0) {
+        // Check if it's a binary diff first using numstat
+        const checkArgs = [...args];
+        const numstatIdx = checkArgs.indexOf("--");
+        if (numstatIdx !== -1) {
+          checkArgs.splice(numstatIdx, 0, "--numstat");
+        } else {
+          checkArgs.push("--numstat");
         }
         
-        const totalChanges = parseInt(added) + parseInt(deleted);
-        if (totalChanges > 5000) {
-          return `File too large (${totalChanges} changes). Direct preview disabled for performance.`;
+        const statsOutput = await this.run(checkArgs, repoPath).catch(() => "");
+        if (statsOutput) {
+          const parts = statsOutput.split("\t");
+          if (parts[0] === "-" || parts[1] === "-") {
+            return "BINARY_FILE";
+          }
         }
       }
 
-      // 2. Fetch the actual diff
-      const args = ["diff", `${commitHash}^`, commitHash, "--", filePath];
-      return await this.run(args, repoPath);
+      const diff = await this.run(args, repoPath);
+      return diff || "No changes detected.";
     } catch (error) {
-      console.error(`Failed to get diff for ${filePath} at commit ${commitHash}:`, error);
-      return "Error loading diff content.";
+      console.error(`Failed to get diff for ${filePath} at ${commitHash || 'working tree'}:`, error);
+      return `Error loading diff: ${error instanceof Error ? error.message : "Unknown error"}`;
+    }
+  }
+
+  private async isBinaryFile(fullPath: string): Promise<boolean> {
+    try {
+      const buffer = Buffer.alloc(8000);
+      const fd = await fs.promises.open(fullPath, 'r');
+      const { bytesRead } = await fd.read(buffer, 0, 8000, 0);
+      await fd.close();
+      
+      for (let i = 0; i < bytesRead; i++) {
+        if (buffer[i] === 0) return true;
+      }
+      return false;
+    } catch {
+      return false;
     }
   }
 

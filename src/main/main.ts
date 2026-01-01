@@ -385,6 +385,27 @@ class GitCanopyApp {
     ipcMain.handle("clear-git-command-history", () =>
       this.gitService.clearCommandHistory(),
     );
+    ipcMain.handle("get-file-data-url", async (_, repoPath: string, filePath: string) => {
+      try {
+        const absolutePath = path.join(repoPath, filePath);
+        if (!fs.existsSync(absolutePath)) return null;
+        
+        const buffer = await fs.promises.readFile(absolutePath);
+        const ext = path.extname(filePath).toLowerCase();
+        let mimeType = "application/octet-stream";
+        
+        if (ext === ".png") mimeType = "image/png";
+        else if (ext === ".jpg" || ext === ".jpeg") mimeType = "image/jpeg";
+        else if (ext === ".gif") mimeType = "image/gif";
+        else if (ext === ".svg") mimeType = "image/svg+xml";
+        else if (ext === ".ico") mimeType = "image/x-icon";
+        
+        return `data:${mimeType};base64,${buffer.toString("base64")}`;
+      } catch (error) {
+        console.error("Failed to get file data URL:", error);
+        return null;
+      }
+    });
 
     // File system operations
     ipcMain.handle("watch-repository", (_, repoPath: string) => {

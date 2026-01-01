@@ -360,6 +360,7 @@ export const CommitDetails: React.FC<CommitDetailsProps> = ({
       )}
       {selectedFile && (
         <DiffModal
+          repoPath={repoPath}
           visible={isDiffModalVisible}
           onClose={() => setDiffModalVisible(false)}
           filePath={selectedFile.path}

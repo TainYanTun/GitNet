@@ -54,7 +54,7 @@ export const BranchExplorer: React.FC<BranchExplorerProps> = ({
         className={`w-3.5 h-3.5 flex-shrink-0 ${
           branch.name === currentBranchName
             ? 'text-zed-accent'
-            : 'text-zed-muted dark:text-zed-dark-muted group-hover/branch:text-zed-text'
+            : 'text-zed-muted dark:text-zed-dark-muted'
         }`}
         fill="none"
         stroke="currentColor"
@@ -84,7 +84,7 @@ export const BranchExplorer: React.FC<BranchExplorerProps> = ({
   ) => (
     <div key={`folder-${group.name}`} className="space-y-0.5">
       <div
-        className="flex items-center gap-1.5 px-2 py-1 text-xs rounded cursor-pointer transition-colors text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element dark:hover:bg-zed-dark-element select-none"
+        className="flex items-center gap-1.5 px-2 py-1 text-xs rounded cursor-pointer transition-colors text-zed-muted dark:text-zed-dark-muted hover:text-zed-text dark:hover:text-white hover:bg-zed-element dark:hover:bg-zed-dark-element select-none group"
         onClick={() => toggleFn(group.name)}
       >
         <svg

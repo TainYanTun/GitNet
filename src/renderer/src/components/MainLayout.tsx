@@ -558,7 +558,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           <div className="w-[228px] flex items-center gap-2.5 border-r border-zed-border dark:border-zed-dark-border mr-3">
             <button
               onClick={() => setCurrentView("graph")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "graph" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "graph" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="Graph View"
             >
               <svg
@@ -577,7 +577,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
             <button
               onClick={() => setCurrentView("history")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "history" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "history" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="Commit History"
             >
               <svg
@@ -596,7 +596,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
             <button
               onClick={() => setCurrentView("changes")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "changes" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "changes" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="Uncommitted Changes"
             >
               <svg
@@ -615,7 +615,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
             <button
               onClick={() => setCurrentView("insights")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "insights" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "insights" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="Insights View"
             >
               <svg
@@ -634,7 +634,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
             <button
               onClick={() => setCurrentView("contributors")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "contributors" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "contributors" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="Contributors"
             >
               <svg
@@ -653,7 +653,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
             <button
               onClick={() => setCurrentView("checkout")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "checkout" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "checkout" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="Checkout Branch"
             >
               <svg
@@ -699,7 +699,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           <div className="flex items-center gap-1 border-r border-zed-border dark:border-zed-dark-border pr-4 mr-2">
             <button
               onClick={() => setCurrentView("stashes")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "stashes" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "stashes" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="Stash Gallery"
             >
               <svg
@@ -718,7 +718,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
             <button
               onClick={() => setCurrentView("console")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "console" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "console" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="Git Console"
             >
               <svg
@@ -737,7 +737,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
             <button
               onClick={() => setCurrentView("help")}
-              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "help" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/50 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element/50"}`}
+              className={`p-1.5 rounded-none transition-all duration-200 ${currentView === "help" ? "bg-zed-element dark:bg-zed-dark-element text-zed-text dark:text-zed-dark-text shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zed-muted/50 dark:text-zed-dark-muted/80 hover:text-zed-text dark:hover:text-zed-dark-text hover:bg-zed-element/50 dark:hover:bg-zed-dark-element"}`}
               title="User Guide"
             >
               <svg

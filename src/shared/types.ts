@@ -310,6 +310,7 @@ export interface GitCanopyAPI {
   getContributors: (repoPath: string) => Promise<ContributorStats[]>;
   getGitCommandHistory: (limit?: number, offset?: number) => Promise<GitCommandLog[]>;
   clearGitCommandHistory: () => Promise<void>;
+  getFileDataUrl: (repoPath: string, filePath: string) => Promise<string | null>;
 
   // File system operations
   watchRepository: (repoPath: string) => Promise<void>;

@@ -84,6 +84,8 @@ const gitcanopyAPI: GitCanopyAPI = {
     ipcRenderer.invoke("get-git-command-history", limit, offset),
   clearGitCommandHistory: (): Promise<void> =>
     ipcRenderer.invoke("clear-git-command-history"),
+  getFileDataUrl: (repoPath: string, filePath: string): Promise<string | null> =>
+    ipcRenderer.invoke("get-file-data-url", repoPath, filePath),
 
   // File system operations
   watchRepository: (repoPath: string): Promise<void> =>

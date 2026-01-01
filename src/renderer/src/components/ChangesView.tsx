@@ -11,6 +11,10 @@ import {
   CaretDownOutlined,
   CaretRightOutlined,
   CheckCircleOutlined,
+  FileImageOutlined,
+  FileMarkdownOutlined,
+  CodeOutlined,
+  FileOutlined,
 } from "@ant-design/icons";
 import { DiffModal } from "./DiffModal";
 import { useToast } from "./ToastContext";
@@ -379,14 +383,6 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
               rows={3}
             />
             <div className="text-[9px] opacity-40 font-mono flex justify-between px-1">
-              <span
-                className={
-                  commitSummary.length > 50 ? "text-red-500 font-bold" : ""
-                }
-              >
-                {commitSummary.length}/50
-              </span>
-              <span>⌘ + Enter to commit</span>
             </div>
           </div>
         </div>
@@ -394,6 +390,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
 
       {selectedFile && (
         <DiffModal
+          repoPath={repoPath}
           visible={isDiffVisible}
           onClose={() => setIsDiffVisible(false)}
           filePath={selectedFile.path}
@@ -490,7 +487,21 @@ const FileRow: React.FC<{
   };
 
   const config = statusConfig[file.status];
-  const fileName = file.path.split("/").pop();
+  const fileName = file.path.split("/").pop() || "";
+  const extension = fileName.split(".").pop()?.toLowerCase();
+
+  const getFileIcon = () => {
+    if (["png", "jpg", "jpeg", "gif", "svg", "ico", "icns"].includes(extension || "")) {
+      return <FileImageOutlined className="text-purple-500/70" />;
+    }
+    if (["md", "txt", "log"].includes(extension || "")) {
+      return <FileMarkdownOutlined className="text-blue-400/70" />;
+    }
+    if (["ts", "tsx", "js", "jsx", "json", "html", "css", "py", "go", "rs"].includes(extension || "")) {
+      return <CodeOutlined className="text-zed-accent/70" />;
+    }
+    return <FileOutlined className="text-zed-muted/50" />;
+  };
 
   return (
     <div
@@ -501,6 +512,9 @@ const FileRow: React.FC<{
         className={`w-4 text-[10px] font-mono font-bold text-center ${config.color}`}
       >
         {config.char}
+      </span>
+      <span className="text-[11px] flex-shrink-0 flex items-center justify-center">
+        {getFileIcon()}
       </span>
       <span className="text-xs font-medium text-zed-text dark:text-zed-dark-text flex-1 truncate">
         {fileName}
