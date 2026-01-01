@@ -106,6 +106,8 @@ const gitcanopyAPI: GitCanopyAPI = {
   getInitialRepo: (): Promise<string | null> =>
     ipcRenderer.invoke("get-initial-repo"),
 
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke("get-app-version"),
+
   // Event listeners
   onRepositoryChanged: (callback: (event: any) => void): (() => void) => {
     const wrappedCallback = (_: any, event: any) => callback(event);
@@ -136,6 +138,14 @@ const gitcanopyAPI: GitCanopyAPI = {
     ipcRenderer.on("head-changed", wrappedCallback);
     return () => {
       ipcRenderer.removeListener("head-changed", wrappedCallback);
+    };
+  },
+
+  onMenuOpenRepository: (callback: () => void): (() => void) => {
+    const wrappedCallback = () => callback();
+    ipcRenderer.on("menu:open-repository", wrappedCallback);
+    return () => {
+      ipcRenderer.removeListener("menu:open-repository", wrappedCallback);
     };
   },
 

@@ -322,6 +322,7 @@ export interface GitCanopyAPI {
   clearRecentRepositories: () => Promise<void>;
 
   getInitialRepo: () => Promise<string | null>;
+  getAppVersion: () => Promise<string>;
 
   // Events
   onRepositoryChanged: (
@@ -334,6 +335,7 @@ export interface GitCanopyAPI {
     callback: (event: BranchesUpdatedEvent) => void,
   ) => () => void;
   onHeadChanged: (callback: (event: HeadChangedEvent) => void) => () => void;
+  onMenuOpenRepository: (callback: () => void) => () => void;
 
   // Utility
   showItemInFolder: (path: string) => Promise<void>;

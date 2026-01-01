@@ -37,6 +37,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   const [branches, setBranches] = useState<Branch[]>([]);
   const [commits, setCommits] = useState<Commit[]>([]);
   const [stashes, setStashes] = useState<string[]>([]);
+  const [version, setVersion] = useState<string>("");
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
   const [commitFilters, setCommitFilters] = useState<CommitFilterOptions>({});
   const [offset, setOffset] = useState(0);
@@ -53,6 +54,18 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
     | "help"
     | "console"
   >("graph");
+
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        const v = await window.gitcanopyAPI.getAppVersion();
+        setVersion(v);
+      } catch (e) {
+        console.error("Failed to fetch version:", e);
+      }
+    };
+    fetchVersion();
+  }, []);
 
   const refreshData = React.useCallback(async () => {
     try {
@@ -756,7 +769,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             </button>
           </div>
           <span>UTF-8</span>
-          <span>GitCanopy v0.1.0</span>
+          <span>GitCanopy v{version}</span>
         </div>
       </div>
     </div>

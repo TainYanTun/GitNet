@@ -215,7 +215,9 @@ class GitCanopyApp {
             {
               label: "Open Repository...",
               accelerator: "CmdOrCtrl+O",
-              click: () => this.handleSelectRepository(),
+              click: () => {
+                this.mainWindow?.webContents.send("menu:open-repository");
+              },
             },
             { type: "separator" },
             { role: "close" },
@@ -268,7 +270,9 @@ class GitCanopyApp {
             {
               label: "Open Repository...",
               accelerator: "CmdOrCtrl+O",
-              click: () => this.handleSelectRepository(),
+              click: () => {
+                this.mainWindow?.webContents.send("menu:open-repository");
+              },
             },
             { type: "separator" },
             { role: "quit" },
@@ -398,6 +402,22 @@ class GitCanopyApp {
         }
       }
       return null;
+    });
+    ipcMain.handle("get-app-version", () => {
+      let version = app.getVersion();
+      // If we're in dev mode, sometimes app.getVersion() returns Electron version
+      if (isDev) {
+        try {
+          const pkgPath = path.join(__dirname, "../../../package.json");
+          if (fs.existsSync(pkgPath)) {
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+            version = pkg.version;
+          }
+        } catch (e) {
+          console.error("Failed to read package.json version:", e);
+        }
+      }
+      return version;
     });
     ipcMain.handle(
       "get-commit-details",

@@ -20,6 +20,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const [isCloning, setIsCloning] = useState(false);
   const [showCloneInput, setShowCloneInput] = useState(false);
   const [cloneUrl, setCloneUrl] = useState("");
+  const [version, setVersion] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -31,7 +32,16 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         console.error("Failed to load recent repos:", err);
       }
     };
+    const fetchVersion = async () => {
+      try {
+        const v = await window.gitcanopyAPI.getAppVersion();
+        setVersion(v);
+      } catch (e) {
+        console.error("Failed to fetch version:", e);
+      }
+    };
     fetchRecent();
+    fetchVersion();
   }, []);
 
   useEffect(() => {
@@ -247,7 +257,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       {/* Footer bar */}
       <div className="h-7 border-t border-zed-border dark:border-zed-dark-border bg-zed-surface dark:bg-zed-dark-surface shrink-0 flex items-center px-4 justify-between relative z-10">
         <div className="text-[9px] font-mono text-zed-muted dark:text-zed-dark-muted uppercase tracking-widest opacity-60">
-          Build 1.0.0-Stable
+          Build {version}-Stable
         </div>
         <div className="flex gap-4 text-[9px] font-mono text-zed-muted dark:text-zed-dark-muted uppercase tracking-widest opacity-60">
           <span>{navigator.platform}</span>

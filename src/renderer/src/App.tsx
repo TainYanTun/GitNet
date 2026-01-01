@@ -30,8 +30,13 @@ const App: React.FC = () => {
       setAuthPrompt(prompt);
     });
 
+    const unsubscribeMenu = window.gitcanopyAPI.onMenuOpenRepository(() => {
+      handleSelectRepository();
+    });
+
     return () => {
       unsubscribe();
+      unsubscribeMenu();
     };
   }, []);
 
