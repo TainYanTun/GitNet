@@ -1,6 +1,6 @@
 {
   "name": "gitcanopy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Railway-style desktop Git visualizer that displays commit history as an interactive graph with semantic coloring and clear merge representation.",
   "main": "dist/main/main/main.js",
   "homepage": "./",

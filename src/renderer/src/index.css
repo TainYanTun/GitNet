@@ -200,7 +200,13 @@
 
     /* Drag utilities */
     .draggable {
+        -webkit-app-region: drag;
         cursor: grab;
+    }
+
+    .no-drag {
+        -webkit-app-region: no-drag;
+        cursor: default;
     }
 
     .dragging {

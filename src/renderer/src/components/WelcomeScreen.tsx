@@ -79,7 +79,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       />
 
       {/* Fake Title Bar */}
-      <div className="h-9 border-b border-zed-border dark:border-zed-dark-border shrink-0 flex items-center px-4 bg-zed-bg dark:bg-zed-dark-bg relative z-10">
+      <div className="h-9 border-b border-zed-border dark:border-zed-dark-border shrink-0 flex items-center px-4 bg-zed-bg dark:bg-zed-dark-bg relative z-10 draggable">
         <div className="w-16 shrink-0" />
         <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zed-muted dark:text-zed-dark-muted">
           GitCanopy / Home
