@@ -99,8 +99,17 @@ class GitCanopyApp {
       // 1. Block navigation to external sites (only allow 'self')
       contents.on("will-navigate", (event, navigationUrl) => {
         const parsedUrl = new URL(navigationUrl);
-        if (parsedUrl.origin !== "http://localhost:3000" && !isDev) {
-          event.preventDefault();
+        const origin = parsedUrl.origin;
+        
+        if (isDev) {
+          if (origin !== "http://localhost:3000") {
+            event.preventDefault();
+          }
+        } else {
+          // In production, allow file:// origin
+          if (origin !== "file://" && origin !== "null") {
+            event.preventDefault();
+          }
         }
       });
 
@@ -133,6 +142,12 @@ class GitCanopyApp {
       y: undefined,
     };
 
+    const preloadPath = path.join(__dirname, "../../preload/preload/preload.js");
+    logInfo("App", `Preload path: ${preloadPath}`);
+    if (!fs.existsSync(preloadPath)) {
+      logError("App", `Preload script not found at: ${preloadPath}`);
+    }
+
     // Create the browser window
     this.mainWindow = new BrowserWindow({
       width: windowState.width,
@@ -146,7 +161,7 @@ class GitCanopyApp {
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
-        preload: path.join(__dirname, "../../preload/preload/preload.js"),
+        preload: preloadPath,
         webSecurity: true,
         allowRunningInsecureContent: false,
       },

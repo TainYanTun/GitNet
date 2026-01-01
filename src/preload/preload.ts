@@ -172,18 +172,15 @@ const gitcanopyAPI: GitCanopyAPI = {
 };
 
 // Expose the API to the renderer process
-if (process.env.NODE_ENV === "development") {
-  console.log(
-    "🔧 [Preload] Exposing gitcanopyAPI with keys:",
-    Object.keys(gitcanopyAPI),
-  );
-}
-contextBridge.exposeInMainWorld("gitcanopyAPI", gitcanopyAPI);
-
-// Log that preload script has loaded (development only)
-if (process.env.NODE_ENV === "development") {
-  console.log("🔧 GitCanopy preload script loaded");
+try {
+  contextBridge.exposeInMainWorld("gitcanopyAPI", gitcanopyAPI);
+} catch (error) {
+  console.error("Failed to expose gitcanopyAPI:", error);
 }
 
 // Prevent the renderer process from accessing Node.js APIs
-Object.freeze(gitcanopyAPI);
+try {
+  Object.freeze(gitcanopyAPI);
+} catch (error) {
+  console.error("Failed to freeze gitcanopyAPI:", error);
+}
