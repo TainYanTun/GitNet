@@ -38,6 +38,16 @@ GitCanopy is an open-source project hosted on GitHub. You can find the latest in
 👉 **[Download GitCanopy from GitHub](https://github.com/TainYanTun/GitCanopy/releases)**
 
 > **Note for macOS users:** Since the app is currently unsigned, you will need to **Right-Click > Open** the first time you launch it to bypass the security verification.
+>
+> If you see a message saying **"GitCanopy is damaged and can't be opened"**:
+> 1. Open your Terminal.
+> 2. Run the following command:
+    ```bash
+    sudo xattr -cr /Applications/GitCanopy.app
+    ```
+    *(Replace `/Applications/GitCanopy.app` with the actual path if you installed it elsewhere)*
+
+> **Note on Trust:** If you are uncomfortable running this command or do not trust the binary, we completely understand. As an open-source project, you are always free to audit the code and **build from source** by following our [Setup Guide](setup.md).
 
 ### 🛠️ Development Setup
 For developers looking to build from source or contribute, please refer to the [Setup Guide](setup.md).
@@ -52,19 +62,6 @@ For developers looking to build from source or contribute, please refer to the [
 - **Analyze Activity:** Use **Team Insights** and **File Hotspots** to track contributor impact.
 
 > 💡 See [Full Documentation](documentation.md) for advanced features.
-
-## ⌨️ Keyboard Shortcuts
-
-### Essential Commands
-
-| Action | macOS | Windows/Linux |
-|--------|-------|---------------|
-| Open Repository | `⌘ + O` | `Ctrl + O` |
-| Refresh / Sync | `⌘ + R` | `Ctrl + R` |
-| Commit Changes | `⌘ + Enter` | `Ctrl + Enter` |
-| Search Commits | `⌘ + F` | `Ctrl + F` |
-| Close Panel | `Esc` | `Esc` |
-| Toggle Fullscreen | `⌃ + ⌘ + F` | `F11` |
 
 ---
 
