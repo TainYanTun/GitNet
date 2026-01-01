@@ -1,6 +1,6 @@
 {
   "name": "gitcanopy",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Electron-based Git visualizer that displays commit history as an interactive graph with semantic coloring, Stable graphs and high FPS virtualized rendering",
   "main": "dist/main/main/main.js",
   "homepage": "./",
@@ -19,7 +19,7 @@
     "dev": "bun run build:preload && concurrently \"bun run dev:renderer\" \"bun run dev:main\"",
     "dev:renderer": "vite",
     "dev:main": "bun run build:preload && tsc -p src/main/tsconfig.json && electron dist/main/main/main.js --inspect=5858",
-    "build": "bun run build:renderer && bun run build:main",
+    "build": "bun run build:renderer && bun run build:preload && bun run build:main",
     "build:renderer": "vite build",
     "build:main": "tsc -p src/main/tsconfig.json",
     "build:preload": "tsc -p src/preload/tsconfig.json",

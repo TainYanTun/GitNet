@@ -142,7 +142,10 @@ class GitCanopyApp {
       y: undefined,
     };
 
-    const preloadPath = path.join(__dirname, "../../preload/preload/preload.js");
+    const preloadPath = isDev
+      ? path.join(__dirname, "../../preload/preload/preload.js")
+      : path.join(app.getAppPath(), "dist/preload/preload/preload.js");
+    
     logInfo("App", `Preload path: ${preloadPath}`);
     if (!fs.existsSync(preloadPath)) {
       logError("App", `Preload script not found at: ${preloadPath}`);
