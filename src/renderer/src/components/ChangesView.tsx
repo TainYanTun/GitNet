@@ -102,7 +102,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
         file.path,
       );
       setDiffContent(diff);
-    } catch (err) {
+    } catch (_err) {
       setDiffContent("Failed to load diff.");
     }
   };
@@ -138,7 +138,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       await window.gitcanopyAPI.stageAll(repoPath);
       fetchStatus();
       showToast("All changes staged", "success");
-    } catch (err) {
+    } catch (_err) {
       showToast("Failed to stage all changes", "error");
     }
   };
@@ -148,7 +148,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       await window.gitcanopyAPI.unstageAll(repoPath);
       fetchStatus();
       showToast("All changes unstaged", "info");
-    } catch (err) {
+    } catch (_err) {
       showToast("Failed to unstage all changes", "error");
     }
   };
@@ -159,7 +159,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
     try {
       await window.gitcanopyAPI.discardChanges(repoPath, file.path);
       fetchStatus();
-    } catch (err) {
+    } catch (_err) {
       showToast("Failed to discard changes", "error");
     }
   };
@@ -190,7 +190,7 @@ export const ChangesView: React.FC<ChangesViewProps> = ({ repoPath }) => {
       await window.gitcanopyAPI.push(repoPath);
       showToast("Pushed successfully", "success");
       fetchStatus();
-    } catch (err) {
+    } catch (_err) {
       showToast("Push failed", "error");
     } finally {
       setIsPushing(false);

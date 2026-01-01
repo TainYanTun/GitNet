@@ -148,6 +148,17 @@ const gitcanopyAPI: GitCanopyAPI = {
 
   copyToClipboard: (text: string): Promise<void> =>
     ipcRenderer.invoke("copy-to-clipboard", text),
+
+  // Auth
+  submitAuth: (answer: string): Promise<void> => ipcRenderer.invoke("auth-submit", answer),
+  cancelAuth: (): Promise<void> => ipcRenderer.invoke("auth-cancel"),
+  onAuthRequest: (callback: (event: { prompt: string }) => void): (() => void) => {
+    const wrappedCallback = (_: any, event: any) => callback(event);
+    ipcRenderer.on("auth-request", wrappedCallback);
+    return () => {
+      ipcRenderer.removeListener("auth-request", wrappedCallback);
+    };
+  },
 };
 
 // Expose the API to the renderer process

@@ -5,6 +5,7 @@ import { isDev, checkGitInstallation } from "./utils";
 import { GitService } from "./services/git-service";
 import { RepositoryWatcher } from "./services/repository-watcher";
 import { SettingsService } from "./services/settings-service";
+import { AuthService } from "./services/auth-service";
 import { CommitFilterOptions } from "../shared/types";
 
 class GitCanopyApp {
@@ -12,9 +13,11 @@ class GitCanopyApp {
   private gitService: GitService;
   private repositoryWatcher: RepositoryWatcher;
   private settingsService: SettingsService;
+  private authService: AuthService;
 
   constructor() {
-    this.gitService = new GitService();
+    this.authService = new AuthService();
+    this.gitService = new GitService(this.authService);
     this.repositoryWatcher = new RepositoryWatcher();
     this.settingsService = new SettingsService();
     this.initializeApp();
@@ -140,6 +143,9 @@ class GitCanopyApp {
     // Show window when ready to prevent visual flash
     this.mainWindow.once("ready-to-show", () => {
       this.mainWindow?.show();
+      if (this.mainWindow) {
+        this.authService.setMainWindow(this.mainWindow);
+      }
 
       if (isDev) {
         this.mainWindow?.webContents.openDevTools();
@@ -447,6 +453,10 @@ class GitCanopyApp {
         return Promise.reject(new Error("Invalid URL"));
       }
     });
+
+    // Auth
+    ipcMain.handle("auth-submit", (_, answer: string) => this.authService.submitCredentials(answer));
+    ipcMain.handle("auth-cancel", () => this.authService.cancelAuth());
   }
 
   private async handleSelectRepository(): Promise<any> {

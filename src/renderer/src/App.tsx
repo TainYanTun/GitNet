@@ -5,6 +5,7 @@ import { MainLayout } from "./components/MainLayout";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { useToast } from "./components/ToastContext";
+import { AuthModal } from "./components/AuthModal";
 
 interface AppState {
   repository: Repository | null;
@@ -19,6 +20,30 @@ const App: React.FC = () => {
     loading: false,
     error: null,
   });
+  
+  const [authPrompt, setAuthPrompt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!window.gitcanopyAPI) return;
+
+    const unsubscribe = window.gitcanopyAPI.onAuthRequest(({ prompt }) => {
+      setAuthPrompt(prompt);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const handleAuthSubmit = async (answer: string) => {
+    await window.gitcanopyAPI.submitAuth(answer);
+    setAuthPrompt(null);
+  };
+
+  const handleAuthCancel = async () => {
+    await window.gitcanopyAPI.cancelAuth();
+    setAuthPrompt(null);
+  };
 
   // Handle repository selection
   const handleSelectRepository = async (repoPath?: string) => {
@@ -222,7 +247,14 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="h-full w-full bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text">
+      <div className="h-full w-full bg-zed-bg dark:bg-zed-dark-bg text-zed-text dark:text-zed-dark-text relative">
+        {authPrompt && (
+          <AuthModal
+            prompt={authPrompt}
+            onSubmit={handleAuthSubmit}
+            onCancel={handleAuthCancel}
+          />
+        )}
         {state.repository ? (
           <MainLayout
             repository={state.repository}

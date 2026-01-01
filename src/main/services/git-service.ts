@@ -2,7 +2,9 @@ import { spawn } from "child_process";
 import * as crypto from "crypto";
 import * as fs from "fs";
 import * as path from "path";
+import * as os from "os";
 import { LRUCache } from "lru-cache";
+import { AuthService } from "./auth-service";
 import {
   Repository,
   Commit,
@@ -23,6 +25,48 @@ export class GitService {
   private avatarCache = new LRUCache<string, string>({ max: 500 });
   private branchesCache = new LRUCache<string, Branch[]>({ max: 10, ttl: 1000 * 30 }); // 30s cache
   private tagsCache = new LRUCache<string, Map<string, string[]>>({ max: 10, ttl: 1000 * 60 }); // 60s cache
+  
+  private authService: AuthService | null = null;
+  private askPassScriptPath: string | null = null;
+
+  constructor(authService?: AuthService) {
+    if (authService) {
+      this.authService = authService;
+    }
+  }
+
+  public setAuthService(authService: AuthService) {
+    this.authService = authService;
+  }
+
+  private getAskPassScriptPath(): string {
+    if (this.askPassScriptPath && fs.existsSync(this.askPassScriptPath)) {
+      return this.askPassScriptPath;
+    }
+
+    const scriptName = process.platform === 'win32' ? 'askpass.bat' : 'askpass.sh';
+    const wrapperPath = path.join(os.tmpdir(), `gitcanopy-${scriptName}`);
+    
+    // Locate the askpass.js script
+    // We are at dist/main/main/services/git-service.js
+    // We want dist/main/main/scripts/askpass.js
+    // So ../scripts/askpass.js
+    const jsPath = path.resolve(__dirname, '../scripts/askpass.js');
+    
+    // In dev mode, we might be running from src with ts-node/bun? 
+    // No, main process is built with tsc.
+    
+    let content = '';
+    if (process.platform === 'win32') {
+      content = `@echo off\r\nset ELECTRON_RUN_AS_NODE=1\r\n"${process.execPath}" "${jsPath}" %*`;
+    } else {
+      content = `#!/bin/sh\nexport ELECTRON_RUN_AS_NODE=1\n"${process.execPath}" "${jsPath}" "$@"`;
+    }
+
+    fs.writeFileSync(wrapperPath, content, { mode: 0o755 });
+    this.askPassScriptPath = wrapperPath;
+    return wrapperPath;
+  }
 
   private getAvatarUrl(email: string): string {
     const cleanEmail = email.trim().toLowerCase();
@@ -42,8 +86,20 @@ export class GitService {
 
   private async run(args: string[], cwd: string): Promise<string> {
     const startTime = Date.now();
+    
+    // Prepare env
+    const env = { ...process.env };
+    if (this.authService) {
+        env.GIT_ASKPASS = this.getAskPassScriptPath();
+        env.GIT_CANOPY_AUTH_SOCK = this.authService.getSocketPath();
+        env.GIT_TERMINAL_PROMPT = '0'; // Disable terminal prompt fallback
+        
+        // Ensure the socket server is running
+        await this.authService.start();
+    }
+
     return new Promise((resolve, reject) => {
-      const gitProcess = spawn("git", args, { cwd });
+      const gitProcess = spawn("git", args, { cwd, env });
       let stdout = "";
       let stderr = "";
       const MAX_BUFFER_SIZE = 10 * 1024 * 1024; // 10MB limit
@@ -311,7 +367,7 @@ export class GitService {
     // Let's check status first or just try checkout.
     try {
       await this.run(["checkout", "--", filePath], repoPath);
-    } catch (err) {
+    } catch (_err) {
       // If checkout fails, maybe it's untracked
       await this.run(["clean", "-f", "--", filePath], repoPath);
     }
